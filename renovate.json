@@ -22,7 +22,6 @@
     {
       "description": "Automerge docker GitHub Actions",
       "matchManagers": ["github-actions"],
-      "matchPackagePatterns": ["^docker/"],
       "automerge": true
     }
   ]
