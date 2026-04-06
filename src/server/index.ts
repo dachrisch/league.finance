@@ -88,7 +88,7 @@ app.use(
 if (process.env.NODE_ENV === 'production') {
   const clientDir = path.join(__dirname, '../..'); 
   app.use(express.static(clientDir));
-  app.get('*', (req, res, next) => {
+  app.get('(.*)', (req, res, next) => {
     if (req.url.startsWith('/trpc') || req.url.startsWith('/auth')) {
       return next();
     }
