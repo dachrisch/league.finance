@@ -71,7 +71,7 @@ app.get(
       { expiresIn: '24h', algorithm: 'HS256' }
     );
     // Redirect to client with token in query string
-    res.redirect(`${CLIENT_URL}/auth/callback?token=${token}`);
+    res.redirect(`${CLIENT_URL}/login/callback?token=${token}`);
   }
 );
 
