@@ -14,7 +14,10 @@ export const FinancialSettings = model<IFinancialSettings>('FinancialSettings', 
 
 /** Returns the singleton, creating it if absent. */
 export async function getOrCreateSettings(): Promise<IFinancialSettings> {
-  const existing = await FinancialSettings.findOne();
-  if (existing) return existing;
-  return FinancialSettings.create({});
+  const doc = await FinancialSettings.findOneAndUpdate(
+    {},
+    {},
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+  return doc!;
 }

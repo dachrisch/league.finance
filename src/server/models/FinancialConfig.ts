@@ -18,9 +18,9 @@ const FinancialConfigSchema = new Schema<IFinancialConfig>(
     seasonId: { type: Number, required: true },
     costModel: { type: String, enum: ['SEASON', 'GAMEDAY'], required: true },
     baseRateOverride: { type: Number, default: null },
-    expectedTeamsCount: { type: Number, default: 0 },
-    expectedGamedaysCount: { type: Number, default: 0 },
-    expectedTeamsPerGameday: { type: Number, default: 0 },
+    expectedTeamsCount: { type: Number, default: 0, min: 0 },
+    expectedGamedaysCount: { type: Number, default: 0, min: 0 },
+    expectedTeamsPerGameday: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );

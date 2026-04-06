@@ -18,4 +18,6 @@ const DiscountSchema = new Schema<IDiscount>(
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 
+DiscountSchema.index({ configId: 1 });
+
 export const Discount = model<IDiscount>('Discount', DiscountSchema);
