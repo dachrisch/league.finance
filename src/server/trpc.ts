@@ -13,7 +13,7 @@ export function createContext({ req }: trpcExpress.CreateExpressContextOptions):
 
   const token = header.slice(7);
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    const payload = jwt.verify(token, process.env.JWT_SECRET!, { algorithms: ['HS256'] }) as JwtPayload;
     return { user: payload };
   } catch {
     return { user: null };
