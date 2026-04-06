@@ -10,6 +10,7 @@ import { User } from './models/User';
 import { appRouter } from './routers/index';
 import { createContext } from './trpc';
 import path from 'path';
+import { healthHandler, setDbStatus } from './health';
 
 declare global {
   namespace Express {
@@ -57,6 +58,8 @@ passport.use(
 
 app.use(passport.initialize());
 
+app.get('/health', healthHandler);
+
 // OAuth routes (not tRPC)
 app.get('/auth/google', passport.authenticate('google', { scope: ['email', 'profile'] }));
 
@@ -95,6 +98,8 @@ if (process.env.NODE_ENV === 'production') {
 
 const PORT = Number(process.env.PORT ?? 3000);
 
-connectMongo().then(() => {
-  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
-});
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
+connectMongo()
+  .then(() => { setDbStatus('connected'); })
+  .catch(err => console.error('MongoDB connection failed:', err));
