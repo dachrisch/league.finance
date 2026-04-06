@@ -18,7 +18,9 @@ declare global {
 }
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+const CLIENT_URL = process.env.CLIENT_URL ?? 'http://localhost:5173';
+
+app.use(cors({ origin: CLIENT_URL, credentials: true }));
 app.use(express.json());
 
 // Google OAuth strategy
@@ -54,12 +56,10 @@ passport.use(
 );
 
 app.use(passport.initialize());
-const app = express();
-const CLIENT_URL = process.env.CLIENT_URL ?? 'http://localhost:5173';
 
-app.use(cors({ origin: CLIENT_URL, credentials: true }));
-app.use(express.json());
-...
+// OAuth routes (not tRPC)
+app.get('/auth/google', passport.authenticate('google', { scope: ['email', 'profile'] }));
+
 app.get(
   '/auth/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login?error=domain' }),
@@ -83,18 +83,15 @@ app.use(
 
 // Serve built client in production
 if (process.env.NODE_ENV === 'production') {
-  // In production, both server and client are usually in the dist folder
   const clientDir = path.join(__dirname, '.'); 
   app.use(express.static(clientDir));
   app.get('*', (req, res, next) => {
-    // If it's a tRPC or auth route, don't serve index.html
     if (req.url.startsWith('/trpc') || req.url.startsWith('/auth')) {
       return next();
     }
     res.sendFile(path.join(clientDir, 'index.html'));
   });
 }
-
 
 const PORT = Number(process.env.PORT ?? 3000);
 
