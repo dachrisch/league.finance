@@ -35,16 +35,14 @@ passport.use(
         return done(null, false, { message: 'Domain not allowed' });
       }
 
-      const userCount = await User.countDocuments();
-      const role = userCount === 0 ? 'admin' : 'viewer';
+      const hasAdmin = await User.exists({ role: 'admin' });
+      const role = hasAdmin ? 'viewer' : 'admin';
 
       const user = await User.findOneAndUpdate(
         { googleId: profile.id },
         {
-          googleId: profile.id,
-          email,
-          displayName: profile.displayName,
-          $setOnInsert: { role },
+          $set: { email, displayName: profile.displayName },
+          $setOnInsert: { googleId: profile.id, role },
         },
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
