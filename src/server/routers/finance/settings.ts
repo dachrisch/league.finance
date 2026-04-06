@@ -1,6 +1,6 @@
 import { router, protectedProcedure, adminProcedure } from '../../trpc';
 import { UpdateFinancialSettingsSchema } from '../../../../shared/schemas/financialSettings';
-import { getOrCreateSettings } from '../../models/FinancialSettings';
+import { FinancialSettings, getOrCreateSettings } from '../../models/FinancialSettings';
 
 export const settingsRouter = router({
   get: protectedProcedure.query(async () => {
@@ -14,13 +14,19 @@ export const settingsRouter = router({
   update: adminProcedure
     .input(UpdateFinancialSettingsSchema)
     .mutation(async ({ input }) => {
-      const settings = await getOrCreateSettings();
-      settings.defaultRatePerTeamSeason = input.defaultRatePerTeamSeason;
-      settings.defaultRatePerTeamGameday = input.defaultRatePerTeamGameday;
-      await settings.save();
+      await FinancialSettings.updateOne(
+        {},
+        {
+          $set: {
+            defaultRatePerTeamSeason: input.defaultRatePerTeamSeason,
+            defaultRatePerTeamGameday: input.defaultRatePerTeamGameday,
+          },
+        },
+        { upsert: true }
+      );
       return {
-        defaultRatePerTeamSeason: settings.defaultRatePerTeamSeason,
-        defaultRatePerTeamGameday: settings.defaultRatePerTeamGameday,
+        defaultRatePerTeamSeason: input.defaultRatePerTeamSeason,
+        defaultRatePerTeamGameday: input.defaultRatePerTeamGameday,
       };
     }),
 });

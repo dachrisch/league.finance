@@ -47,6 +47,8 @@ export const configsRouter = router({
   delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
+      const config = await FinancialConfig.findById(input.id).lean();
+      if (!config) throw new TRPCError({ code: 'NOT_FOUND' });
       await Discount.deleteMany({ configId: input.id });
       await FinancialConfig.findByIdAndDelete(input.id);
       return { success: true };
