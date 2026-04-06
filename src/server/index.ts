@@ -54,10 +54,12 @@ passport.use(
 );
 
 app.use(passport.initialize());
+const app = express();
+const CLIENT_URL = process.env.CLIENT_URL ?? 'http://localhost:5173';
 
-// OAuth routes (not tRPC)
-app.get('/auth/google', passport.authenticate('google', { scope: ['email', 'profile'] }));
-
+app.use(cors({ origin: CLIENT_URL, credentials: true }));
+app.use(express.json());
+...
 app.get(
   '/auth/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login?error=domain' }),
@@ -68,8 +70,8 @@ app.get(
       process.env.JWT_SECRET!,
       { expiresIn: '24h', algorithm: 'HS256' }
     );
-    // Redirect to client with token in query string (client stores in localStorage)
-    res.redirect(`http://localhost:5173/auth/callback?token=${token}`);
+    // Redirect to client with token in query string
+    res.redirect(`${CLIENT_URL}/auth/callback?token=${token}`);
   }
 );
 
@@ -81,10 +83,18 @@ app.use(
 
 // Serve built client in production
 if (process.env.NODE_ENV === 'production') {
-  const clientDir = path.join(__dirname, '../../client');
+  // In production, both server and client are usually in the dist folder
+  const clientDir = path.join(__dirname, '.'); 
   app.use(express.static(clientDir));
-  app.get('*', (_req, res) => res.sendFile(path.join(clientDir, 'index.html')));
+  app.get('*', (req, res, next) => {
+    // If it's a tRPC or auth route, don't serve index.html
+    if (req.url.startsWith('/trpc') || req.url.startsWith('/auth')) {
+      return next();
+    }
+    res.sendFile(path.join(clientDir, 'index.html'));
+  });
 }
+
 
 const PORT = Number(process.env.PORT ?? 3000);
 
