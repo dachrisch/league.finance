@@ -1,0 +1,104 @@
+export interface CalculationTeam {
+  id: number;
+  name: string;
+}
+
+export interface ParticipationEntry {
+  gamedayId: number;
+  teamIds: number[];
+}
+
+export interface CalculationDiscount {
+  type: 'FIXED' | 'PERCENT';
+  value: number;
+}
+
+export interface CalculationInput {
+  costModel: 'SEASON' | 'GAMEDAY';
+  baseRate: number;
+  teams: CalculationTeam[];
+  participation: ParticipationEntry[];
+  discounts: CalculationDiscount[];
+  expectedTeamsCount?: number;
+  expectedGamedaysCount?: number;
+  expectedTeamsPerGameday?: number;
+}
+
+export interface CalculationDetail {
+  teamId: number;
+  teamName: string;
+  gross: number;
+  discount: number;
+  net: number;
+}
+
+export interface CalculationResult {
+  gross: number;
+  discount: number;
+  net: number;
+  baseRate: number;
+  expectedGross: number;
+  expectedParticipationCount: number;
+  liveParticipationCount: number;
+  details: CalculationDetail[] | null;
+}
+
+function applyDiscounts(gross: number, discounts: CalculationDiscount[]): number {
+  return discounts.reduce((total, d) => {
+    if (d.type === 'FIXED') return total + d.value;
+    return total + (gross * d.value) / 100;
+  }, 0);
+}
+
+export function calculateCosts(input: CalculationInput): CalculationResult {
+  const {
+    costModel,
+    baseRate,
+    teams,
+    participation,
+    discounts,
+    expectedTeamsCount = 0,
+    expectedGamedaysCount = 0,
+    expectedTeamsPerGameday = 0,
+  } = input;
+
+  if (costModel === 'SEASON') {
+    const details: CalculationDetail[] = teams.map((team) => ({
+      teamId: team.id,
+      teamName: team.name,
+      gross: baseRate,
+      discount: 0,
+      net: baseRate,
+    }));
+
+    const gross = teams.length * baseRate;
+    const discount = applyDiscounts(gross, discounts);
+
+    return {
+      gross,
+      discount,
+      net: gross - discount,
+      baseRate,
+      expectedGross: expectedTeamsCount * baseRate,
+      expectedParticipationCount: expectedTeamsCount,
+      liveParticipationCount: teams.length,
+      details,
+    };
+  }
+
+  // GAMEDAY model
+  const liveParticipationCount = participation.reduce((sum, p) => sum + p.teamIds.length, 0);
+  const gross = liveParticipationCount * baseRate;
+  const discount = applyDiscounts(gross, discounts);
+
+  return {
+    gross,
+    discount,
+    net: gross - discount,
+    baseRate,
+    expectedGross: expectedGamedaysCount * expectedTeamsPerGameday * baseRate,
+    expectedParticipationCount: expectedGamedaysCount * expectedTeamsPerGameday,
+    liveParticipationCount,
+    details: null,
+  };
+}
