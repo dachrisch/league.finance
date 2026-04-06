@@ -16,7 +16,7 @@ jobs:
     uses: ./.github/workflows/part_docker_build.yaml
 
   docker-test:
-    needs: docker-build
+    needs: [node-test, docker-build]
     uses: ./.github/workflows/part_docker_test.yaml
     with:
       artifact_name: ${{ needs.docker-build.outputs.artifact_name }}
