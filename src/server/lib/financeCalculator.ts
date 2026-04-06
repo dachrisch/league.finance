@@ -50,6 +50,10 @@ function applyDiscounts(gross: number, discounts: CalculationDiscount[]): number
   }, 0);
 }
 
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
 export function calculateCosts(input: CalculationInput): CalculationResult {
   const {
     costModel,
@@ -75,11 +79,11 @@ export function calculateCosts(input: CalculationInput): CalculationResult {
     const discount = applyDiscounts(gross, discounts);
 
     return {
-      gross,
-      discount,
-      net: gross - discount,
-      baseRate,
-      expectedGross: expectedTeamsCount * baseRate,
+      gross: round2(gross),
+      discount: round2(discount),
+      net: round2(gross - discount),
+      baseRate: round2(baseRate),
+      expectedGross: round2(expectedTeamsCount * baseRate),
       expectedParticipationCount: expectedTeamsCount,
       liveParticipationCount: teams.length,
       details,
@@ -92,11 +96,11 @@ export function calculateCosts(input: CalculationInput): CalculationResult {
   const discount = applyDiscounts(gross, discounts);
 
   return {
-    gross,
-    discount,
-    net: gross - discount,
-    baseRate,
-    expectedGross: expectedGamedaysCount * expectedTeamsPerGameday * baseRate,
+    gross: round2(gross),
+    discount: round2(discount),
+    net: round2(gross - discount),
+    baseRate: round2(baseRate),
+    expectedGross: round2(expectedGamedaysCount * expectedTeamsPerGameday * baseRate),
     expectedParticipationCount: expectedGamedaysCount * expectedTeamsPerGameday,
     liveParticipationCount,
     details: null,
