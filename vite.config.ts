@@ -7,7 +7,7 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   server: {
-...
+    proxy: {
       '/trpc': 'http://localhost:3000',
       '/auth': 'http://localhost:3000',
     },
