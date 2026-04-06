@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: 🐳🚀 Push Docker Image
+
+on:
+  workflow_call:
+    inputs:
+      artifact_name:
+        required: true
+        description: The name of the artifact containing the Docker image
+        type: string
+      image_name:
+        required: true
+        description: The local name of the Docker image (without registry prefix)
+        type: string
+    secrets:
+      DOCKER_TOKEN:
+        required: true
+        description: Docker Hub token for authentication
+
+permissions:
+  contents: read
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: /tmp
+
+      - name: 🐳 Load Docker image
+        run: |
+          docker load --input /tmp/${{ inputs.image_name }}.tar
+          docker image ls -a
+
+      - name: 🔐 Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: 🐳🚀 Tag and push Docker image
+        run: |
+          docker tag ${{ inputs.image_name }}:latest dachrisch/league.finance:latest
+          docker tag ${{ inputs.image_name }}:latest dachrisch/league.finance:${{ github.sha }}
+          docker push dachrisch/league.finance:latest
+          docker push dachrisch/league.finance:${{ github.sha }}
