@@ -15,6 +15,6 @@ export const SeasonSchema = z.object({
 export const TeamSchema = z.object({
   id: z.number(),
   name: z.string(),
-  description: z.string(),
+  description: z.string().nullable().default(''),
   location: z.string(),
 });
