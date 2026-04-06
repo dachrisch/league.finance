@@ -17,7 +17,7 @@ export async function getOrCreateSettings(): Promise<IFinancialSettings> {
   const doc = await FinancialSettings.findOneAndUpdate(
     {},
     {},
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
   );
   return doc!;
 }

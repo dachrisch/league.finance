@@ -1,8 +1,9 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trpc, clearToken } from '../lib/trpc';
 import { SummaryCards } from '../components/SummaryCards';
-import { ConfigsTable } from '../components/ConfigsTable';
-import { PendingTable } from '../components/PendingTable';
+import { SeasonalAccordion } from '../components/SeasonalAccordion';
+import { groupDashboardData } from '../lib/dashboardUtils';
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -12,8 +13,29 @@ export function DashboardPage() {
   const { data: seasons } = trpc.teams.seasons.useQuery();
   const deleteConfig = trpc.finance.configs.delete.useMutation({ onSuccess: () => refetch() });
 
+  const [expandedSeasons, setExpandedSeasons] = useState<Set<number>>(new Set());
+
   const leagueNames: Record<number, string> = Object.fromEntries((leagues ?? []).map((l) => [l.id, l.name]));
   const seasonNames: Record<number, string> = Object.fromEntries((seasons ?? []).map((s) => [s.id, s.name]));
+
+  // Process data
+  const groupedData = data 
+    ? groupDashboardData(data.configStats, data.pending, seasonNames, leagueNames)
+    : [];
+
+  // Default expansion: first season
+  useEffect(() => {
+    if (groupedData.length > 0 && expandedSeasons.size === 0) {
+      setExpandedSeasons(new Set([groupedData[0].seasonId]));
+    }
+  }, [groupedData]);
+
+  function toggleSeason(id: number) {
+    const next = new Set(expandedSeasons);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setExpandedSeasons(next);
+  }
 
   function handleLogout() {
     clearToken();
@@ -45,14 +67,18 @@ export function DashboardPage() {
       </div>
 
       <SummaryCards totalGross={data.totalGross} totalDiscount={data.totalDiscount} totalNet={data.totalNet} />
-      <ConfigsTable
-        rows={data.configStats as any}
-        leagueNames={leagueNames}
-        seasonNames={seasonNames}
-        isAdmin={me?.role === 'admin'}
-        onDelete={(id) => deleteConfig.mutate({ id })}
-      />
-      <PendingTable rows={data.pending} />
+      
+      {groupedData.map((group) => (
+        <SeasonalAccordion 
+          key={group.seasonId}
+          group={group}
+          leagueNames={leagueNames}
+          isAdmin={me?.role === 'admin'}
+          isExpanded={expandedSeasons.has(group.seasonId)}
+          onToggle={() => toggleSeason(group.seasonId)}
+          onDelete={(id) => deleteConfig.mutate({ id })}
+        />
+      ))}
     </div>
   );
 }

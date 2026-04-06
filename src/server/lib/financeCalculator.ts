@@ -1,3 +1,5 @@
+import type { CalculationDetail, CalculationResult } from '../../../shared/types';
+
 export interface CalculationTeam {
   id: number;
   name: string;
@@ -22,25 +24,6 @@ export interface CalculationInput {
   expectedTeamsCount?: number;
   expectedGamedaysCount?: number;
   expectedTeamsPerGameday?: number;
-}
-
-export interface CalculationDetail {
-  teamId: number;
-  teamName: string;
-  gross: number;
-  discount: number;
-  net: number;
-}
-
-export interface CalculationResult {
-  gross: number;
-  discount: number;
-  net: number;
-  baseRate: number;
-  expectedGross: number;
-  expectedParticipationCount: number;
-  liveParticipationCount: number;
-  details: CalculationDetail[] | null;
 }
 
 function applyDiscounts(gross: number, discounts: CalculationDiscount[]): number {

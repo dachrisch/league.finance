@@ -47,7 +47,7 @@ passport.use(
           $set: { email, displayName: profile.displayName },
           $setOnInsert: { googleId: profile.id, role },
         },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
       );
 
       done(null, user);
@@ -62,7 +62,7 @@ app.get('/auth/google', passport.authenticate('google', { scope: ['email', 'prof
 
 app.get(
   '/auth/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/login?error=domain' }),
+  passport.authenticate('google', { session: false, failureRedirect: `${CLIENT_URL}/login?error=domain` }),
   (req, res) => {
     const user = req.user as InstanceType<typeof User>;
     const token = jwt.sign(
@@ -83,7 +83,7 @@ app.use(
 
 // Serve built client in production
 if (process.env.NODE_ENV === 'production') {
-  const clientDir = path.join(__dirname, '.'); 
+  const clientDir = path.join(__dirname, '../..'); 
   app.use(express.static(clientDir));
   app.get('*', (req, res, next) => {
     if (req.url.startsWith('/trpc') || req.url.startsWith('/auth')) {

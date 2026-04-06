@@ -24,3 +24,22 @@ export type UpdateFinancialConfigInput = z.infer<typeof UpdateFinancialConfigSch
 export type DiscountType = z.infer<typeof DiscountTypeSchema>;
 export type Discount = z.infer<typeof DiscountSchema>;
 export type AddDiscountInput = z.infer<typeof AddDiscountSchema>;
+
+export interface CalculationDetail {
+  teamId: number;
+  teamName: string;
+  gross: number;
+  discount: number;
+  net: number;
+}
+
+export interface CalculationResult {
+  gross: number;
+  discount: number;
+  net: number;
+  baseRate: number;
+  expectedGross: number;
+  expectedParticipationCount: number;
+  liveParticipationCount: number;
+  details: CalculationDetail[] | null;
+}
