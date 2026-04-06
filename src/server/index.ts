@@ -9,6 +9,7 @@ import { connectMongo } from './db/mongo';
 import { User } from './models/User';
 import { appRouter } from './routers/index';
 import { createContext } from './trpc';
+import path from 'path';
 
 declare global {
   namespace Express {
@@ -77,6 +78,13 @@ app.use(
   '/trpc',
   trpcExpress.createExpressMiddleware({ router: appRouter, createContext })
 );
+
+// Serve built client in production
+if (process.env.NODE_ENV === 'production') {
+  const clientDir = path.join(__dirname, '../../client');
+  app.use(express.static(clientDir));
+  app.get('*', (_req, res) => res.sendFile(path.join(clientDir, 'index.html')));
+}
 
 const PORT = Number(process.env.PORT ?? 3000);
 
