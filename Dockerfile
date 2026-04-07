@@ -3,6 +3,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 COPY . .
+ARG VITE_GIT_COMMIT_HASH
+ENV VITE_GIT_COMMIT_HASH=$VITE_GIT_COMMIT_HASH
 RUN npm run build
 
 FROM node:24-alpine

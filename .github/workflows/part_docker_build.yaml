@@ -32,6 +32,8 @@ jobs:
         with:
           context: .
           tags: league.finance:latest
+          build-args: |
+            VITE_GIT_COMMIT_HASH=${{ github.sha }}
           outputs: type=docker,dest=/tmp/league.finance.tar
           cache-from: type=gha
           cache-to: type=gha,mode=max

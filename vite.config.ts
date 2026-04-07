@@ -2,7 +2,13 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { execSync } from 'child_process';
 
-const gitHash = execSync('git rev-parse --short HEAD').toString().trim();
+let gitHash = 'unknown';
+try {
+  gitHash = execSync('git rev-parse --short HEAD').toString().trim();
+} catch (e) {
+  // Fallback for Docker builds or environments without git
+  gitHash = process.env.VITE_GIT_COMMIT_HASH || 'unknown';
+}
 
 export default defineConfig({
   plugins: [react()],
