@@ -6,8 +6,10 @@ import { configsRouter } from './finance/configs';
 import { discountsRouter } from './finance/discounts';
 import { dashboardRouter } from './finance/dashboard';
 import { calculateRouter } from './finance/calculate';
+import { healthRouter } from './health';
 
 export const appRouter = router({
+  health: healthRouter,
   auth: authRouter,
   teams: teamsRouter,
   finance: router({
