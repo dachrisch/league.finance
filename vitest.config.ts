@@ -7,9 +7,9 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   test: {
-    environment: 'node',
+    environment: 'jsdom',
     globals: true,
-    include: ['src/**/*.test.ts', 'shared/**/*.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}', 'shared/**/*.test.ts'],
     exclude: ['**/node_modules/**', '**/dist/**'],
   },
 });
