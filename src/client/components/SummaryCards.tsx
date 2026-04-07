@@ -15,7 +15,7 @@ const cardStyle = (color: string): React.CSSProperties => ({
 
 export function SummaryCards({ totalGross, totalDiscount, totalNet }: Props) {
   return (
-    <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+    <div className="responsive-flex" style={{ marginBottom: '2rem' }}>
       <div style={cardStyle('#0d6efd')}>
         <p style={{ margin: 0, color: '#666', fontSize: 12, textTransform: 'uppercase' }}>Gross Revenue</p>
         <h2 style={{ margin: 0, color: '#0d6efd' }}>{totalGross.toFixed(2)} €</h2>

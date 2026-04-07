@@ -38,16 +38,17 @@ export function ConfigNewPage() {
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: '2rem', fontFamily: 'sans-serif' }}>
+    <div className="container" style={{ maxWidth: 600 }}>
       <button
         onClick={() => navigate('/dashboard')}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', marginBottom: '1rem', color: '#0d6efd', padding: 0 }}
+        className="btn-danger-text"
+        style={{ marginBottom: '1rem', color: '#0d6efd', padding: 0, display: 'block' }}
       >
         ← Back to Dashboard
       </button>
       <h1 style={{ marginBottom: '2rem' }}>New Finance Config</h1>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', background: '#f8f9fa', padding: '2rem', borderRadius: 12 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', background: '#fff', padding: '1.5rem', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
+        <div className="responsive-grid-2">
           <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <span style={{ fontSize: 14, fontWeight: 'bold' }}>League</span>
             <select value={leagueId} onChange={(e) => setLeagueId(e.target.value)} required style={{ padding: '8px' }}>
@@ -96,7 +97,7 @@ export function ConfigNewPage() {
         )}
 
         {costModel === 'GAMEDAY' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="responsive-grid-2">
             <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <span style={{ fontSize: 14, fontWeight: 'bold' }}>Expected Gamedays</span>
               <input type="number" min="0" value={expectedGamedaysCount} onChange={(e) => setExpectedGamedaysCount(e.target.value)} style={{ padding: '8px' }} />

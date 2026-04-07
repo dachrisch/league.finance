@@ -46,21 +46,21 @@ export function DashboardPage() {
   if (!data) return <p>Error loading dashboard.</p>;
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '2rem', fontFamily: 'sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h1>Financial Dashboard</h1>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+    <div className="container">
+      <div className="responsive-flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h1 style={{ margin: 0 }}>Financial Dashboard</h1>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           {me?.role === 'admin' && (
             <>
-              <button onClick={() => navigate('/config/new')} style={{ padding: '8px 16px', background: '#0d6efd', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+              <button onClick={() => navigate('/config/new')} className="btn btn-primary">
                 + New Config
               </button>
-              <button onClick={() => navigate('/settings')} style={{ padding: '8px 16px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+              <button onClick={() => navigate('/settings')} className="btn btn-secondary">
                 Settings
               </button>
             </>
           )}
-          <button onClick={handleLogout} style={{ padding: '8px 16px', background: 'none', border: '1px solid #dee2e6', borderRadius: 4, cursor: 'pointer' }}>
+          <button onClick={handleLogout} className="btn btn-outline">
             Logout
           </button>
         </div>

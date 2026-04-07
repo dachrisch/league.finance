@@ -23,10 +23,12 @@ export function SeasonalAccordion({ group, leagueNames, isExpanded, onToggle, is
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          fontWeight: '600'
+          fontWeight: '600',
+          flexWrap: 'wrap',
+          gap: '0.5rem'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '1.2rem' }}>{group.seasonName}</span>
           <span style={{ fontSize: '0.9rem', color: '#666', fontWeight: 'normal' }}>
             {group.totalGross > 0 ? `Total Gross: ${group.totalGross.toFixed(2)} €` : ''}
