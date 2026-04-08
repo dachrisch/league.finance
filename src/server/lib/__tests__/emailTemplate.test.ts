@@ -59,7 +59,13 @@ describe('emailTemplate', () => {
     });
 
     it('should be valid HTML', () => {
-      const body = generateOfferEmailBody(...Object.values(testData) as any);
+      const body = generateOfferEmailBody(
+        testData.associationName,
+        testData.seasonName,
+        testData.leagueNames,
+        testData.totalPrice,
+        testData.driveLink
+      );
       expect(body).toContain('<html>');
       expect(body).toContain('</html>');
       expect(body).toContain('<body');
@@ -117,13 +123,25 @@ describe('emailTemplate', () => {
     });
 
     it('should include footer with offer validity', () => {
-      const body = generateOfferEmailBody(...Object.values(testData) as any);
+      const body = generateOfferEmailBody(
+        testData.associationName,
+        testData.seasonName,
+        testData.leagueNames,
+        testData.totalPrice,
+        testData.driveLink
+      );
       expect(body).toContain('30 days');
       expect(body).toContain('offer is valid');
     });
 
     it('should include professional greeting', () => {
-      const body = generateOfferEmailBody(...Object.values(testData) as any);
+      const body = generateOfferEmailBody(
+        testData.associationName,
+        testData.seasonName,
+        testData.leagueNames,
+        testData.totalPrice,
+        testData.driveLink
+      );
       expect(body).toContain('Hello,');
       expect(body).toContain('Best regards');
       expect(body).toContain('Leagues Finance Team');
@@ -169,7 +187,13 @@ describe('emailTemplate', () => {
     });
 
     it('should include styling for professional appearance', () => {
-      const body = generateOfferEmailBody(...Object.values(testData) as any);
+      const body = generateOfferEmailBody(
+        testData.associationName,
+        testData.seasonName,
+        testData.leagueNames,
+        testData.totalPrice,
+        testData.driveLink
+      );
       expect(body).toContain('font-family: Arial, sans-serif');
       expect(body).toContain('color: #333');
       expect(body).toContain('color: #2c5aa0');

@@ -34,8 +34,8 @@ export async function calculateOfferLineItems(
 
     // For SEASON model, treat teams as the participation count
     // For GAMEDAY model, use the actual participation count
-    let teams = [];
-    let participation = [];
+    let teams: Array<{ id: number; name: string }> = [];
+    let participation: Array<{ gamedayId: number; teamIds: number[] }> = [];
 
     if (league.costModel === 'SEASON') {
       // Create dummy team entries for cost calculation
