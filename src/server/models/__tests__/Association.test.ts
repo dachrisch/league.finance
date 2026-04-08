@@ -20,6 +20,7 @@ describe('Association Model', () => {
     });
 
     expect(doc.name).toBe('Northern Region');
+    expect(doc.description).toBe('Leagues in the northern region');
     expect(doc.email).toBe('contact@north.local');
     expect(doc.phone).toBe('555-1234');
     expect(doc.createdAt).toBeDefined();
@@ -27,22 +28,22 @@ describe('Association Model', () => {
   });
 
   it('should require name field', async () => {
-    expect(async () => {
-      await Association.create({
+    await expect(
+      Association.create({
         description: 'Missing name',
         email: 'test@local',
         phone: '555-5555',
-      });
-    }).rejects.toThrow();
+      })
+    ).rejects.toThrow();
   });
 
   it('should require email field', async () => {
-    expect(async () => {
-      await Association.create({
+    await expect(
+      Association.create({
         name: 'Test',
         description: 'Missing email',
         phone: '555-5555',
-      });
-    }).rejects.toThrow();
+      })
+    ).rejects.toThrow();
   });
 });
