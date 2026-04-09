@@ -4,13 +4,25 @@ name: 🐳🏗️ Build Docker Image
 
 on:
   workflow_call:
+    inputs:
+      dockerfile:
+        required: false
+        description: The Dockerfile used to build the image
+        type: string
+        default: Dockerfile
+      image_name:
+        required: true
+        description: The local name to use for the image
+        type: string
+      version:
+        required: false
+        description: Version string to embed in the build
+        type: string
+        default: "dev"
     outputs:
       artifact_name:
         description: "Name of the uploaded artifact containing the Docker image"
         value: ${{ jobs.build.outputs.artifact_name }}
-      image_name:
-        description: "Local Docker image name (without registry prefix)"
-        value: ${{ jobs.build.outputs.image_name }}
 
 permissions:
   contents: read
@@ -19,34 +31,31 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      artifact_name: ${{ steps.set-outputs.outputs.artifact_name }}
-      image_name: ${{ steps.set-outputs.outputs.image_name }}
+      artifact_name: ${{ steps.set-artifact-name.outputs.artifact_name }}
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Docker Buildx
+      - name: 🐳🛠️ Setup Docker buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Build Docker image
+      - name: 🐳🏗️ Build Docker image
         uses: docker/build-push-action@v7
         with:
-          context: .
-          tags: league.finance:latest
-          build-args: |
-            VITE_GIT_COMMIT_HASH=${{ github.sha }}
-          outputs: type=docker,dest=/tmp/league.finance.tar
+          file: ${{ inputs.dockerfile }}
+          tags: ${{ inputs.image_name }}:latest
+          outputs: type=docker,dest=/tmp/${{ inputs.image_name }}.tar
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            VITE_BUILD_VERSION=${{ inputs.version }}
 
-      - name: Upload Docker image artifact
+      - name: 📤 Upload Docker image as artifact
         uses: actions/upload-artifact@v7
         with:
-          name: docker-image-league.finance
-          path: /tmp/league.finance.tar
+          name: docker-image-${{ inputs.image_name }}
+          path: /tmp/${{ inputs.image_name }}.tar
           retention-days: 1
 
-      - name: Set outputs
-        id: set-outputs
-        run: |
-          echo "artifact_name=docker-image-league.finance" >> $GITHUB_OUTPUT
-          echo "image_name=league.finance" >> $GITHUB_OUTPUT
+      - name: 🏷️ Set artifact name output
+        id: set-artifact-name
+        run: echo "artifact_name=docker-image-${{ inputs.image_name }}" >> $GITHUB_OUTPUT

@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: 🏗️🧪🚀 Build, Test and Deploy everything
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+  checks: write
+  security-events: write
+
+concurrency:
+  group: build-test-deploy
+  cancel-in-progress: true
+
+
+jobs:
+  node-project:
+    uses: ./.github/workflows/part_node_build.yaml
+    secrets: inherit
+    with:
+      project: .
+
+  docker-image:
+    uses: ./.github/workflows/part_docker_build.yaml
+    with:
+      dockerfile: Dockerfile
+      image_name: league.finance
+      version: "${{ github.ref_name }}"
+
+  image-test:
+    needs:
+      - node-project
+      - docker-image
+    uses: ./.github/workflows/part_docker_test.yaml
+    with:
+      artifact_name: ${{ needs.docker-image.outputs.artifact_name }}
+      image_name: league.finance
+
+  image-push:
+    needs:
+      - docker-image
+      - image-test
+    secrets: inherit
+    uses: ./.github/workflows/part_docker_push.yaml
+    with:
+      artifact_name: ${{ needs.docker-image.outputs.artifact_name }}
+      image_name: dachrisch/league.finance
+      local_image_name: league.finance
+      version: "${{ github.ref_name }}"

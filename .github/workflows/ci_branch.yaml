@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: 🏗️🧪🍂 Build & Test branches
+# https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
+on:
+  push:
+    branches:
+      - "*"
+    tags-ignore:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+
+permissions:
+  contents: write
+  checks: write
+  security-events: write
+
+jobs:
+  node-project:
+    uses: ./.github/workflows/part_node_build.yaml
+    secrets: inherit
+    with:
+      project: .
+
+  docker-image:
+    uses: ./.github/workflows/part_docker_build.yaml
+    with:
+      dockerfile: Dockerfile
+      image_name: league.finance
+
+  image-test:
+    needs:
+      - node-project
+      - docker-image
+    uses: ./.github/workflows/part_docker_test.yaml
+    with:
+      artifact_name: ${{ needs.docker-image.outputs.artifact_name }}
+      image_name: league.finance
