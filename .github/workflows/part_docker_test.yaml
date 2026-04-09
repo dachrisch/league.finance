@@ -34,13 +34,21 @@ jobs:
 
       - name: 🐳🧪 Test Docker image
         run: |
-          docker run --rm --detach --name test_container -e ENCRYPTION_KEY=ci-test-key-123 ${{ inputs.image_name }}:latest
+          docker run --rm --detach --name test_container \
+            -e GOOGLE_CLIENT_ID=ci-test \
+            -e GOOGLE_CLIENT_SECRET=ci-test \
+            -e GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback \
+            -e JWT_SECRET=ci-test-secret \
+            ${{ inputs.image_name }}:latest
           for i in {1..10}; do
-            status=$(docker inspect --format='{{.State.Health.Status}}' test_container)
-            health_details=$(docker inspect --format='{{json .State.Health}}' test_container)
+            status=$(docker inspect --format='{{.State.Health.Status}}' test_container 2>/dev/null || echo "gone")
             echo "Health status: $status"
-            echo "Health details: $health_details"
             if [ "$status" = "healthy" ]; then break; fi
+            if [ "$status" = "gone" ]; then
+              echo "Container exited unexpectedly. Logs:"
+              docker logs test_container 2>/dev/null || true
+              exit 1
+            fi
             sleep 6
           done
           # Fail the step if not healthy after 10 retries
