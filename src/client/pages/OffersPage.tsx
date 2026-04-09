@@ -75,7 +75,7 @@ export function OffersPage() {
         totalOffers={summary.totalOffers}
         draftOffers={summary.draftOffers}
         sentOffers={summary.sentOffers}
-        pendingOffers={pendingCount}
+        pendingOffers={summary.sentOffers}
         acceptedOffers={summary.acceptedOffers}
         totalRevenue={summary.totalOfferValue}
       />
