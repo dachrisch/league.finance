@@ -11,5 +11,6 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.test.{ts,tsx}', 'shared/**/*.test.ts'],
     exclude: ['**/node_modules/**', '**/dist/**'],
+    setupFiles: ['src/test/setup.ts'],
   },
 });

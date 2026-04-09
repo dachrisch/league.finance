@@ -14,6 +14,7 @@
     "typecheck:server": "tsc -p tsconfig.server.json --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-query": "^5.96.2",
     "@trpc/client": "^11.16.0",
     "@trpc/react-query": "^11.16.0",
@@ -32,6 +33,7 @@
     "puppeteer": "^24.40.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-hook-form": "^7.72.1",
     "react-router-dom": "^7.14.0",
     "zod": "^4.3.6"
   },

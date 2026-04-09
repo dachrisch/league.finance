@@ -6,6 +6,11 @@ import { ConfigDetailPage } from './pages/ConfigDetailPage';
 import { ConfigNewPage } from './pages/ConfigNewPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
+import { AssociationsPage } from './pages/AssociationsPage';
+import { OffersPage } from './pages/OffersPage';
+import { OfferDetailPage } from './pages/OfferDetailPage';
+import { OfferCreateWizard } from './components/OfferCreateWizard';
+import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { trpc } from './lib/trpc';
 
@@ -42,11 +47,14 @@ export function App() {
   return (
     <BrowserRouter>
       <div id="app-wrapper" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <main style={{ flex: 1 }}>
+        <main style={{ flex: 1, display: 'flex' }}>
           {isDbDown ? (
             <DbDownScreen />
           ) : (
-            <Routes>
+            <>
+              <Navigation />
+              <div style={{ flex: 1, marginLeft: '200px' }}>
+                <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/login/callback" element={<AuthCallbackPage />} />
               <Route element={<ProtectedRoute />}>
@@ -54,9 +62,15 @@ export function App() {
                 <Route path="/config/new" element={<ConfigNewPage />} />
                 <Route path="/config/:id" element={<ConfigDetailPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/associations" element={<AssociationsPage />} />
+                <Route path="/offers" element={<OffersPage />} />
+                <Route path="/offers/create" element={<OfferCreateWizard />} />
+                <Route path="/offers/:id" element={<OfferDetailPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
+                </Routes>
+              </div>
+            </>
           )}
         </main>
         <Footer />
