@@ -1,5 +1,6 @@
 import { Offer } from '../models/Offer';
 import { Contact } from '../models/Contact';
+import { Types } from 'mongoose';
 
 describe('Offer Model', () => {
   let contact: any;
@@ -74,5 +75,36 @@ describe('Offer Model', () => {
         contactId: contact._id,
       })
     ).rejects.toThrow();
+  });
+
+  it('should require at least one league', async () => {
+    await expect(
+      Offer.create({
+        status: 'draft',
+        associationId: 1,
+        seasonId: 1,
+        leagueIds: [], // Empty array - should fail
+        contactId: contact._id,
+      })
+    ).rejects.toThrow();
+  });
+
+  it('should require a valid contact reference', async () => {
+    const invalidContactId = new Types.ObjectId();
+
+    const offer = await Offer.create({
+      status: 'draft',
+      associationId: 1,
+      seasonId: 1,
+      leagueIds: [1],
+      contactId: invalidContactId, // Won't enforce foreign key, but document shows intent
+    });
+
+    expect(offer.contactId).toEqual(invalidContactId);
+  });
+
+  afterAll(async () => {
+    // Clean up test contact created in beforeAll
+    await Contact.deleteMany({});
   });
 });

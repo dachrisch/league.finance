@@ -1,36 +1,28 @@
 import { z } from 'zod';
 
+// Offer metadata only - financial config is separate
 export const CreateOfferSchema = z.object({
-  associationId: z.number().int().positive('Association ID must be a positive integer'),
-  seasonId: z.number().int().positive('Season ID must be a positive integer'),
-  leagueIds: z
-    .array(z.number().int().positive('League IDs must be positive integers'))
-    .min(1, 'At least one league ID is required'),
-  contactId: z.string().min(1, 'Contact ID is required'),
-  costModel: z.string().min(1, 'Cost model is required'),
-  baseRateOverride: z.number().positive('Base rate must be positive').nullable(),
-  expectedTeamsCount: z.number().int().positive('Expected teams count must be a positive integer'),
-  expectedGamedaysCount: z
-    .number()
-    .int()
-    .positive('Expected gamedays count must be a positive integer')
-    .optional(),
-  expectedTeamsPerGameday: z
-    .number()
-    .int()
-    .positive('Expected teams per gameday must be a positive integer')
-    .optional(),
+  associationId: z.number().int().positive('Association ID must be positive'),
+  seasonId: z.number().int().positive('Season ID must be positive'),
+  leagueIds: z.array(z.number().int().positive()).min(1, 'At least one league required'),
+  contactId: z.string().min(1, 'Contact is required'),
 });
 
-export const UpdateOfferSchema = CreateOfferSchema.partial();
+export const UpdateOfferSchema = z.object({
+  status: z.enum(['draft', 'sent', 'accepted']).optional(),
+  contactId: z.string().optional(),
+  leagueIds: z.array(z.number().int().positive()).min(1).optional(),
+  sentAt: z.date().optional(),
+  acceptedAt: z.date().optional(),
+});
 
 export const OfferSchema = CreateOfferSchema.extend({
   _id: z.string(),
   status: z.enum(['draft', 'sent', 'accepted']),
-  sentAt: z.date().optional(),
-  acceptedAt: z.date().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
+  sentAt: z.date().optional(),
+  acceptedAt: z.date().optional(),
 });
 
 export type CreateOfferInput = z.infer<typeof CreateOfferSchema>;

@@ -48,4 +48,9 @@ OfferSchema.index(
   }
 );
 
+// Index for common queries
+OfferSchema.index({ status: 1 });
+OfferSchema.index({ contactId: 1 });
+OfferSchema.index({ associationId: 1 });
+
 export const Offer = model<IOffer>('Offer', OfferSchema);
