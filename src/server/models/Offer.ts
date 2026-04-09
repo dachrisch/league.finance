@@ -1,45 +1,51 @@
 import { Schema, model, Document, Types } from 'mongoose';
 
 export interface IOffer extends Document {
-  associationId: Types.ObjectId;
+  status: 'draft' | 'sent' | 'accepted';
+  associationId: number;
   seasonId: number;
-  selectedLeagueIds: number[];
-  status: 'DRAFT' | 'SENT' | 'VIEWED' | 'NEGOTIATING' | 'ACCEPTED' | 'REJECTED';
-  driveFileId: string | null;
-  sentTo: Array<{ email: string; sentAt: Date }>;
-  notes: string;
+  leagueIds: number[];
+  contactId: Types.ObjectId;
+  financialConfigId?: Types.ObjectId;
+  sentAt?: Date;
+  acceptedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
-  sentAt: Date | null;
-  viewedAt: Date | null;
-  completedAt: Date | null;
 }
 
 const OfferSchema = new Schema<IOffer>(
   {
-    associationId: { type: Schema.Types.ObjectId, required: true, ref: 'Association' },
-    seasonId: { type: Number, required: true },
-    selectedLeagueIds: { type: [Number], required: true, default: [] },
     status: {
       type: String,
-      enum: ['DRAFT', 'SENT', 'VIEWED', 'NEGOTIATING', 'ACCEPTED', 'REJECTED'],
-      default: 'DRAFT',
+      enum: ['draft', 'sent', 'accepted'],
+      default: 'draft',
     },
-    driveFileId: { type: String, default: null },
-    sentTo: [
-      {
-        email: String,
-        sentAt: Date,
+    associationId: { type: Number, required: true },
+    seasonId: { type: Number, required: true },
+    leagueIds: {
+      type: [Number],
+      required: true,
+      validate: {
+        validator: (v: number[]) => v.length > 0,
+        message: 'leagueIds must have at least 1 element',
       },
-    ],
-    notes: { type: String, default: '' },
-    sentAt: { type: Date, default: null },
-    viewedAt: { type: Date, default: null },
-    completedAt: { type: Date, default: null },
+    },
+    contactId: { type: Schema.Types.ObjectId, required: true, ref: 'Contact' },
+    financialConfigId: { type: Schema.Types.ObjectId, ref: 'FinancialConfig' },
+    sentAt: { type: Date },
+    acceptedAt: { type: Date },
   },
   { timestamps: true }
 );
 
-OfferSchema.index({ associationId: 1, seasonId: 1 });
+// Unique partial index: prevents duplicate draft/sent offers for same association-season
+// but allows new draft offers after acceptance
+OfferSchema.index(
+  { associationId: 1, seasonId: 1, status: 1 },
+  {
+    partialFilterExpression: { status: { $in: ['draft', 'sent'] } },
+    unique: true,
+  }
+);
 
 export const Offer = model<IOffer>('Offer', OfferSchema);
