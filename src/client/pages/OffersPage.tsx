@@ -11,7 +11,6 @@ export function OffersPage() {
   // Fetch offers and associations
   const { data: offers = [], isLoading: offersLoading, refetch: refetchOffers } = trpc.finance.offers.list.useQuery({});
   const { data: associations = [] } = trpc.finance.associations.list.useQuery();
-  const { data: summary } = trpc.finance.offers.summary.useQuery();
 
   // Create association name map
   const associationNames: Record<string, string> = associations.reduce((acc: Record<string, string>, a: any) => {
@@ -19,8 +18,14 @@ export function OffersPage() {
     return acc;
   }, {});
 
-  // Calculate pending count (VIEWED + NEGOTIATING)
-  const pendingCount = offers.filter((o: any) => o.status === 'VIEWED' || o.status === 'NEGOTIATING').length;
+  // Calculate summary from offers
+  const summary = {
+    totalOffers: offers.length,
+    draftOffers: offers.filter((o: any) => o.status === 'draft').length,
+    sentOffers: offers.filter((o: any) => o.status === 'sent').length,
+    acceptedOffers: offers.filter((o: any) => o.status === 'accepted').length,
+    totalOfferValue: offers.reduce((sum: number, o: any) => sum + (o.totalPrice || 0), 0),
+  };
 
   const handleCreateOffer = () => {
     navigate('/offers/create');
@@ -39,7 +44,7 @@ export function OffersPage() {
     navigate(`/offers/${id}`);
   };
 
-  if (!summary) {
+  if (offersLoading) {
     return <div className="container"><p>Loading offers...</p></div>;
   }
 

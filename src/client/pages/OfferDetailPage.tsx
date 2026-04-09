@@ -4,15 +4,12 @@ import { trpc } from '../lib/trpc';
 
 const statusBadgeStyle = (status: string): React.CSSProperties => {
   const colors: Record<string, { bg: string; color: string }> = {
-    DRAFT: { bg: '#e9ecef', color: '#495057' },
-    SENT: { bg: '#cfe2ff', color: '#084298' },
-    VIEWED: { bg: '#fff3cd', color: '#997404' },
-    NEGOTIATING: { bg: '#ffe5cc', color: '#cc5200' },
-    ACCEPTED: { bg: '#d1e7dd', color: '#0f5132' },
-    REJECTED: { bg: '#f8d7da', color: '#842029' },
+    draft: { bg: '#e9ecef', color: '#495057' },
+    sent: { bg: '#cfe2ff', color: '#084298' },
+    accepted: { bg: '#d1e7dd', color: '#0f5132' },
   };
 
-  const colorSet = colors[status] || colors.DRAFT;
+  const colorSet = colors[status] || colors.draft;
 
   return {
     display: 'inline-block',
@@ -43,28 +40,21 @@ export function OfferDetailPage() {
     return <div>Offer not found.</div>;
   }
 
-  const { data, isLoading } = trpc.finance.offers.getById.useQuery({ id });
-  const { data: association } = trpc.finance.associations.getById.useQuery(
-    data?.offer?.associationId ? { id: data.offer.associationId } : { id: '' },
-    { enabled: !!data?.offer?.associationId }
+  const { data, isLoading, refetch } = trpc.finance.offers.get.useQuery({ id });
+  const { data: association } = trpc.finance.associations.get.useQuery(
+    data?.associationId ? { id: data.associationId } : { id: '' },
+    { enabled: !!data?.associationId }
   );
 
-  const updateStatus = trpc.finance.offers.updateStatus.useMutation({
+  const markSent = trpc.finance.offers.markSent.useMutation({
     onSuccess: () => {
-      // Refetch offer details
+      refetch();
     },
   });
 
-  const customizePrice = trpc.finance.offers.customizePrice.useMutation({
+  const markAccepted = trpc.finance.offers.markAccepted.useMutation({
     onSuccess: () => {
-      setEditingPrice(null);
-      setEditingLeagueId(null);
-    },
-  });
-
-  const sendOffer = trpc.finance.offers.send.useMutation({
-    onSuccess: () => {
-      // Show success message and refetch
+      refetch();
     },
   });
 
@@ -72,7 +62,7 @@ export function OfferDetailPage() {
     return <div className="container"><p>Loading offer...</p></div>;
   }
 
-  if (!data?.offer) {
+  if (!data) {
     return (
       <div className="container">
         <p>Offer not found.</p>
@@ -90,8 +80,9 @@ export function OfferDetailPage() {
     );
   }
 
-  const { offer, lineItems } = data;
-  const totalPrice = lineItems.reduce((sum, item) => sum + item.finalPrice, 0);
+  const offer = data;
+  const configs = offer.configs || [];
+  const totalPrice = configs.reduce((sum, config) => sum + config.finalPrice, 0);
 
   return (
     <div className="container" style={{ paddingBottom: '2rem' }}>
@@ -150,7 +141,7 @@ export function OfferDetailPage() {
         </div>
       </div>
 
-      {/* Line Items Table */}
+      {/* Configs Table */}
       <div style={{ marginBottom: '2rem' }}>
         <h3 style={{ marginBottom: '1rem' }}>League Pricing</h3>
         <div style={{ overflowX: 'auto' }}>
@@ -165,21 +156,21 @@ export function OfferDetailPage() {
                 <th style={{ padding: '1rem', textAlign: 'right', fontSize: 14, fontWeight: 600 }}>Base Price</th>
                 <th style={{ padding: '1rem', textAlign: 'right', fontSize: 14, fontWeight: 600 }}>Custom Price</th>
                 <th style={{ padding: '1rem', textAlign: 'right', fontSize: 14, fontWeight: 600 }}>Final Price</th>
-                {offer.status === 'DRAFT' && <th style={{ padding: '1rem', textAlign: 'center', fontSize: 14, fontWeight: 600 }}>Actions</th>}
+                {offer.status === 'draft' && <th style={{ padding: '1rem', textAlign: 'center', fontSize: 14, fontWeight: 600 }}>Actions</th>}
               </tr>
             </thead>
             <tbody>
-              {lineItems.map((item) => (
-                <tr key={item._id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                  <td style={{ padding: '1rem', fontSize: 14 }}>{item.leagueName}</td>
-                  <td style={{ padding: '1rem', fontSize: 14, textAlign: 'right' }}>{formatPrice(item.basePrice)}</td>
+              {configs.map((config) => (
+                <tr key={config._id} style={{ borderBottom: '1px solid #dee2e6' }}>
+                  <td style={{ padding: '1rem', fontSize: 14 }}>{config.leagueName}</td>
+                  <td style={{ padding: '1rem', fontSize: 14, textAlign: 'right' }}>{formatPrice(config.basePrice)}</td>
                   <td style={{ padding: '1rem', fontSize: 14, textAlign: 'right' }}>
-                    {editingLeagueId === item.leagueId && offer.status === 'DRAFT' ? (
+                    {editingLeagueId === config.leagueId && offer.status === 'draft' ? (
                       <input
                         type="number"
                         step="0.01"
                         min="0"
-                        value={editingPrice || item.customPrice || item.basePrice}
+                        value={editingPrice || config.customPrice || config.basePrice}
                         onChange={(e) => setEditingPrice(Number(e.target.value))}
                         style={{
                           width: '100px',
@@ -188,30 +179,27 @@ export function OfferDetailPage() {
                           borderRadius: 4,
                         }}
                       />
-                    ) : item.customPrice ? (
-                      formatPrice(item.customPrice)
+                    ) : config.customPrice ? (
+                      formatPrice(config.customPrice)
                     ) : (
                       '-'
                     )}
                   </td>
                   <td style={{ padding: '1rem', fontSize: 14, textAlign: 'right', fontWeight: 500 }}>
-                    {formatPrice(item.finalPrice)}
+                    {formatPrice(config.finalPrice)}
                   </td>
-                  {offer.status === 'DRAFT' && (
+                  {offer.status === 'draft' && (
                     <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      {editingLeagueId === item.leagueId ? (
+                      {editingLeagueId === config.leagueId ? (
                         <>
                           <button
                             onClick={() => {
                               if (editingPrice !== null) {
-                                customizePrice.mutate({
-                                  offerId: id,
-                                  leagueId: item.leagueId,
-                                  customPrice: editingPrice,
-                                });
+                                // Placeholder for customize price mutation
+                                setEditingLeagueId(null);
+                                setEditingPrice(null);
                               }
                             }}
-                            disabled={customizePrice.isPending}
                             style={{
                               padding: '0.3rem 0.6rem',
                               background: '#198754',
@@ -230,7 +218,6 @@ export function OfferDetailPage() {
                               setEditingLeagueId(null);
                               setEditingPrice(null);
                             }}
-                            disabled={customizePrice.isPending}
                             style={{
                               padding: '0.3rem 0.6rem',
                               background: '#6c757d',
@@ -247,10 +234,9 @@ export function OfferDetailPage() {
                       ) : (
                         <button
                           onClick={() => {
-                            setEditingLeagueId(item.leagueId);
-                            setEditingPrice(item.customPrice || item.basePrice);
+                            setEditingLeagueId(config.leagueId);
+                            setEditingPrice(config.customPrice || config.basePrice);
                           }}
-                          disabled={customizePrice.isPending}
                           style={{
                             padding: '0.3rem 0.6rem',
                             background: '#0d6efd',
@@ -275,37 +261,29 @@ export function OfferDetailPage() {
 
       {/* Actions Section */}
       <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-        {offer.status === 'DRAFT' && (
+        {offer.status === 'draft' && (
           <>
             <button
               onClick={() => {
-                // TODO: Implement send offer modal with email form
-                const emails = prompt('Enter recipient emails (comma-separated):');
-                if (emails) {
-                  const emailList = emails.split(',').map((e) => e.trim());
-                  sendOffer.mutate({
-                    offerId: id,
-                    to: emailList,
-                  });
-                }
+                markSent.mutate({ id: id! });
               }}
-              disabled={sendOffer.isPending}
+              disabled={markSent.isPending}
               style={{
                 padding: '0.5rem 1rem',
                 background: '#198754',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 4,
-                cursor: sendOffer.isPending ? 'not-allowed' : 'pointer',
+                cursor: markSent.isPending ? 'not-allowed' : 'pointer',
                 fontSize: 14,
                 fontWeight: 500,
               }}
             >
-              {sendOffer.isPending ? 'Sending…' : 'Send Offer'}
+              {markSent.isPending ? 'Sending…' : 'Send Offer'}
             </button>
           </>
         )}
-        {(offer.status === 'SENT' || offer.status === 'VIEWED' || offer.status === 'NEGOTIATING') && offer.driveFileId && (
+        {offer.status === 'sent' && offer.driveFileId && (
           <a
             href={`https://drive.google.com/file/d/${offer.driveFileId}/view`}
             target="_blank"

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 
-type WizardStep = 1 | 2 | 3 | 4;
+type WizardStep = 1 | 2 | 3;
 
 interface StepProps {
   onNext: () => void;
@@ -16,7 +16,10 @@ export function OfferCreateWizard() {
   const [selectedAssociationId, setSelectedAssociationId] = useState<string>('');
   const [selectedSeasonId, setSelectedSeasonId] = useState<number | ''>('');
   const [selectedLeagueIds, setSelectedLeagueIds] = useState<number[]>([]);
-  const [customPrices, setCustomPrices] = useState<Record<number, number>>({});
+  const [contactId, setContactId] = useState<string>('');
+  const [costModel, setCostModel] = useState<string>('');
+  const [baseRateOverride, setBaseRateOverride] = useState<string>('');
+  const [expectedTeamsCount, setExpectedTeamsCount] = useState<string>('');
   const [createdOfferId, setCreatedOfferId] = useState<string>('');
 
   // Fetch data
@@ -30,8 +33,12 @@ export function OfferCreateWizard() {
     : [];
 
   // Mutations
-  const createOffer = trpc.finance.offers.create.useMutation();
-  const addLeagues = trpc.finance.offers.addLeagues.useMutation();
+  const createOffer = trpc.finance.offers.create.useMutation({
+    onSuccess: (offer) => {
+      setCreatedOfferId(offer._id);
+      navigate(`/offers/${offer._id}`);
+    },
+  });
 
   const handleStep1Next = () => {
     if (selectedAssociationId && selectedSeasonId) {
@@ -47,17 +54,15 @@ export function OfferCreateWizard() {
 
   const handleStep3Next = async () => {
     try {
-      // Create offer
-      const offer = await createOffer.mutateAsync({
+      await createOffer.mutateAsync({
         associationId: selectedAssociationId,
         seasonId: selectedSeasonId as number,
+        leagueIds: selectedLeagueIds,
+        contactId: contactId || undefined,
+        costModel: costModel || undefined,
+        baseRateOverride: baseRateOverride ? Number(baseRateOverride) : undefined,
+        expectedTeamsCount: expectedTeamsCount ? Number(expectedTeamsCount) : undefined,
       });
-
-      // TODO: Add leagues to offer with customPrices
-      // This would require additional API integration
-
-      setCreatedOfferId(offer._id);
-      setStep(4);
     } catch (error) {
       console.error('Error creating offer:', error);
     }
@@ -66,8 +71,7 @@ export function OfferCreateWizard() {
   const stepTitle = [
     'Select Association & Season',
     'Select Leagues',
-    'Review & Customize',
-    'Confirmation',
+    'Review & Create',
   ];
 
   return (
@@ -83,7 +87,7 @@ export function OfferCreateWizard() {
         marginBottom: '2rem',
         position: 'relative',
       }}>
-        {[1, 2, 3, 4].map((s) => (
+        {[1, 2, 3].map((s) => (
           <div
             key={s}
             style={{
@@ -116,7 +120,7 @@ export function OfferCreateWizard() {
               color: step >= s ? '#0d6efd' : '#666',
               textAlign: 'center',
             }}>
-              {['Association', 'Leagues', 'Customize', 'Done'][s - 1]}
+              {['Association', 'Leagues', 'Review'][s - 1]}
             </p>
           </div>
         ))}
@@ -154,28 +158,23 @@ export function OfferCreateWizard() {
           />
         )}
 
-        {/* Step 3: Review & Customize */}
+        {/* Step 3: Review & Create */}
         {step === 3 && (
           <Step3
             selectedAssociation={associations.find((a: any) => a._id === selectedAssociationId)}
             selectedSeason={selectedSeasonId}
             selectedLeagues={associationLeagues.filter((l: any) => selectedLeagueIds.includes(l.id))}
-            customPrices={customPrices}
-            onCustomPriceChange={(leagueId, price) => {
-              setCustomPrices({ ...customPrices, [leagueId]: price });
-            }}
+            contactId={contactId}
+            costModel={costModel}
+            baseRateOverride={baseRateOverride}
+            expectedTeamsCount={expectedTeamsCount}
+            onContactIdChange={setContactId}
+            onCostModelChange={setCostModel}
+            onBaseRateOverrideChange={setBaseRateOverride}
+            onExpectedTeamsCountChange={setExpectedTeamsCount}
             onNext={handleStep3Next}
             onBack={() => setStep(2)}
             isLoading={createOffer.isPending}
-          />
-        )}
-
-        {/* Step 4: Confirmation */}
-        {step === 4 && (
-          <Step4
-            offerId={createdOfferId}
-            onViewOffer={() => navigate(`/offers/${createdOfferId}`)}
-            onBackToDashboard={() => navigate('/offers')}
           />
         )}
       </div>
@@ -361,8 +360,14 @@ interface Step3Props extends StepProps {
   selectedAssociation: any;
   selectedSeason: number | '';
   selectedLeagues: any[];
-  customPrices: Record<number, number>;
-  onCustomPriceChange: (leagueId: number, price: number) => void;
+  contactId: string;
+  costModel: string;
+  baseRateOverride: string;
+  expectedTeamsCount: string;
+  onContactIdChange: (id: string) => void;
+  onCostModelChange: (model: string) => void;
+  onBaseRateOverrideChange: (override: string) => void;
+  onExpectedTeamsCountChange: (count: string) => void;
   onBack: () => void;
 }
 
@@ -370,19 +375,21 @@ function Step3({
   selectedAssociation,
   selectedSeason,
   selectedLeagues,
-  customPrices,
-  onCustomPriceChange,
+  contactId,
+  costModel,
+  baseRateOverride,
+  expectedTeamsCount,
+  onContactIdChange,
+  onCostModelChange,
+  onBaseRateOverrideChange,
+  onExpectedTeamsCountChange,
   onNext,
   onBack,
   isLoading,
 }: Step3Props) {
-  const totalPrice = selectedLeagues.reduce((sum, league) => {
-    return sum + (customPrices[league.id] || 0);
-  }, 0);
-
   return (
     <>
-      <h2 style={{ margin: '0 0 1.5rem 0' }}>Review & Customize Prices</h2>
+      <h2 style={{ margin: '0 0 1.5rem 0' }}>Review & Create Offer</h2>
 
       <div style={{
         background: '#f8f9fa',
@@ -393,57 +400,96 @@ function Step3({
         <p style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: 12 }}>
           <strong>Association:</strong> {selectedAssociation?.name}
         </p>
-        <p style={{ margin: '0', color: '#666', fontSize: 12 }}>
+        <p style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: 12 }}>
           <strong>Season:</strong> {selectedSeason}
+        </p>
+        <p style={{ margin: '0', color: '#666', fontSize: 12 }}>
+          <strong>Leagues:</strong> {selectedLeagues.length} selected
         </p>
       </div>
 
       <div style={{ marginBottom: '1.5rem' }}>
-        <table style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          background: '#fff',
-          marginBottom: '1rem',
-        }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #dee2e6', background: '#f8f9fa' }}>
-              <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: 12, fontWeight: 600 }}>League</th>
-              <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: 12, fontWeight: 600 }}>Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {selectedLeagues.map((league: any) => (
-              <tr key={league.id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                <td style={{ padding: '0.75rem' }}>{league.name}</td>
-                <td style={{ padding: '0.75rem', textAlign: 'right' }}>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={customPrices[league.id] || ''}
-                    onChange={(e) => onCustomPriceChange(league.id, Number(e.target.value))}
-                    disabled={isLoading}
-                    style={{
-                      width: '100px',
-                      padding: '0.4rem',
-                      border: '1px solid #ddd',
-                      borderRadius: 4,
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div style={{
-          padding: '1rem',
-          background: '#e7f3ff',
-          borderRadius: 4,
-          textAlign: 'right',
-        }}>
-          <strong style={{ fontSize: 14 }}>Total: ${totalPrice.toFixed(2)}</strong>
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: '0.5rem' }}>
+            Contact ID (Optional)
+          </label>
+          <input
+            type="text"
+            value={contactId}
+            onChange={(e) => onContactIdChange(e.target.value)}
+            disabled={isLoading}
+            placeholder="Enter contact ID"
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              border: '1px solid #ddd',
+              borderRadius: 4,
+              boxSizing: 'border-box',
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: '0.5rem' }}>
+            Cost Model (Optional)
+          </label>
+          <input
+            type="text"
+            value={costModel}
+            onChange={(e) => onCostModelChange(e.target.value)}
+            disabled={isLoading}
+            placeholder="Enter cost model"
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              border: '1px solid #ddd',
+              borderRadius: 4,
+              boxSizing: 'border-box',
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: '0.5rem' }}>
+            Base Rate Override (Optional)
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            value={baseRateOverride}
+            onChange={(e) => onBaseRateOverrideChange(e.target.value)}
+            disabled={isLoading}
+            placeholder="0.00"
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              border: '1px solid #ddd',
+              borderRadius: 4,
+              boxSizing: 'border-box',
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: '0.5rem' }}>
+            Expected Teams Count (Optional)
+          </label>
+          <input
+            type="number"
+            step="1"
+            min="0"
+            value={expectedTeamsCount}
+            onChange={(e) => onExpectedTeamsCountChange(e.target.value)}
+            disabled={isLoading}
+            placeholder="0"
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              border: '1px solid #ddd',
+              borderRadius: 4,
+              boxSizing: 'border-box',
+            }}
+          />
         </div>
       </div>
 
@@ -487,64 +533,3 @@ function Step3({
   );
 }
 
-interface Step4Props {
-  offerId: string;
-  onViewOffer: () => void;
-  onBackToDashboard: () => void;
-}
-
-function Step4({ offerId, onViewOffer, onBackToDashboard }: Step4Props) {
-  return (
-    <>
-      <h2 style={{ margin: '0 0 1.5rem 0' }}>Offer Created!</h2>
-
-      <div style={{
-        background: '#d1e7dd',
-        border: '1px solid #badbcc',
-        borderRadius: 4,
-        padding: '1rem',
-        marginBottom: '1.5rem',
-        color: '#0f5132',
-      }}>
-        <p style={{ margin: 0, fontSize: 14 }}>
-          Your offer has been created successfully. You can now customize prices, review details, or send it to the association.
-        </p>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <button
-          onClick={onViewOffer}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            background: '#0d6efd',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: 'pointer',
-            fontSize: 14,
-            fontWeight: 500,
-          }}
-        >
-          View Offer Details
-        </button>
-        <button
-          onClick={onBackToDashboard}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            background: '#6c757d',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: 'pointer',
-            fontSize: 14,
-            fontWeight: 500,
-          }}
-        >
-          Back to Offers Dashboard
-        </button>
-      </div>
-    </>
-  );
-}
