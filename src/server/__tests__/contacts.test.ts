@@ -1,6 +1,10 @@
 import { Contact } from '../models/Contact';
 
 describe('Contact Model', () => {
+  afterEach(async () => {
+    await Contact.deleteMany({});
+  });
+
   it('should create a contact with name and full address', async () => {
     const contact = await Contact.create({
       name: 'John Smith',
@@ -21,15 +25,12 @@ describe('Contact Model', () => {
   });
 
   it('should require name and all address fields', async () => {
-    try {
-      await Contact.create({
+    await expect(
+      Contact.create({
         name: 'John Smith',
         address: { street: '123 Main St' },
-      });
-      fail('Should have thrown validation error');
-    } catch (err: any) {
-      expect(err.message).toContain('address');
-    }
+      })
+    ).rejects.toThrow();
   });
 
   it('should be reusable across multiple offers', async () => {

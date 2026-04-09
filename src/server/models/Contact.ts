@@ -24,4 +24,6 @@ const ContactSchema = new Schema<IContact>(
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 
+ContactSchema.index({ name: 1 });
+
 export const Contact = model<IContact>('Contact', ContactSchema);
