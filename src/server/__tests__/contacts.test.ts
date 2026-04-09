@@ -1,6 +1,12 @@
+import { describe, it, expect, afterEach, beforeAll, afterAll } from 'vitest';
 import { Contact } from '../models/Contact';
+import { connectMongo, disconnectMongo } from '../db/mongo';
 
 describe('Contact Model', () => {
+  beforeAll(async () => {
+    await connectMongo();
+  });
+
   afterEach(async () => {
     await Contact.deleteMany({});
   });
@@ -46,5 +52,9 @@ describe('Contact Model', () => {
 
     expect(contact._id).toBeDefined();
     // Multiple offers will reference this same ID
+  });
+
+  afterAll(async () => {
+    await disconnectMongo();
   });
 });

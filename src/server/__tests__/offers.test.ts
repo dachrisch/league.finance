@@ -1,11 +1,14 @@
+import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
 import { Offer } from '../models/Offer';
 import { Contact } from '../models/Contact';
 import { Types } from 'mongoose';
+import { connectMongo, disconnectMongo } from '../db/mongo';
 
 describe('Offer Model', () => {
   let contact: any;
 
   beforeAll(async () => {
+    await connectMongo();
     contact = await Contact.create({
       name: 'Test Contact',
       address: {
@@ -106,5 +109,6 @@ describe('Offer Model', () => {
   afterAll(async () => {
     // Clean up test contact created in beforeAll
     await Contact.deleteMany({});
+    await disconnectMongo();
   });
 });

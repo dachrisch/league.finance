@@ -1,313 +1,206 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { router, protectedProcedure } from '../../trpc';
+import { router, protectedProcedure, adminProcedure } from '../../trpc';
+import { CreateOfferSchema, UpdateOfferSchema } from '../../../../shared/schemas/offer';
 import { Offer } from '../../models/Offer';
-import { OfferLineItem } from '../../models/OfferLineItem';
-import { Association } from '../../models/Association';
 import { FinancialConfig } from '../../models/FinancialConfig';
-import { calculateOfferLineItems } from '../../lib/offerCalculator';
-import { generateOfferPDF } from '../../lib/pdfGenerator';
-import { uploadPDFToDrive } from '../../lib/driveUploader';
-import { generateOfferEmailSubject, generateOfferEmailBody } from '../../lib/emailTemplate';
-import { sendOfferEmail } from '../../lib/emailSender';
+import { Contact } from '../../models/Contact';
 
 export const offersRouter = router({
-  // Task 10: Create new offer
-  create: protectedProcedure
-    .input(
-      z.object({
-        associationId: z.string(),
-        seasonId: z.number(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const association = await Association.findById(input.associationId);
-      if (!association) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Association not found' });
-      }
-
-      const offer = await Offer.create({
-        associationId: input.associationId,
-        seasonId: input.seasonId,
-        selectedLeagueIds: [],
-        status: 'DRAFT',
-      });
-
-      return offer;
-    }),
-
-  // Task 10: List offers with optional filters
   list: protectedProcedure
     .input(
       z.object({
-        status: z.enum(['DRAFT', 'SENT', 'VIEWED', 'NEGOTIATING', 'ACCEPTED', 'REJECTED']).optional(),
-        associationId: z.string().optional(),
-      })
+        status: z.enum(['draft', 'sent', 'accepted']).optional(),
+        associationId: z.number().optional(),
+      }).optional()
     )
     .query(async ({ input }) => {
       const query: any = {};
-      if (input.status) {
-        query.status = input.status;
-      }
-      if (input.associationId) {
-        query.associationId = input.associationId;
-      }
+      if (input?.status) query.status = input.status;
+      if (input?.associationId) query.associationId = input.associationId;
 
-      const offers = await Offer.find(query).sort({ createdAt: -1 });
-      return offers;
+      return Offer.find(query)
+        .populate('contactId', 'name address')
+        .sort({ createdAt: -1 })
+        .lean();
     }),
 
-  // Task 10: Get offer by ID with line items
-  getById: protectedProcedure
+  get: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const offer = await Offer.findById(input.id);
-      if (!offer) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
+      const offer = await Offer.findById(input.id)
+        .populate('contactId')
+        .lean();
 
-      const lineItems = await OfferLineItem.find({ offerId: input.id });
-      return { offer, lineItems };
+      if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      // Get all configs for this offer
+      const configs = await FinancialConfig.find({ offerId: input.id }).lean();
+
+      return { offer, contact: (offer as any).contactId, configs };
     }),
 
-  // Task 11: Update offer status
-  updateStatus: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        status: z.enum(['DRAFT', 'SENT', 'VIEWED', 'NEGOTIATING', 'ACCEPTED', 'REJECTED']),
+  create: adminProcedure
+    .input(CreateOfferSchema.extend({
+      costModel: z.enum(['SEASON', 'GAMEDAY']),
+      baseRateOverride: z.number().positive().nullable().optional(),
+      expectedTeamsCount: z.number().int().min(1),
+      expectedGamedaysCount: z.number().int().min(0).optional(),
+      expectedTeamsPerGameday: z.number().int().min(0).optional(),
+    }))
+    .mutation(async ({ input }) => {
+      try {
+        // Create offer
+        const offer = await Offer.create({
+          status: 'draft',
+          associationId: input.associationId,
+          seasonId: input.seasonId,
+          leagueIds: input.leagueIds,
+          contactId: input.contactId,
+        });
+
+        // Auto-create FinancialConfig for each league
+        const configs = await Promise.all(
+          input.leagueIds.map((leagueId) =>
+            FinancialConfig.create({
+              leagueId,
+              seasonId: input.seasonId,
+              costModel: input.costModel,
+              baseRateOverride: input.baseRateOverride ?? null,
+              expectedTeamsCount: input.expectedTeamsCount,
+              expectedGamedaysCount: input.expectedGamedaysCount ?? 0,
+              expectedTeamsPerGameday: input.expectedTeamsPerGameday ?? 0,
+              offerId: offer._id,
+            })
+          )
+        );
+
+        return {
+          ...offer.toObject(),
+          configs,
+        };
+      } catch (err: any) {
+        if (err.code === 11000) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'An offer for this association/season already exists in draft or sent state.',
+          });
+        }
+        throw err;
+      }
+    }),
+
+  update: adminProcedure
+    .input(z.object({
+      id: z.string(),
+      data: UpdateOfferSchema.extend({
+        costModel: z.enum(['SEASON', 'GAMEDAY']).optional(),
+        baseRateOverride: z.number().positive().nullable().optional(),
+        expectedTeamsCount: z.number().int().min(1).optional(),
       })
-    )
+    }))
+    .mutation(async ({ input }) => {
+      const offer = await Offer.findById(input.id);
+      if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      // Update allowed fields
+      if (input.data.status) offer.status = input.data.status;
+      if (input.data.sentAt) offer.sentAt = input.data.sentAt;
+      if (input.data.acceptedAt) offer.acceptedAt = input.data.acceptedAt;
+      if (input.data.contactId) offer.contactId = input.data.contactId as any;
+
+      // If leagues changed, update configs
+      if (input.data.leagueIds) {
+        const oldLeagueIds = offer.leagueIds;
+        const removedLeagueIds = oldLeagueIds.filter(
+          (id) => !input.data.leagueIds!.includes(id)
+        );
+        const newLeagueIds = input.data.leagueIds.filter(
+          (id) => !oldLeagueIds.includes(id)
+        );
+
+        if (removedLeagueIds.length > 0) {
+          await FinancialConfig.deleteMany({
+            offerId: offer._id,
+            leagueId: { $in: removedLeagueIds },
+          });
+        }
+
+        if (newLeagueIds.length > 0) {
+          await Promise.all(
+            newLeagueIds.map((leagueId) =>
+              FinancialConfig.create({
+                leagueId,
+                seasonId: offer.seasonId,
+                costModel: 'SEASON',
+                baseRateOverride: null,
+                expectedTeamsCount: 15,
+                offerId: offer._id,
+              })
+            )
+          );
+        }
+
+        offer.leagueIds = input.data.leagueIds;
+      }
+
+      await offer.save();
+
+      const configs = await FinancialConfig.find({ offerId: offer._id }).lean();
+      const contact = await Contact.findById(offer.contactId).lean();
+
+      return {
+        ...offer.toObject(),
+        contact,
+        configs,
+      };
+    }),
+
+  delete: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      const offer = await Offer.findById(input.id);
+      if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      if (offer.status !== 'draft') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Only draft offers can be deleted.',
+        });
+      }
+
+      // Delete all associated configs
+      await FinancialConfig.deleteMany({ offerId: offer._id });
+
+      // Delete offer
+      await Offer.findByIdAndDelete(input.id);
+
+      return { success: true };
+    }),
+
+  markSent: adminProcedure
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       const offer = await Offer.findByIdAndUpdate(
         input.id,
-        { status: input.status },
-        { new: true }
-      );
-      if (!offer) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
+        { status: 'sent', sentAt: new Date() },
+        { returnDocument: 'after' }
+      ).lean();
+
+      if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
       return offer;
     }),
 
-  // Task 12: Add leagues to offer and calculate prices
-  addLeagues: protectedProcedure
-    .input(
-      z.object({
-        offerId: z.string(),
-        leagueIds: z.array(z.number()),
-        baseRate: z.number(),
-        teams: z.record(z.string(), z.number()),
-        participation: z.record(z.string(), z.number()),
-        discounts: z.array(
-          z.object({
-            type: z.enum(['FIXED', 'PERCENT']),
-            value: z.number(),
-          })
-        ),
-      })
-    )
+  markAccepted: adminProcedure
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      const offer = await Offer.findById(input.offerId);
-      if (!offer) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Offer not found' });
-      }
+      const offer = await Offer.findByIdAndUpdate(
+        input.id,
+        { status: 'accepted', acceptedAt: new Date() },
+        { returnDocument: 'after' }
+      ).lean();
 
-      // Get financial configs for selected leagues
-      const configs = await FinancialConfig.find({
-        leagueId: { $in: input.leagueIds },
-        seasonId: offer.seasonId,
-      });
-
-      if (configs.length === 0) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'No financial configs found for selected leagues and season',
-        });
-      }
-
-      // Calculate line items
-      const leagueConfigsForCalc = configs.map((config) => ({
-        leagueId: config.leagueId,
-        leagueName: `League ${config.leagueId}`,
-        costModel: config.costModel,
-        baseRateOverride: config.baseRateOverride,
-      }));
-
-      const teamsMap = Object.entries(input.teams).reduce((acc, [key, val]) => {
-        acc[parseInt(key)] = val;
-        return acc;
-      }, {} as Record<number, number>);
-
-      const participationMap = Object.entries(input.participation).reduce((acc, [key, val]) => {
-        acc[parseInt(key)] = val;
-        return acc;
-      }, {} as Record<number, number>);
-
-      const lineItemsData = await calculateOfferLineItems(leagueConfigsForCalc, {
-        baseRate: input.baseRate,
-        teams: teamsMap,
-        participation: participationMap,
-        discounts: input.discounts,
-        expectedTeamsCount: 0,
-        expectedGamedaysCount: 0,
-        expectedTeamsPerGameday: 0,
-      });
-
-      // Delete existing line items for this offer
-      await OfferLineItem.deleteMany({ offerId: input.offerId });
-
-      // Create new line items
-      const createdLineItems = await OfferLineItem.insertMany(
-        lineItemsData.map((item) => ({
-          offerId: input.offerId,
-          ...item,
-        }))
-      );
-
-      // Update offer with selected league IDs
-      offer.selectedLeagueIds = input.leagueIds;
-      await offer.save();
-
-      return { offer, lineItems: createdLineItems };
+      if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
+      return offer;
     }),
-
-  // Task 13: Customize price for a league
-  customizePrice: protectedProcedure
-    .input(
-      z.object({
-        offerId: z.string(),
-        leagueId: z.number(),
-        customPrice: z.number(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const lineItem = await OfferLineItem.findOneAndUpdate(
-        { offerId: input.offerId, leagueId: input.leagueId },
-        { customPrice: input.customPrice },
-        { new: true }
-      );
-
-      if (!lineItem) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Line item not found',
-        });
-      }
-
-      return lineItem;
-    }),
-
-  // Task 14: Send offer via email
-  send: protectedProcedure
-    .input(
-      z.object({
-        offerId: z.string(),
-        to: z.array(z.string().email()),
-        cc: z.array(z.string().email()).optional(),
-        bcc: z.array(z.string().email()).optional(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const offer = await Offer.findById(input.offerId);
-      if (!offer) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      const association = await Association.findById(offer.associationId);
-      if (!association) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Association not found' });
-      }
-
-      const lineItems = await OfferLineItem.find({ offerId: input.offerId });
-
-      // Generate PDF
-      const pdfBuffer = await generateOfferPDF({
-        associationName: association.name,
-        seasonName: `Season ${offer.seasonId}`,
-        createdAt: new Date(),
-        lineItems: lineItems.map((item) => ({
-          leagueId: item.leagueId,
-          leagueName: item.leagueName,
-          basePrice: item.basePrice,
-          customPrice: item.customPrice,
-          finalPrice: item.finalPrice,
-        })),
-      });
-
-      // Upload to Google Drive (if token available)
-      let driveFileId: string | null = null;
-      let driveLink = '';
-
-      if (process.env.GOOGLE_DRIVE_ACCESS_TOKEN) {
-        const fileName = `${association.name}_Offer_${offer.seasonId}_${new Date().getTime()}.pdf`;
-        driveFileId = await uploadPDFToDrive(
-          pdfBuffer,
-          process.env.GOOGLE_DRIVE_ACCESS_TOKEN,
-          fileName
-        );
-        driveLink = `https://drive.google.com/file/d/${driveFileId}/view`;
-      }
-
-      // Calculate total price
-      const totalPrice = lineItems.reduce((sum, item) => sum + item.finalPrice, 0);
-
-      // Generate email
-      const subject = generateOfferEmailSubject(association.name, `Season ${offer.seasonId}`);
-      const htmlBody = generateOfferEmailBody(
-        association.name,
-        `Season ${offer.seasonId}`,
-        lineItems.map((item) => item.leagueName),
-        totalPrice,
-        driveLink || 'https://offers.leagues.finance'
-      );
-
-      // Send email
-      await sendOfferEmail(input.to, input.cc || [], input.bcc || [], subject, htmlBody);
-
-      // Update offer
-      offer.status = 'SENT';
-      offer.sentAt = new Date();
-      offer.driveFileId = driveFileId;
-
-      input.to.forEach((email) => {
-        offer.sentTo.push({ email, sentAt: new Date() });
-      });
-
-      await offer.save();
-
-      return { offer, driveFileId };
-    }),
-
-  // Task 15: Get offer summary with statistics
-  summary: protectedProcedure.query(async () => {
-    const totalOffers = await Offer.countDocuments();
-    const draftOffers = await Offer.countDocuments({ status: 'DRAFT' });
-    const sentOffers = await Offer.countDocuments({ status: 'SENT' });
-    const acceptedOffers = await Offer.countDocuments({ status: 'ACCEPTED' });
-    const rejectedOffers = await Offer.countDocuments({ status: 'REJECTED' });
-
-    const allOffers = await Offer.find().lean();
-    const totalValue = await OfferLineItem.aggregate([
-      {
-        $group: {
-          _id: null,
-          totalFinalPrice: {
-            $sum: {
-              $cond: ['$customPrice', '$customPrice', '$basePrice'],
-            },
-          },
-        },
-      },
-    ]);
-
-    return {
-      totalOffers,
-      draftOffers,
-      sentOffers,
-      acceptedOffers,
-      rejectedOffers,
-      totalOfferValue: totalValue[0]?.totalFinalPrice || 0,
-    };
-  }),
 });

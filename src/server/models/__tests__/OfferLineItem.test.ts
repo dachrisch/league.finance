@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { OfferLineItem } from '../OfferLineItem';
 import { Offer } from '../Offer';
-import { Association } from '../Association';
+import { Contact } from '../Contact';
 import { connectMongo, disconnectMongo } from '../../db/mongo';
 
 describe('OfferLineItem Model', () => {
@@ -9,17 +9,21 @@ describe('OfferLineItem Model', () => {
 
   beforeAll(async () => {
     await connectMongo();
-    const association = await Association.create({
-      name: 'Test Association',
-      description: 'For testing line items',
-      email: 'test@association.local',
-      phone: '555-1234',
+    const contact = await Contact.create({
+      name: 'Test Contact',
+      address: {
+        street: '123 Main St',
+        city: 'Berlin',
+        postalCode: '10115',
+        country: 'Germany',
+      },
     });
 
     const offer = await Offer.create({
-      associationId: association._id,
+      associationId: 1,
       seasonId: 2024,
-      selectedLeagueIds: [1, 2, 3],
+      leagueIds: [1, 2, 3],
+      contactId: contact._id,
     });
     offerId = offer._id.toString();
   }, 60000);

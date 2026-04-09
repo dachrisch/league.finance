@@ -1,20 +1,23 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { Offer } from '../Offer';
-import { Association } from '../Association';
+import { Contact } from '../Contact';
 import { connectMongo, disconnectMongo } from '../../db/mongo';
 
 describe('Offer Model', () => {
-  let associationId: string;
+  let contactId: string;
 
   beforeAll(async () => {
     await connectMongo();
-    const association = await Association.create({
-      name: 'Test Association',
-      description: 'For testing offers',
-      email: 'test@association.local',
-      phone: '555-1234',
+    const contact = await Contact.create({
+      name: 'Test Contact',
+      address: {
+        street: '123 Main St',
+        city: 'Berlin',
+        postalCode: '10115',
+        country: 'Germany',
+      },
     });
-    associationId = association._id.toString();
+    contactId = contact._id.toString();
   }, 60000);
 
   afterAll(async () => {
@@ -23,125 +26,96 @@ describe('Offer Model', () => {
 
   it('should create an offer with required fields', async () => {
     const doc = await Offer.create({
-      associationId,
+      associationId: 123,
       seasonId: 2024,
-      selectedLeagueIds: [1, 2, 3],
-      status: 'DRAFT',
+      leagueIds: [1, 2, 3],
+      contactId,
+      status: 'draft',
     });
 
-    expect(doc.associationId.toString()).toBe(associationId);
+    expect(doc.associationId).toBe(123);
     expect(doc.seasonId).toBe(2024);
-    expect(doc.selectedLeagueIds).toEqual([1, 2, 3]);
-    expect(doc.status).toBe('DRAFT');
-    expect(doc.driveFileId).toBeNull();
-    expect(doc.sentTo).toEqual([]);
-    expect(doc.notes).toBe('');
-    expect(doc.sentAt).toBeNull();
-    expect(doc.viewedAt).toBeNull();
-    expect(doc.completedAt).toBeNull();
+    expect(doc.leagueIds).toEqual([1, 2, 3]);
+    expect(doc.status).toBe('draft');
+    expect(doc.contactId.toString()).toBe(contactId);
     expect(doc.createdAt).toBeDefined();
     expect(doc.updatedAt).toBeDefined();
   });
 
-  it('should update offer status', async () => {
+  it('should update offer status to sent', async () => {
     const doc = await Offer.create({
-      associationId,
+      associationId: 456,
       seasonId: 2024,
-      selectedLeagueIds: [1, 2],
-      status: 'DRAFT',
+      leagueIds: [1, 2],
+      contactId,
+      status: 'draft',
     });
 
-    doc.status = 'SENT';
+    doc.status = 'sent';
     doc.sentAt = new Date();
-    doc.sentTo.push({ email: 'contact@association.local', sentAt: new Date() });
     await doc.save();
 
     const updated = await Offer.findById(doc._id);
-    expect(updated?.status).toBe('SENT');
+    expect(updated?.status).toBe('sent');
     expect(updated?.sentAt).toBeDefined();
-    expect(updated?.sentTo.length).toBe(1);
-    expect(updated?.sentTo[0].email).toBe('contact@association.local');
   });
 
-  it('should track multiple sentTo entries', async () => {
+  it('should update offer status to accepted', async () => {
     const doc = await Offer.create({
-      associationId,
+      associationId: 789,
       seasonId: 2025,
-      selectedLeagueIds: [4, 5],
+      leagueIds: [4, 5],
+      contactId,
     });
 
-    doc.sentTo.push(
-      { email: 'email1@test.local', sentAt: new Date() },
-      { email: 'email2@test.local', sentAt: new Date() }
-    );
+    doc.status = 'accepted';
+    doc.acceptedAt = new Date();
     await doc.save();
 
     const updated = await Offer.findById(doc._id);
-    expect(updated?.sentTo.length).toBe(2);
-    expect(updated?.sentTo[0].email).toBe('email1@test.local');
-    expect(updated?.sentTo[1].email).toBe('email2@test.local');
+    expect(updated?.status).toBe('accepted');
+    expect(updated?.acceptedAt).toBeDefined();
   });
 
-  it('should allow custom notes', async () => {
-    const notes = 'Custom pricing applied due to early commitment';
-    const doc = await Offer.create({
-      associationId,
-      seasonId: 2024,
-      selectedLeagueIds: [1],
-      notes,
-    });
-
-    expect(doc.notes).toBe(notes);
+  it('should validate status enum', async () => {
+    await expect(
+      Offer.create({
+        associationId: 111,
+        seasonId: 2024,
+        leagueIds: [1],
+        contactId,
+        status: 'INVALID_STATUS' as any,
+      })
+    ).rejects.toThrow();
   });
 
-  it('should allow setting driveFileId', async () => {
-    const driveFileId = 'file_abc123def456';
-    const doc = await Offer.create({
-      associationId,
-      seasonId: 2024,
-      selectedLeagueIds: [1],
-      driveFileId,
-    });
-
-    expect(doc.driveFileId).toBe(driveFileId);
+  it('should require leagueIds to have at least 1 element', async () => {
+    await expect(
+      Offer.create({
+        associationId: 222,
+        seasonId: 2024,
+        leagueIds: [],
+        contactId,
+      })
+    ).rejects.toThrow();
   });
 
-  it('should track offer completion dates', async () => {
-    const doc = await Offer.create({
-      associationId,
-      seasonId: 2024,
-      selectedLeagueIds: [1],
-    });
-
-    const viewDate = new Date();
-    const completeDate = new Date();
-
-    doc.viewedAt = viewDate;
-    doc.completedAt = completeDate;
-    doc.status = 'ACCEPTED';
-    await doc.save();
-
-    const updated = await Offer.findById(doc._id);
-    expect(updated?.viewedAt?.getTime()).toBe(viewDate.getTime());
-    expect(updated?.completedAt?.getTime()).toBe(completeDate.getTime());
-    expect(updated?.status).toBe('ACCEPTED');
-  });
-
-  it('should allow empty selectedLeagueIds', async () => {
-    const doc = await Offer.create({
-      associationId,
-      seasonId: 2024,
-      selectedLeagueIds: [],
-    });
-
-    expect(doc.selectedLeagueIds).toEqual([]);
+  it('should require contactId', async () => {
+    await expect(
+      Offer.create({
+        associationId: 333,
+        seasonId: 2024,
+        leagueIds: [1],
+      })
+    ).rejects.toThrow();
   });
 
   it('should require associationId', async () => {
     await expect(
       Offer.create({
         seasonId: 2024,
-        selectedLeagueIds: [1],
+        leagueIds: [1],
+        contactId,
       })
     ).rejects.toThrow();
   });
@@ -149,38 +123,77 @@ describe('Offer Model', () => {
   it('should require seasonId', async () => {
     await expect(
       Offer.create({
-        associationId,
-        selectedLeagueIds: [1],
+        associationId: 444,
+        leagueIds: [1],
+        contactId,
       })
     ).rejects.toThrow();
   });
 
-  it('should validate status enum', async () => {
+  it('should enforce unique index for draft/sent offers', async () => {
+    const doc1 = await Offer.create({
+      associationId: 555,
+      seasonId: 2026,
+      leagueIds: [1],
+      contactId,
+      status: 'draft',
+    });
+
+    // Should not allow duplicate draft offer for same association-season
     await expect(
       Offer.create({
-        associationId,
-        seasonId: 2024,
-        selectedLeagueIds: [1],
-        status: 'INVALID_STATUS' as any,
+        associationId: 555,
+        seasonId: 2026,
+        leagueIds: [2],
+        contactId,
+        status: 'draft',
       })
     ).rejects.toThrow();
   });
 
-  it('should index by associationId and seasonId', async () => {
+  it('should allow new draft offer after acceptance', async () => {
     const doc1 = await Offer.create({
-      associationId,
+      associationId: 666,
+      seasonId: 2026,
+      leagueIds: [1],
+      contactId,
+      status: 'draft',
+    });
+
+    // Accept the offer
+    doc1.status = 'accepted';
+    doc1.acceptedAt = new Date();
+    await doc1.save();
+
+    // Should allow new draft offer for same association-season after acceptance
+    const doc2 = await Offer.create({
+      associationId: 666,
+      seasonId: 2026,
+      leagueIds: [2],
+      contactId,
+      status: 'draft',
+    });
+
+    expect(doc2).toBeDefined();
+  });
+
+  it('should index by associationId and status', async () => {
+    const doc1 = await Offer.create({
+      associationId: 777,
       seasonId: 2099,
-      selectedLeagueIds: [1],
+      leagueIds: [1],
+      contactId,
     });
 
     const doc2 = await Offer.create({
-      associationId,
+      associationId: 778,
       seasonId: 2098,
-      selectedLeagueIds: [2],
+      leagueIds: [2],
+      contactId,
     });
 
     // Query using the index
-    const found = await Offer.find({ associationId, seasonId: 2099 });
+    const found = await Offer.find({ associationId: 777, status: 'draft' });
     expect(found.length).toBeGreaterThan(0);
     const foundDoc1 = found.find(d => d._id.toString() === doc1._id.toString());
     expect(foundDoc1).toBeDefined();
