@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.2](https://github.com/dachrisch/league.finance/compare/v0.1.1...v0.1.2) (2026-04-09)
+
+
+### Features
+
+* add version tag to footer ([923de2d](https://github.com/dachrisch/league.finance/commit/923de2dba9c1b3da7e0f8c801b6c1302d2fb172e))
+
 ### 0.1.1 (2026-04-09)
 
 
