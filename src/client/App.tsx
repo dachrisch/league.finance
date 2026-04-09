@@ -62,10 +62,10 @@ export function App() {
                 <Route path="/config/new" element={<ConfigNewPage />} />
                 <Route path="/config/:id" element={<ConfigDetailPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/associations" element={<AssociationsPage />} />
-                <Route path="/offers" element={<OffersPage />} />
-                <Route path="/offers/create" element={<OfferCreateWizard />} />
+                <Route path="/offers/new" element={<OfferCreateWizard />} />
                 <Route path="/offers/:id" element={<OfferDetailPage />} />
+                <Route path="/offers" element={<OffersPage />} />
+                <Route path="/associations" element={<AssociationsPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>

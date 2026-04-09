@@ -50,9 +50,12 @@ export function DashboardPage() {
       <div className="responsive-flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1 style={{ margin: 0 }}>Financial Dashboard</h1>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button onClick={() => navigate('/offers')} className="btn btn-primary">
+            Offers
+          </button>
           {me?.role === 'admin' && (
             <>
-              <button onClick={() => navigate('/config/new')} className="btn btn-primary">
+              <button onClick={() => navigate('/config/new')} className="btn btn-secondary">
                 + New Config
               </button>
               <button onClick={() => navigate('/settings')} className="btn btn-secondary">
