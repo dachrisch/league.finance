@@ -10,7 +10,7 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.test.{ts,tsx}', 'shared/**/*.test.ts'],
     exclude: ['**/node_modules/**', '**/dist/**'],
-    setupFiles: ['src/test/setupServer.ts'],
-    environment: 'node',
+    setupFiles: ['src/test/setup.ts', 'src/test/setupServer.ts'],
+    environment: 'jsdom',
   },
 });
