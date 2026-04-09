@@ -11,6 +11,7 @@ export const FinancialConfigSchema = z.object({
   expectedTeamsCount: z.number().int().min(0),
   expectedGamedaysCount: z.number().int().min(0),
   expectedTeamsPerGameday: z.number().int().min(0),
+  offerId: z.string().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -23,6 +24,7 @@ export const CreateFinancialConfigSchema = z.object({
   expectedTeamsCount: z.number().int().min(0).default(0),
   expectedGamedaysCount: z.number().int().min(0).default(0),
   expectedTeamsPerGameday: z.number().int().min(0).default(0),
+  offerId: z.string().optional(),
 });
 
 export const UpdateFinancialConfigSchema = CreateFinancialConfigSchema.partial().omit({
