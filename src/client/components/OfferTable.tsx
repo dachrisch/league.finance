@@ -12,15 +12,12 @@ interface OfferTableProps {
 
 const statusBadgeStyle = (status: string): React.CSSProperties => {
   const colors: Record<string, { bg: string; color: string }> = {
-    DRAFT: { bg: '#e9ecef', color: '#495057' },
-    SENT: { bg: '#cfe2ff', color: '#084298' },
-    VIEWED: { bg: '#fff3cd', color: '#997404' },
-    NEGOTIATING: { bg: '#ffe5cc', color: '#cc5200' },
-    ACCEPTED: { bg: '#d1e7dd', color: '#0f5132' },
-    REJECTED: { bg: '#f8d7da', color: '#842029' },
+    draft: { bg: '#e9ecef', color: '#495057' },
+    sent: { bg: '#cfe2ff', color: '#084298' },
+    accepted: { bg: '#d1e7dd', color: '#0f5132' },
   };
 
-  const colorSet = colors[status] || colors.DRAFT;
+  const colorSet = colors[status] || colors.draft;
 
   return {
     display: 'inline-block',
@@ -96,12 +93,9 @@ export function OfferTable({
       <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
         {[
           { label: 'All', value: null },
-          { label: 'Draft', value: 'DRAFT' },
-          { label: 'Sent', value: 'SENT' },
-          { label: 'Viewed', value: 'VIEWED' },
-          { label: 'Negotiating', value: 'NEGOTIATING' },
-          { label: 'Accepted', value: 'ACCEPTED' },
-          { label: 'Rejected', value: 'REJECTED' },
+          { label: 'Draft', value: 'draft' },
+          { label: 'Sent', value: 'sent' },
+          { label: 'Accepted', value: 'accepted' },
         ].map(({ label, value }) => (
           <button
             key={label}
@@ -207,7 +201,7 @@ export function OfferTable({
                   >
                     View
                   </button>
-                  {offer.status === 'DRAFT' && onSend && (
+                  {offer.status === 'draft' && onSend && (
                     <button
                       onClick={() => onSend(offer._id)}
                       disabled={isLoading}
@@ -225,7 +219,7 @@ export function OfferTable({
                       Send
                     </button>
                   )}
-                  {offer.status === 'DRAFT' && onEdit && (
+                  {offer.status === 'draft' && onEdit && (
                     <button
                       onClick={() => onEdit(offer._id)}
                       disabled={isLoading}

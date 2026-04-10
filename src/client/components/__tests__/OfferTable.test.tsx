@@ -10,7 +10,7 @@ describe('OfferTable', () => {
       associationId: 'assoc1',
       seasonId: 2024,
       selectedLeagueIds: [1, 2, 3],
-      status: 'DRAFT',
+      status: 'draft',
       driveFileId: null,
       sentTo: [],
       notes: '',
@@ -25,7 +25,7 @@ describe('OfferTable', () => {
       associationId: 'assoc2',
       seasonId: 2024,
       selectedLeagueIds: [2, 3],
-      status: 'SENT',
+      status: 'sent',
       driveFileId: 'file-id',
       sentTo: [{ email: 'test@example.com', sentAt: new Date() }],
       notes: '',
@@ -75,8 +75,8 @@ describe('OfferTable', () => {
 
     expect(screen.getByText('Association 1')).toBeInTheDocument();
     expect(screen.getByText('Association 2')).toBeInTheDocument();
-    expect(screen.getByText('DRAFT')).toBeInTheDocument();
-    expect(screen.getByText('SENT')).toBeInTheDocument();
+    expect(screen.getByText('draft')).toBeInTheDocument();
+    expect(screen.getByText('sent')).toBeInTheDocument();
   });
 
   it('displays league counts correctly', () => {
@@ -164,10 +164,7 @@ describe('OfferTable', () => {
     expect(screen.getByRole('button', { name: /All/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Draft/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Sent/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Viewed/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Negotiating/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Accepted/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Rejected/i })).toBeInTheDocument();
   });
 
   it('disables buttons when loading', () => {

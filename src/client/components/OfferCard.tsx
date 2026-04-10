@@ -10,21 +10,15 @@ interface OfferCardProps {
 }
 
 const statusColors: Record<string, string> = {
-  DRAFT: '#ffc107',
-  SENT: '#17a2b8',
-  VIEWED: '#17a2b8',
-  NEGOTIATING: '#17a2b8',
-  ACCEPTED: '#28a745',
-  REJECTED: '#dc3545',
+  draft: '#ffc107',
+  sent: '#17a2b8',
+  accepted: '#28a745',
 };
 
 const statusBgColors: Record<string, string> = {
-  DRAFT: '#fff3cd',
-  SENT: '#d1ecf1',
-  VIEWED: '#d1ecf1',
-  NEGOTIATING: '#d1ecf1',
-  ACCEPTED: '#d4edda',
-  REJECTED: '#f8d7da',
+  draft: '#fff3cd',
+  sent: '#d1ecf1',
+  accepted: '#d4edda',
 };
 
 export function OfferCard({ offer, associationName, leagueNames, contactName, onView, onDelete }: OfferCardProps) {
@@ -62,7 +56,7 @@ export function OfferCard({ offer, associationName, leagueNames, contactName, on
             fontSize: '12px',
             fontWeight: 'bold',
             backgroundColor: statusBgColors[offer.status] || '#e2e3e5',
-            color: offer.status === 'DRAFT' ? '#856404' : offer.status === 'ACCEPTED' ? '#155724' : offer.status === 'REJECTED' ? '#721c24' : '#0c5460',
+            color: offer.status === 'draft' ? '#856404' : offer.status === 'accepted' ? '#155724' : '#0c5460',
           }}
         >
           {offer.status}
@@ -118,7 +112,7 @@ export function OfferCard({ offer, associationName, leagueNames, contactName, on
         >
           View
         </button>
-        {offer.status === 'DRAFT' && (
+        {offer.status === 'draft' && (
           <button
             onClick={() => onDelete(offer._id)}
             style={{

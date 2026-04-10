@@ -6,7 +6,7 @@ import { Offer } from '../../lib/schemas';
 describe('OfferCard', () => {
   const mockOffer: Offer = {
     _id: '123',
-    status: 'DRAFT',
+    status: 'draft',
     associationId: 'assoc1',
     seasonId: 2024,
     selectedLeagueIds: [1, 2],
@@ -44,7 +44,7 @@ describe('OfferCard', () => {
 
     expect(screen.getByText('Tigers FC')).toBeInTheDocument();
     expect(screen.getByText(/2024/)).toBeInTheDocument();
-    expect(screen.getByText('DRAFT')).toBeInTheDocument();
+    expect(screen.getByText('draft')).toBeInTheDocument();
     expect(screen.getByText('John Smith')).toBeInTheDocument();
     expect(screen.getByText('League A')).toBeInTheDocument();
     expect(screen.getByText('League B')).toBeInTheDocument();
@@ -71,7 +71,7 @@ describe('OfferCard', () => {
   });
 
   it('should show accepted status with green border', () => {
-    const acceptedOffer: Offer = { ...mockOffer, status: 'ACCEPTED' };
+    const acceptedOffer: Offer = { ...mockOffer, status: 'accepted' };
     const onView = vi.fn();
     const onDelete = vi.fn();
 
@@ -108,7 +108,7 @@ describe('OfferCard', () => {
 
     expect(screen.getByRole('button', { name: /Delete/i })).toBeInTheDocument();
 
-    const sentOffer: Offer = { ...mockOffer, status: 'SENT' };
+    const sentOffer: Offer = { ...mockOffer, status: 'sent' };
     rerender(
       <OfferCard
         offer={sentOffer}
@@ -164,7 +164,7 @@ describe('OfferCard', () => {
   });
 
   it('should render sent status with cyan border', () => {
-    const sentOffer: Offer = { ...mockOffer, status: 'SENT' };
+    const sentOffer: Offer = { ...mockOffer, status: 'sent' };
     const onView = vi.fn();
     const onDelete = vi.fn();
 
