@@ -1,186 +1,176 @@
-import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
 import { OfferCard } from '../OfferCard';
-import { Offer } from '../../lib/schemas';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Mock the router navigation
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => vi.fn(),
+  };
+});
 
 describe('OfferCard', () => {
-  const mockOffer: Offer = {
-    _id: '123',
-    status: 'draft',
-    associationId: 'assoc1',
-    seasonId: 2024,
-    selectedLeagueIds: [1, 2],
-    sentTo: [],
-    notes: '',
-    driveFileId: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    sentAt: null,
-    viewedAt: null,
-    completedAt: null,
+  const defaultProps = {
+    id: 'offer-123',
+    associationName: 'Test Association',
+    seasonName: '2024-2025',
+    contactName: 'John Doe',
+    leagueCount: 3,
+    leagueNames: ['League A', 'League B', 'League C'],
+    status: 'draft' as const,
+    createdAt: new Date('2026-04-10'),
+    isExpanded: false,
+    onToggleExpand: vi.fn(),
   };
 
-  const mockAssociationName = 'Tigers FC';
-  const mockLeagueNames: Record<number, string> = {
-    1: 'League A',
-    2: 'League B',
-  };
-  const mockContactName = 'John Smith';
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-  it('should render offer details with status badge', () => {
-    const onView = vi.fn();
-    const onDelete = vi.fn();
-
+  it('renders collapsed state with summary info', () => {
     render(
-      <OfferCard
-        offer={mockOffer}
-        associationName={mockAssociationName}
-        leagueNames={mockLeagueNames}
-        contactName={mockContactName}
-        onView={onView}
-        onDelete={onDelete}
-      />
+      <BrowserRouter>
+        <OfferCard {...defaultProps} />
+      </BrowserRouter>
     );
 
-    expect(screen.getByText('Tigers FC')).toBeInTheDocument();
-    expect(screen.getByText(/2024/)).toBeInTheDocument();
-    expect(screen.getByText('draft')).toBeInTheDocument();
-    expect(screen.getByText('John Smith')).toBeInTheDocument();
-    expect(screen.getByText('League A')).toBeInTheDocument();
-    expect(screen.getByText('League B')).toBeInTheDocument();
+    expect(screen.getByText('Test Association')).toBeInTheDocument();
+    expect(screen.getByText(/Season:/)).toBeInTheDocument();
+    expect(screen.getByText(/2024-2025/)).toBeInTheDocument();
+    expect(screen.getByText(/Contact:/)).toBeInTheDocument();
+    expect(screen.getByText(/John Doe/)).toBeInTheDocument();
+    expect(screen.getByText(/3 selected/)).toBeInTheDocument();
   });
 
-  it('should call onView when View button clicked', () => {
-    const onView = vi.fn();
-    const onDelete = vi.fn();
-
+  it('displays status badge with correct status', () => {
     render(
-      <OfferCard
-        offer={mockOffer}
-        associationName={mockAssociationName}
-        leagueNames={mockLeagueNames}
-        contactName={mockContactName}
-        onView={onView}
-        onDelete={onDelete}
-      />
+      <BrowserRouter>
+        <OfferCard {...defaultProps} status="sent" />
+      </BrowserRouter>
     );
 
-    const viewButton = screen.getByRole('button', { name: /View/i });
-    fireEvent.click(viewButton);
-    expect(onView).toHaveBeenCalledWith('123');
+    expect(screen.getByText('SENT')).toBeInTheDocument();
   });
 
-  it('should show accepted status with green border', () => {
-    const acceptedOffer: Offer = { ...mockOffer, status: 'accepted' };
-    const onView = vi.fn();
-    const onDelete = vi.fn();
-
-    const { container } = render(
-      <OfferCard
-        offer={acceptedOffer}
-        associationName={mockAssociationName}
-        leagueNames={mockLeagueNames}
-        contactName={mockContactName}
-        onView={onView}
-        onDelete={onDelete}
-      />
-    );
-
-    const card = container.firstChild as HTMLElement;
-    const style = window.getComputedStyle(card);
-    expect(style.borderLeftColor).toBe('rgb(40, 167, 69)');
-  });
-
-  it('should show delete button only for draft offers', () => {
-    const onView = vi.fn();
-    const onDelete = vi.fn();
-
-    const { rerender } = render(
-      <OfferCard
-        offer={mockOffer}
-        associationName={mockAssociationName}
-        leagueNames={mockLeagueNames}
-        contactName={mockContactName}
-        onView={onView}
-        onDelete={onDelete}
-      />
-    );
-
-    expect(screen.getByRole('button', { name: /Delete/i })).toBeInTheDocument();
-
-    const sentOffer: Offer = { ...mockOffer, status: 'sent' };
-    rerender(
-      <OfferCard
-        offer={sentOffer}
-        associationName={mockAssociationName}
-        leagueNames={mockLeagueNames}
-        contactName={mockContactName}
-        onView={onView}
-        onDelete={onDelete}
-      />
-    );
-
-    expect(screen.queryByRole('button', { name: /Delete/i })).not.toBeInTheDocument();
-  });
-
-  it('should call onDelete when Delete button clicked', () => {
-    const onView = vi.fn();
-    const onDelete = vi.fn();
-
+  it('shows View, Send, Delete buttons in draft status', () => {
     render(
-      <OfferCard
-        offer={mockOffer}
-        associationName={mockAssociationName}
-        leagueNames={mockLeagueNames}
-        contactName={mockContactName}
-        onView={onView}
-        onDelete={onDelete}
-      />
+      <BrowserRouter>
+        <OfferCard {...defaultProps} status="draft" />
+      </BrowserRouter>
     );
 
-    const deleteButton = screen.getByRole('button', { name: /Delete/i });
-    fireEvent.click(deleteButton);
-    expect(onDelete).toHaveBeenCalledWith('123');
+    expect(screen.getByText('View')).toBeInTheDocument();
+    expect(screen.getByText('Send')).toBeInTheDocument();
+    expect(screen.getByText('Delete')).toBeInTheDocument();
   });
 
-  it('should render draft status with yellow border', () => {
-    const onView = vi.fn();
-    const onDelete = vi.fn();
-
-    const { container } = render(
-      <OfferCard
-        offer={mockOffer}
-        associationName={mockAssociationName}
-        leagueNames={mockLeagueNames}
-        contactName={mockContactName}
-        onView={onView}
-        onDelete={onDelete}
-      />
+  it('shows only View button in sent status', () => {
+    render(
+      <BrowserRouter>
+        <OfferCard {...defaultProps} status="sent" />
+      </BrowserRouter>
     );
 
-    const card = container.firstChild as HTMLElement;
-    const style = window.getComputedStyle(card);
-    expect(style.borderLeftColor).toBe('rgb(255, 193, 7)');
+    expect(screen.getByText('View')).toBeInTheDocument();
+    expect(screen.queryByText('Send')).not.toBeInTheDocument();
+    expect(screen.queryByText('Delete')).not.toBeInTheDocument();
   });
 
-  it('should render sent status with cyan border', () => {
-    const sentOffer: Offer = { ...mockOffer, status: 'sent' };
-    const onView = vi.fn();
-    const onDelete = vi.fn();
-
-    const { container } = render(
-      <OfferCard
-        offer={sentOffer}
-        associationName={mockAssociationName}
-        leagueNames={mockLeagueNames}
-        contactName={mockContactName}
-        onView={onView}
-        onDelete={onDelete}
-      />
+  it('shows only View button in accepted status', () => {
+    render(
+      <BrowserRouter>
+        <OfferCard {...defaultProps} status="accepted" />
+      </BrowserRouter>
     );
 
-    const card = container.firstChild as HTMLElement;
-    const style = window.getComputedStyle(card);
-    expect(style.borderLeftColor).toBe('rgb(23, 162, 184)');
+    expect(screen.getByText('View')).toBeInTheDocument();
+    expect(screen.queryByText('Send')).not.toBeInTheDocument();
+    expect(screen.queryByText('Delete')).not.toBeInTheDocument();
+  });
+
+  it('calls onToggleExpand when header is clicked', () => {
+    const onToggleExpand = vi.fn();
+    render(
+      <BrowserRouter>
+        <OfferCard {...defaultProps} onToggleExpand={onToggleExpand} />
+      </BrowserRouter>
+    );
+
+    fireEvent.click(screen.getByText('Test Association'));
+    expect(onToggleExpand).toHaveBeenCalled();
+  });
+
+  it('calls onDelete when Delete button is clicked', () => {
+    const onDelete = vi.fn();
+    render(
+      <BrowserRouter>
+        <OfferCard {...defaultProps} status="draft" onDelete={onDelete} />
+      </BrowserRouter>
+    );
+
+    fireEvent.click(screen.getByText('Delete'));
+    expect(onDelete).toHaveBeenCalled();
+  });
+
+  it('calls onSend when Send button is clicked', () => {
+    const onSend = vi.fn();
+    render(
+      <BrowserRouter>
+        <OfferCard {...defaultProps} status="draft" onSend={onSend} />
+      </BrowserRouter>
+    );
+
+    fireEvent.click(screen.getByText('Send'));
+    expect(onSend).toHaveBeenCalled();
+  });
+
+  it('renders expanded content when isExpanded is true', () => {
+    const childContent = <div>Expanded Content</div>;
+    render(
+      <BrowserRouter>
+        <OfferCard {...defaultProps} isExpanded={true}>
+          {childContent}
+        </OfferCard>
+      </BrowserRouter>
+    );
+
+    expect(screen.getByText('Expanded Content')).toBeInTheDocument();
+  });
+
+  it('truncates league names when more than 3', () => {
+    render(
+      <BrowserRouter>
+        <OfferCard
+          {...defaultProps}
+          leagueCount={5}
+          leagueNames={['League A', 'League B', 'League C', 'League D', 'League E']}
+        />
+      </BrowserRouter>
+    );
+
+    expect(screen.getByText(/League A, League B, League C\.\.\./)).toBeInTheDocument();
+  });
+
+  it('shows chevron pointing down when expanded', () => {
+    const { container } = render(
+      <BrowserRouter>
+        <OfferCard {...defaultProps} isExpanded={true} />
+      </BrowserRouter>
+    );
+
+    expect(container.textContent).toContain('▼');
+  });
+
+  it('shows chevron pointing right when collapsed', () => {
+    const { container } = render(
+      <BrowserRouter>
+        <OfferCard {...defaultProps} isExpanded={false} />
+      </BrowserRouter>
+    );
+
+    expect(container.textContent).toContain('▶');
   });
 });
