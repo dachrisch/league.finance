@@ -37,7 +37,7 @@ export function OfferCreateWizard() {
 
   // TRPC queries & mutations
   const { data: associations, isLoading: loadingAssociations } = trpc.finance.associations.list.useQuery();
-  const { data: contacts, refetch: refetchContacts } = trpc.finance.contacts.list.useQuery();
+  const { data: contacts, isLoading: loadingContacts, refetch: refetchContacts } = trpc.finance.contacts.list.useQuery();
   const { data: seasons, isLoading: loadingSeasons } = trpc.teams.seasons.useQuery();
   const { data: leagues, isLoading: loadingLeagues } = trpc.teams.leagues.useQuery();
 
@@ -96,6 +96,11 @@ export function OfferCreateWizard() {
   const handleCreateOffer = async () => {
     if (state.selectedLeagueIds.length === 0) {
       alert('Please select at least one league');
+      return;
+    }
+
+    if (state.baseRateOverride !== null && state.baseRateOverride <= 0) {
+      alert('Base rate override must be greater than 0');
       return;
     }
 
@@ -262,7 +267,7 @@ export function OfferCreateWizard() {
                   contacts={contacts || []}
                   selectedId={state.contactId}
                   onSelect={(id) => setState((prev) => ({ ...prev, contactId: id }))}
-                  isLoading={isLoading}
+                  isLoading={isLoading || loadingContacts}
                 />
               </div>
 
