@@ -1,0 +1,6 @@
+{"type":"server-started","port":64259,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:64259","screen_dir":"/home/cda/dev/leagues.finance/.superpowers/brainstorm/2380821-1775768157/content","state_dir":"/home/cda/dev/leagues.finance/.superpowers/brainstorm/2380821-1775768157/state"}
+{"type":"screen-added","file":"/home/cda/dev/leagues.finance/.superpowers/brainstorm/2380821-1775768157/content/dashboard-approach1.html"}
+{"type":"screen-added","file":"/home/cda/dev/leagues.finance/.superpowers/brainstorm/2380821-1775768157/content/dashboard-cards.html"}
+{"type":"screen-added","file":"/home/cda/dev/leagues.finance/.superpowers/brainstorm/2380821-1775768157/content/waiting.html"}
+{"type":"screen-added","file":"/home/cda/dev/leagues.finance/.superpowers/brainstorm/2380821-1775768157/content/screens-workflow.html"}
+{"type":"server-stopped","reason":"idle timeout"}

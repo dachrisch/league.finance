@@ -1,0 +1,225 @@
+<h2>Complete Workflow: All Key Screens</h2>
+<p class="subtitle">Create, edit, view, and manage offers through their lifecycle</p>
+
+<!-- Screen 1: Create Offer (Step 1) -->
+<div class="mockup">
+  <div class="mockup-header">Screen 1: New Offer - Select Association & Season</div>
+  <div class="mockup-body" style="padding: 2rem;">
+    <h3 style="margin: 0 0 2rem 0;">Create Quotation</h3>
+    <form style="max-width: 500px;">
+      <div style="margin-bottom: 2rem;">
+        <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 0.5rem; color: #333;">Association *</label>
+        <select style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+          <option value="">— select association —</option>
+          <option value="tigers">Tigers FC</option>
+          <option value="united">United Stars</option>
+          <option value="dragon">Dragon United</option>
+        </select>
+        <p style="margin: 0.5rem 0 0 0; font-size: 12px; color: #666;">Choose one association for this offer.</p>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 0.5rem; color: #333;">Season *</label>
+        <select style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+          <option value="">— select season —</option>
+          <option value="2024">2024/25</option>
+          <option value="2023">2023/24</option>
+        </select>
+      </div>
+
+      <button type="button" style="padding: 12px 24px; background: #0d6efd; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px;">Next: Select Contact</button>
+    </form>
+  </div>
+</div>
+
+<!-- Screen 2: Create Offer (Step 2) -->
+<div class="mockup" style="margin-top: 2rem;">
+  <div class="mockup-header">Screen 2: New Offer - Select/Create Contact</div>
+  <div class="mockup-body" style="padding: 2rem;">
+    <h3 style="margin: 0 0 2rem 0;">Select Contact (for quotation PDF)</h3>
+
+    <div style="margin-bottom: 2rem;">
+      <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 0.5rem; color: #333;">Choose Existing Contact</label>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="border: 2px solid #ddd; border-radius: 6px; padding: 1rem; cursor: pointer; transition: all 0.2s;">
+          <p style="margin: 0 0 0.5rem 0; font-weight: bold;">John Smith</p>
+          <p style="margin: 0; font-size: 12px; color: #666;">123 Main St, Berlin, Germany</p>
+        </div>
+        <div style="border: 2px solid #ddd; border-radius: 6px; padding: 1rem; cursor: pointer; transition: all 0.2s;">
+          <p style="margin: 0 0 0.5rem 0; font-weight: bold;">Jane Doe</p>
+          <p style="margin: 0; font-size: 12px; color: #666;">456 Oak Ave, Munich, Germany</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="border-top: 2px solid #ddd; padding-top: 2rem;">
+      <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 1rem; color: #333;">Or Create New Contact</label>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 0.3rem;">Name</label>
+          <input type="text" placeholder="Full name" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 0.3rem;">Address</label>
+          <input type="text" placeholder="Street address" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 0.3rem;">City</label>
+          <input type="text" placeholder="City" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 0.3rem;">Postal Code</label>
+          <input type="text" placeholder="Postal code" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 0.3rem;">Country</label>
+          <input type="text" placeholder="Country" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+      <button type="button" style="padding: 12px 24px; background: #6c757d; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Back</button>
+      <button type="button" style="padding: 12px 24px; background: #0d6efd; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Next: Set Pricing</button>
+    </div>
+  </div>
+</div>
+
+<!-- Screen 3: Create Offer (Step 3) -->
+<div class="mockup" style="margin-top: 2rem;">
+  <div class="mockup-header">Screen 3: New Offer - Set Pricing & Assign Leagues</div>
+  <div class="mockup-body" style="padding: 2rem;">
+    <h3 style="margin: 0 0 2rem 0;">Financial Configuration</h3>
+
+    <div style="margin-bottom: 2rem;">
+      <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 0.5rem;">Cost Model *</label>
+      <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="radio" name="costmodel" checked> Flat Fee (Season)
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="radio" name="costmodel"> Usage-Based (Per Gameday)
+        </label>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 2rem;">
+      <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 0.5rem;">Base Rate Override (€) *</label>
+      <input type="number" placeholder="e.g., 50.00" style="width: 100%; max-width: 200px; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+      <p style="margin: 0.5rem 0 0 0; font-size: 12px; color: #666;">Leave empty to use system default.</p>
+    </div>
+
+    <div style="margin-bottom: 2rem;">
+      <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 0.5rem;">Expected Teams Count *</label>
+      <input type="number" placeholder="e.g., 15" style="width: 100%; max-width: 200px; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+    </div>
+
+    <hr style="border: none; border-top: 1px solid #ddd; margin: 2rem 0;">
+
+    <div style="margin-bottom: 2rem;">
+      <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 1rem;">Assign Leagues *</label>
+      <p style="margin: 0 0 1rem 0; font-size: 12px; color: #666;">This config will be created for each selected league.</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; padding: 1rem; background: #f9f9f9; border-radius: 6px; cursor: pointer;">
+          <input type="checkbox" checked> League A
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; padding: 1rem; background: #f9f9f9; border-radius: 6px; cursor: pointer;">
+          <input type="checkbox" checked> League B
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; padding: 1rem; background: #f9f9f9; border-radius: 6px; cursor: pointer;">
+          <input type="checkbox"> League C
+        </label>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+      <button type="button" style="padding: 12px 24px; background: #6c757d; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Back</button>
+      <button type="button" style="padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Create Offer (Draft)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Screen 4: Offer Detail/Edit -->
+<div class="mockup" style="margin-top: 2rem;">
+  <div class="mockup-header">Screen 4: Offer Detail - View & Edit</div>
+  <div class="mockup-body" style="padding: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2rem;">
+      <div>
+        <h3 style="margin: 0 0 0.5rem 0;">Tigers FC - 2024/25</h3>
+        <p style="margin: 0; color: #666; font-size: 13px;">Association · Season · Draft Status</p>
+      </div>
+      <span style="background: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;">DRAFT</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+      <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 6px;">
+        <h4 style="margin: 0 0 1rem 0; font-size: 13px; text-transform: uppercase; color: #666;">Contact</h4>
+        <p style="margin: 0 0 0.5rem 0; font-weight: bold;">John Smith</p>
+        <p style="margin: 0; font-size: 13px; color: #666;">123 Main St, Berlin, Germany</p>
+        <button style="margin-top: 1rem; padding: 6px 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">Change</button>
+      </div>
+
+      <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 6px;">
+        <h4 style="margin: 0 0 1rem 0; font-size: 13px; text-transform: uppercase; color: #666;">Config (Auto-Created)</h4>
+        <p style="margin: 0 0 0.5rem 0; font-size: 12px;"><strong>Cost Model:</strong> Flat Fee</p>
+        <p style="margin: 0 0 0.5rem 0; font-size: 12px;"><strong>Base Rate:</strong> €50/team/season</p>
+        <p style="margin: 0; font-size: 12px;"><strong>Expected Teams:</strong> 15</p>
+        <button style="margin-top: 1rem; padding: 6px 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">Edit Config</button>
+      </div>
+    </div>
+
+    <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 6px; margin-bottom: 2rem;">
+      <h4 style="margin: 0 0 1rem 0; font-size: 13px; text-transform: uppercase; color: #666;">Assigned Leagues (2 configs created)</h4>
+      <div style="display: grid; gap: 0.75rem;">
+        <div style="background: white; padding: 1rem; border-radius: 4px; border: 1px solid #ddd;">
+          <p style="margin: 0 0 0.5rem 0; font-weight: bold; font-size: 13px;">League A</p>
+          <p style="margin: 0; font-size: 12px; color: #666;">Config created: 50 teams × €50 = €2,500 (season)</p>
+        </div>
+        <div style="background: white; padding: 1rem; border-radius: 4px; border: 1px solid #ddd;">
+          <p style="margin: 0 0 0.5rem 0; font-weight: bold; font-size: 13px;">League B</p>
+          <p style="margin: 0; font-size: 12px; color: #666;">Config created: 50 teams × €50 = €2,500 (season)</p>
+        </div>
+      </div>
+      <button style="margin-top: 1rem; padding: 6px 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">Add/Remove Leagues</button>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem;">
+      <button style="padding: 10px 16px; background: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">PDF Preview</button>
+      <button style="padding: 10px 16px; background: #0d6efd; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">Send Offer</button>
+      <button style="padding: 10px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">Mark Accepted</button>
+      <button style="padding: 10px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Screen 5: Associations View -->
+<div class="mockup" style="margin-top: 2rem;">
+  <div class="mockup-header">Screen 5: Associations View - Linked to Offers</div>
+  <div class="mockup-body" style="padding: 2rem; background: #f9f9f9;">
+    <h3 style="margin: 0 0 1.5rem 0;">Associations</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+      <div style="background: white; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #0d6efd; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0 0 1rem 0;">Tigers FC</h4>
+        <p style="margin: 0 0 0.5rem 0; font-size: 12px; color: #666;"><strong>Active Offers:</strong> 2</p>
+        <p style="margin: 0 0 1rem 0; font-size: 12px; color: #666;"><strong>Last Updated:</strong> 2 days ago</p>
+        <button style="width: 100%; padding: 8px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">View Offers</button>
+      </div>
+
+      <div style="background: white; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #0d6efd; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0 0 1rem 0;">United Stars</h4>
+        <p style="margin: 0 0 0.5rem 0; font-size: 12px; color: #666;"><strong>Active Offers:</strong> 1</p>
+        <p style="margin: 0 0 1rem 0; font-size: 12px; color: #666;"><strong>Last Updated:</strong> 1 week ago</p>
+        <button style="width: 100%; padding: 8px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">View Offers</button>
+      </div>
+
+      <div style="background: white; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #0d6efd; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0 0 1rem 0;">Dragon United</h4>
+        <p style="margin: 0 0 0.5rem 0; font-size: 12px; color: #666;"><strong>Active Offers:</strong> 0</p>
+        <p style="margin: 0 0 1rem 0; font-size: 12px; color: #666;"><strong>Last Updated:</strong> 3 weeks ago</p>
+        <button style="width: 100%; padding: 8px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">View Offers</button>
+      </div>
+    </div>
+  </div>
+</div>

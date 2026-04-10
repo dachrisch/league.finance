@@ -1,0 +1,110 @@
+<h2>Dashboard: Offer Cards (Redesigned)</h2>
+<p class="subtitle">Offers as cards instead of tables for better visual hierarchy</p>
+
+<div class="mockup">
+  <div class="mockup-header">Offers List - Card View</div>
+  <div class="mockup-body" style="padding: 1.5rem; background: #f9f9f9;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h3 style="margin: 0;">Quotations</h3>
+      <button class="mock-button" style="background: #0d6efd; padding: 10px 16px; border-radius: 6px; border: none; color: white; font-weight: bold; cursor: pointer;">+ New Offer</button>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem;">
+      <!-- Card 1: Draft -->
+      <div style="background: white; border-radius: 8px; border-left: 4px solid #ffc107; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer; transition: transform 0.2s;">
+        <div style="padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <div>
+              <h4 style="margin: 0 0 0.25rem 0; font-size: 16px; font-weight: bold;">Tigers FC</h4>
+              <p style="margin: 0; font-size: 12px; color: #666;">2024/25 Season</p>
+            </div>
+            <span style="background: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">DRAFT</span>
+          </div>
+
+          <div style="margin-bottom: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+            <p style="margin: 0 0 0.5rem 0; font-size: 11px; color: #999; text-transform: uppercase;">Contact</p>
+            <p style="margin: 0; font-size: 13px; font-weight: 500;">John Smith</p>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem 0; font-size: 11px; color: #999; text-transform: uppercase;">Leagues</p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <span style="background: #e7f3ff; color: #0066cc; padding: 3px 8px; border-radius: 3px; font-size: 12px;">League A</span>
+              <span style="background: #e7f3ff; color: #0066cc; padding: 3px 8px; border-radius: 3px; font-size: 12px;">League B</span>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+            <button style="flex: 1; padding: 8px; background: #0d6efd; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold;">View</button>
+            <button style="flex: 1; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold;">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Sent -->
+      <div style="background: white; border-radius: 8px; border-left: 4px solid #17a2b8; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer; transition: transform 0.2s;">
+        <div style="padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <div>
+              <h4 style="margin: 0 0 0.25rem 0; font-size: 16px; font-weight: bold;">United Stars</h4>
+              <p style="margin: 0; font-size: 12px; color: #666;">2024/25 Season</p>
+            </div>
+            <span style="background: #d1ecf1; color: #0c5460; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">SENT</span>
+          </div>
+
+          <div style="margin-bottom: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+            <p style="margin: 0 0 0.5rem 0; font-size: 11px; color: #999; text-transform: uppercase;">Contact</p>
+            <p style="margin: 0; font-size: 13px; font-weight: 500;">Jane Doe</p>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem 0; font-size: 11px; color: #999; text-transform: uppercase;">Leagues</p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <span style="background: #e7f3ff; color: #0066cc; padding: 3px 8px; border-radius: 3px; font-size: 12px;">League A</span>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+            <button style="flex: 1; padding: 8px; background: #0d6efd; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold;">View</button>
+            <button style="flex: 1; padding: 8px; background: #6c757d; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold;">Mark Accepted</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Accepted -->
+      <div style="background: white; border-radius: 8px; border-left: 4px solid #28a745; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer; transition: transform 0.2s;">
+        <div style="padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <div>
+              <h4 style="margin: 0 0 0.25rem 0; font-size: 16px; font-weight: bold;">Dragon United</h4>
+              <p style="margin: 0; font-size: 12px; color: #666;">2023/24 Season</p>
+            </div>
+            <span style="background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">ACCEPTED</span>
+          </div>
+
+          <div style="margin-bottom: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+            <p style="margin: 0 0 0.5rem 0; font-size: 11px; color: #999; text-transform: uppercase;">Contact</p>
+            <p style="margin: 0; font-size: 13px; font-weight: 500;">Mike Johnson</p>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem 0; font-size: 11px; color: #999; text-transform: uppercase;">Leagues</p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <span style="background: #e7f3ff; color: #0066cc; padding: 3px 8px; border-radius: 3px; font-size: 12px;">League B</span>
+              <span style="background: #e7f3ff; color: #0066cc; padding: 3px 8px; border-radius: 3px; font-size: 12px;">League C</span>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+            <button style="flex: 1; padding: 8px; background: #0d6efd; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold;">View</button>
+            <button style="flex: 1; padding: 8px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold;">PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 2rem; padding: 1rem; background: #e7f3ff; border-left: 4px solid #0d6efd; border-radius: 4px;">
+  <p style="margin: 0; font-size: 13px;"><strong>Card Design Benefits:</strong> Visual status indicators (left border color), cleaner hierarchy, easy to scan by association name, flexible layout on mobile.</p>
+</div>

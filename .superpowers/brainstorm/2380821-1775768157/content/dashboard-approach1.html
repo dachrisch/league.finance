@@ -1,0 +1,129 @@
+<h2>Dashboard: Offer-First Navigation (Approach 1)</h2>
+<p class="subtitle">How users will navigate and interact with offers, configs, and associations</p>
+
+<div class="mockup">
+  <div class="mockup-header">Level 1: Offers List (New Entry Point)</div>
+  <div class="mockup-body" style="padding: 1.5rem; background: #f9f9f9;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h3 style="margin: 0;">Quotations</h3>
+      <button class="mock-button" style="background: #0d6efd;">+ New Offer</button>
+    </div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+      <thead>
+        <tr style="border-bottom: 2px solid #ddd;">
+          <th style="text-align: left; padding: 8px;">Status</th>
+          <th style="text-align: left; padding: 8px;">Association</th>
+          <th style="text-align: left; padding: 8px;">Season</th>
+          <th style="text-align: left; padding: 8px;">Leagues</th>
+          <th style="text-align: left; padding: 8px;">Contact</th>
+          <th style="text-align: left; padding: 8px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 8px;"><span style="background: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Draft</span></td>
+          <td style="padding: 8px;">Tigers FC</td>
+          <td style="padding: 8px;">2024/25</td>
+          <td style="padding: 8px;">League A, League B</td>
+          <td style="padding: 8px;">John Smith</td>
+          <td style="padding: 8px;"><a href="#" style="color: #0d6efd; text-decoration: none;">View</a></td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 8px;"><span style="background: #d1ecf1; color: #0c5460; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Sent</span></td>
+          <td style="padding: 8px;">United Stars</td>
+          <td style="padding: 8px;">2024/25</td>
+          <td style="padding: 8px;">League A</td>
+          <td style="padding: 8px;">Jane Doe</td>
+          <td style="padding: 8px;"><a href="#" style="color: #0d6efd; text-decoration: none;">View</a></td>
+        </tr>
+        <tr>
+          <td style="padding: 8px;"><span style="background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Accepted</span></td>
+          <td style="padding: 8px;">Dragon United</td>
+          <td style="padding: 8px;">2023/24</td>
+          <td style="padding: 8px;">League B, League C</td>
+          <td style="padding: 8px;">Mike Johnson</td>
+          <td style="padding: 8px;"><a href="#" style="color: #0d6efd; text-decoration: none;">View</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div style="margin-top: 2rem; padding: 1rem; background: #e7f3ff; border-left: 4px solid #0d6efd; border-radius: 4px;">
+  <p style="margin: 0; font-size: 13px;"><strong>Key Change:</strong> Offers are now the primary entry point. Users create/manage offers first, then drill down into configs and associations.</p>
+</div>
+
+<div class="mockup" style="margin-top: 2rem;">
+  <div class="mockup-header">Level 2: Offer Detail (Drill-Down from List)</div>
+  <div class="mockup-body" style="padding: 1.5rem;">
+    <div style="margin-bottom: 2rem;">
+      <h3 style="margin: 0 0 1rem 0;">Offer: Tigers FC - 2024/25</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="background: #f9f9f9; padding: 1rem; border-radius: 6px;">
+          <p style="margin: 0 0 0.5rem 0; font-size: 12px; color: #666; text-transform: uppercase;">Status</p>
+          <p style="margin: 0; font-size: 14px; font-weight: bold;">Draft</p>
+        </div>
+        <div style="background: #f9f9f9; padding: 1rem; border-radius: 6px;">
+          <p style="margin: 0 0 0.5rem 0; font-size: 12px; color: #666; text-transform: uppercase;">Association</p>
+          <p style="margin: 0; font-size: 14px; font-weight: bold;">Tigers FC</p>
+        </div>
+      </div>
+
+      <div style="background: #f9f9f9; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
+        <p style="margin: 0 0 0.5rem 0; font-size: 12px; color: #666; text-transform: uppercase;">Contact Info</p>
+        <p style="margin: 0; font-size: 14px;"><strong>John Smith</strong></p>
+        <p style="margin: 4px 0 0 0; font-size: 13px; color: #666;">123 Main St, City, Country</p>
+      </div>
+
+      <div style="background: #f9f9f9; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
+        <h4 style="margin: 0 0 1rem 0;">Financial Config (Auto-Created)</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 13px;">
+          <div><strong>Season:</strong> 2024/25</div>
+          <div><strong>Cost Model:</strong> Flat Fee (Season)</div>
+          <div><strong>Base Rate:</strong> €50/team/season</div>
+          <div><strong>Expected Teams:</strong> 15</div>
+        </div>
+      </div>
+
+      <div style="background: #f9f9f9; padding: 1rem; border-radius: 6px;">
+        <h4 style="margin: 0 0 0.5rem 0;">Assigned Leagues</h4>
+        <ul style="margin: 0.5rem 0 0 0; padding-left: 1.5rem; font-size: 13px;">
+          <li>League A</li>
+          <li>League B</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem;">
+      <button class="mock-button" style="background: #28a745;">PDF Preview</button>
+      <button class="mock-button" style="background: #0d6efd;">Edit</button>
+      <button class="mock-button" style="background: #6c757d;">Send</button>
+      <button class="mock-button" style="background: #dc3545;">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top: 2rem;">
+  <div class="mockup-header">Also Available: Associations View (Linked to Offers)</div>
+  <div class="mockup-body" style="padding: 1.5rem; background: #f9f9f9;">
+    <p style="margin: 0 0 1rem 0; font-size: 13px; color: #666;"><strong>Note:</strong> Associations list still exists, but now shows which offers they're part of. Click an association → see all its offers.</p>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+      <thead>
+        <tr style="border-bottom: 2px solid #ddd;">
+          <th style="text-align: left; padding: 8px;">Association</th>
+          <th style="text-align: left; padding: 8px;">Season</th>
+          <th style="text-align: left; padding: 8px;">Offers</th>
+          <th style="text-align: left; padding: 8px;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 8px;">Tigers FC</td>
+          <td style="padding: 8px;">2024/25</td>
+          <td style="padding: 8px;">2 active offers</td>
+          <td style="padding: 8px;"><a href="#" style="color: #0d6efd; text-decoration: none;">View</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
