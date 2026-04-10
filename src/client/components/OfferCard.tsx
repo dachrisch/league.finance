@@ -1,135 +1,153 @@
-import { Offer } from '../lib/schemas';
+// src/client/components/OfferCard.tsx
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getStatusColor, getStatusLabel, getTimeAgoText } from '../lib/offerHelpers';
 
-interface OfferCardProps {
-  offer: Offer;
+export interface OfferCardProps {
+  id: string;
   associationName: string;
-  leagueNames: Record<number, string>;
+  seasonName: string;
   contactName: string;
-  onView: (id: string) => void;
-  onDelete: (id: string) => void;
+  leagueCount: number;
+  leagueNames: string[];
+  status: 'draft' | 'sent' | 'accepted';
+  createdAt: Date | string;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+  onDelete?: () => void;
+  onSend?: () => void;
+  children?: React.ReactNode; // For expanded content
 }
 
-const statusColors: Record<string, string> = {
-  draft: '#ffc107',
-  sent: '#17a2b8',
-  accepted: '#28a745',
-};
-
-const statusBgColors: Record<string, string> = {
-  draft: '#fff3cd',
-  sent: '#d1ecf1',
-  accepted: '#d4edda',
-};
-
-export function OfferCard({ offer, associationName, leagueNames, contactName, onView, onDelete }: OfferCardProps) {
-  const borderColor = statusColors[offer.status] || '#6c757d';
-  const season = `${offer.seasonId}/${offer.seasonId + 1}`;
+export function OfferCard({
+  id,
+  associationName,
+  seasonName,
+  contactName,
+  leagueCount,
+  leagueNames,
+  status,
+  createdAt,
+  isExpanded,
+  onToggleExpand,
+  onDelete,
+  onSend,
+  children,
+}: OfferCardProps) {
+  const navigate = useNavigate();
+  const statusColor = getStatusColor(status);
 
   return (
     <div
       style={{
-        borderLeft: `4px solid ${borderColor}`,
-        borderTop: '1px solid #ddd',
-        borderRight: '1px solid #ddd',
-        borderBottom: '1px solid #ddd',
-        background: '#fff',
-        borderRadius: '6px',
-        padding: '15px',
-        marginBottom: '12px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        border: '1px solid #dee2e6',
+        borderRadius: '8px',
+        borderLeft: `4px solid ${statusColor}`,
+        overflow: 'hidden',
+        backgroundColor: '#fff',
+        transition: 'box-shadow 0.2s',
+        cursor: 'default',
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
       }}
     >
-      {/* Header: Association and Season */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-        <div>
-          <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 'bold', color: '#333' }}>
+      {/* Header with Association Name and Status */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '1rem',
+          borderBottom: '1px solid #dee2e6',
+          cursor: 'pointer',
+        }}
+        onClick={onToggleExpand}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ fontSize: '1.2rem', color: '#666' }}>
+            {isExpanded ? '▼' : '▶'}
+          </span>
+          <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '600' }}>
             {associationName}
           </h3>
-          <p style={{ margin: '0', fontSize: '13px', color: '#666' }}>Season {season}</p>
         </div>
-        {/* Status Badge */}
         <span
           style={{
-            display: 'inline-block',
-            padding: '4px 10px',
+            backgroundColor: statusColor,
+            color: '#fff',
+            padding: '0.25rem 0.75rem',
             borderRadius: '4px',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            backgroundColor: statusBgColors[offer.status] || '#e2e3e5',
-            color: offer.status === 'draft' ? '#856404' : offer.status === 'accepted' ? '#155724' : '#0c5460',
+            fontSize: '0.75rem',
+            fontWeight: '600',
           }}
         >
-          {offer.status}
+          {getStatusLabel(status)}
         </span>
       </div>
 
-      {/* Contact Name */}
-      <div style={{ marginBottom: '12px' }}>
-        <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: '#999', fontWeight: 'bold', textTransform: 'uppercase' }}>
-          Contact
-        </p>
-        <p style={{ margin: '0', fontSize: '14px', color: '#333' }}>{contactName}</p>
-      </div>
+      {/* Collapsed Content */}
+      {!isExpanded && (
+        <div style={{ padding: '1rem' }}>
+          <div style={{ marginBottom: '0.5rem', color: '#495057' }}>
+            <strong>Season:</strong> {seasonName}
+          </div>
+          <div style={{ marginBottom: '0.5rem', color: '#495057' }}>
+            <strong>Contact:</strong> {contactName}
+          </div>
+          <div style={{ marginBottom: '1rem', color: '#495057' }}>
+            <strong>Leagues:</strong> {leagueCount} selected
+            {leagueCount > 0 && leagueNames.length > 0 && (
+              <> ({leagueNames.slice(0, 3).join(', ')}{leagueCount > 3 ? '...' : ''})</>
+            )}
+          </div>
+          <div style={{ color: '#999', fontSize: '0.875rem' }}>
+            Created {getTimeAgoText(createdAt)}
+          </div>
 
-      {/* Leagues */}
-      <div style={{ marginBottom: '12px' }}>
-        <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#999', fontWeight: 'bold', textTransform: 'uppercase' }}>
-          Leagues
-        </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-          {offer.selectedLeagueIds.map((leagueId) => (
-            <span
-              key={leagueId}
-              style={{
-                display: 'inline-block',
-                padding: '4px 10px',
-                backgroundColor: '#e9ecef',
-                borderRadius: '4px',
-                fontSize: '12px',
-                color: '#495057',
+          {/* Actions */}
+          <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/offers/${id}`);
               }}
             >
-              {leagueNames[leagueId] || `League ${leagueId}`}
-            </span>
-          ))}
+              View
+            </button>
+            {status === 'draft' && (
+              <>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSend?.();
+                  }}
+                >
+                  Send
+                </button>
+                <button
+                  className="btn btn-outline btn-sm"
+                  style={{ color: '#dc3545' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete?.();
+                  }}
+                >
+                  Delete
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Action Buttons */}
-      <div style={{ display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid #eee' }}>
-        <button
-          onClick={() => onView(offer._id)}
-          style={{
-            padding: '6px 12px',
-            backgroundColor: '#007bff',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: 'bold',
-          }}
-        >
-          View
-        </button>
-        {offer.status === 'draft' && (
-          <button
-            onClick={() => onDelete(offer._id)}
-            style={{
-              padding: '6px 12px',
-              backgroundColor: '#dc3545',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: 'bold',
-            }}
-          >
-            Delete
-          </button>
-        )}
-      </div>
+      {/* Expanded Content */}
+      {isExpanded && children}
     </div>
   );
 }
