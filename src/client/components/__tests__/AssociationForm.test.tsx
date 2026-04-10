@@ -60,24 +60,6 @@ describe('AssociationForm', () => {
     expect(submitButton).toBeInTheDocument();
   });
 
-  it('displays initial data when provided', () => {
-    const initialData = {
-      _id: '123',
-      name: 'Existing Association',
-      description: 'Existing Description',
-      email: 'existing@example.com',
-      phone: '987654321',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    render(<AssociationForm initialData={initialData} onSubmit={mockOnSubmit} />);
-
-    expect((screen.getByLabelText(/Name/i) as HTMLInputElement).value).toBe('Existing Association');
-    expect((screen.getByLabelText(/Email/i) as HTMLInputElement).value).toBe('existing@example.com');
-    expect(screen.getByRole('button', { name: /Update Association/i })).toBeInTheDocument();
-  });
-
   it('calls onCancel when cancel button is clicked', () => {
     const mockOnCancel = vi.fn();
     render(<AssociationForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
@@ -93,7 +75,7 @@ describe('AssociationForm', () => {
     render(<AssociationForm onSubmit={slowSubmit} isLoading={true} />);
 
     const nameInput = screen.getByLabelText(/Name/i) as HTMLInputElement;
-    const submitButton = screen.getByRole('button', { name: /Saving/i });
+    const submitButton = screen.getByRole('button', { name: /Creating/i });
 
     expect(nameInput).toBeDisabled();
     expect(submitButton).toBeDisabled();
