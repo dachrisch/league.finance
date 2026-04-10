@@ -34,7 +34,7 @@ jobs:
 
       - name: 🐳🧪 Test Docker image
         run: |
-          docker run --detach --name test_container \
+          docker run --rm --detach --name test_container \
             -e GOOGLE_CLIENT_ID=ci-test \
             -e GOOGLE_CLIENT_SECRET=ci-test \
             -e GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback \
@@ -47,16 +47,14 @@ jobs:
             if [ "$status" = "gone" ]; then
               echo "Container exited unexpectedly. Logs:"
               docker logs test_container 2>/dev/null || true
-              docker rm test_container 2>/dev/null || true
               exit 1
             fi
             sleep 6
           done
+          # Fail the step if not healthy after 10 retries
           if [ "$status" != "healthy" ]; then
             echo "Container did not become healthy after 10 attempts."
             docker logs test_container
-            docker rm test_container
             exit 1
           fi
           docker stop test_container
-          docker rm test_container

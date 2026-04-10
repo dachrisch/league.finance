@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import { execSync } from 'child_process';
 
 let gitHash = 'unknown';
+let version = 'dev';
+
 try {
   gitHash = execSync('git rev-parse --short HEAD').toString().trim();
 } catch (e) {
@@ -10,10 +12,17 @@ try {
   gitHash = process.env.VITE_GIT_COMMIT_HASH || 'unknown';
 }
 
+try {
+  version = execSync('git describe --tags --abbrev=0 2>/dev/null || echo "dev"').toString().trim();
+} catch (e) {
+  version = process.env.VITE_BUILD_VERSION || 'dev';
+}
+
 export default defineConfig({
   plugins: [react()],
   define: {
     __GIT_COMMIT__: JSON.stringify(gitHash),
+    __VERSION__: JSON.stringify(version),
   },
   resolve: {
     tsconfigPaths: true,
