@@ -1,535 +1,457 @@
+// src/client/components/OfferCreateWizard.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
+import { AssociationForm } from './AssociationForm';
+import { ContactForm } from './ContactForm';
+import { ContactGrid } from './ContactGrid';
 
 type WizardStep = 1 | 2 | 3;
 
-interface StepProps {
-  onNext: () => void;
-  onBack?: () => void;
-  isLoading?: boolean;
+interface WizardState {
+  associationId: string;
+  seasonId: number;
+  contactId: string;
+  costModel: 'SEASON' | 'GAMEDAY';
+  baseRateOverride: number | null;
+  expectedTeamsCount: number;
+  selectedLeagueIds: number[];
 }
 
 export function OfferCreateWizard() {
   const navigate = useNavigate();
   const [step, setStep] = useState<WizardStep>(1);
-  const [selectedAssociationId, setSelectedAssociationId] = useState<string>('');
-  const [selectedSeasonId, setSelectedSeasonId] = useState<number | ''>('');
-  const [selectedLeagueIds, setSelectedLeagueIds] = useState<number[]>([]);
-  const [contactId, setContactId] = useState<string>('');
-  const [costModel, setCostModel] = useState<string>('');
-  const [baseRateOverride, setBaseRateOverride] = useState<string>('');
-  const [expectedTeamsCount, setExpectedTeamsCount] = useState<string>('');
-  const [createdOfferId, setCreatedOfferId] = useState<string>('');
-
-  // Fetch data
-  const { data: associations = [] } = trpc.finance.associations.list.useQuery();
-  const { data: seasons = [] } = trpc.teams.seasons.useQuery();
-  const { data: leagues = [] } = trpc.teams.leagues.useQuery();
-
-  // Get leagues for selected association and season
-  const associationLeagues = selectedSeasonId && selectedAssociationId
-    ? leagues.filter((l: any) => true) // In a real app, filter by association and season
-    : [];
-
-  // Mutations
-  const createOffer = trpc.finance.offers.create.useMutation({
-    onSuccess: (offer) => {
-      setCreatedOfferId(offer._id);
-      navigate(`/offers/${offer._id}`);
-    },
+  const [state, setState] = useState<WizardState>({
+    associationId: '',
+    seasonId: 0,
+    contactId: '',
+    costModel: 'SEASON',
+    baseRateOverride: null,
+    expectedTeamsCount: 0,
+    selectedLeagueIds: [],
   });
 
-  const handleStep1Next = () => {
-    if (selectedAssociationId && selectedSeasonId) {
-      setStep(2);
-    }
-  };
+  const [showNewAssociation, setShowNewAssociation] = useState(false);
+  const [showNewContact, setShowNewContact] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleStep2Next = () => {
-    if (selectedLeagueIds.length > 0) {
-      setStep(3);
-    }
-  };
+  // TRPC queries & mutations
+  const { data: associations, isLoading: loadingAssociations } = trpc.finance.associations.list.useQuery();
+  const { data: contacts, refetch: refetchContacts } = trpc.finance.contacts.list.useQuery();
+  const { data: seasons, isLoading: loadingSeasons } = trpc.teams.seasons.useQuery();
+  const { data: leagues, isLoading: loadingLeagues } = trpc.teams.leagues.useQuery();
 
-  const handleStep3Next = async () => {
+  const createAssociation = trpc.finance.associations.create.useMutation();
+  const createContact = trpc.finance.contacts.create.useMutation();
+  const createOffer = trpc.finance.offers.create.useMutation();
+
+  // Step 1: Association & Season
+  const handleAssociationCreated = async (data: any) => {
+    setIsLoading(true);
     try {
-      await createOffer.mutateAsync({
-        associationId: selectedAssociationId,
-        seasonId: selectedSeasonId as number,
-        leagueIds: selectedLeagueIds,
-        contactId: contactId || undefined,
-        costModel: costModel || undefined,
-        baseRateOverride: baseRateOverride ? Number(baseRateOverride) : undefined,
-        expectedTeamsCount: expectedTeamsCount ? Number(expectedTeamsCount) : undefined,
-      });
-    } catch (error) {
-      console.error('Error creating offer:', error);
+      const result = await createAssociation.mutateAsync(data);
+      setState((prev) => ({ ...prev, associationId: result._id }));
+      setShowNewAssociation(false);
+    } catch (err) {
+      console.error('Failed to create association:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const stepTitle = [
-    'Select Association & Season',
-    'Select Leagues',
-    'Review & Create',
-  ];
+  const handleStep1Continue = () => {
+    if (!state.associationId || !state.seasonId) {
+      alert('Please select an association and season');
+      return;
+    }
+    setStep(2);
+  };
+
+  // Step 2: Contact
+  const handleContactCreated = async (data: any) => {
+    setIsLoading(true);
+    try {
+      const result = await createContact.mutateAsync(data);
+      setState((prev) => ({ ...prev, contactId: result._id }));
+      await refetchContacts();
+      setShowNewContact(false);
+    } catch (err) {
+      console.error('Failed to create contact:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStep2Continue = () => {
+    if (!state.contactId) {
+      alert('Please select a contact');
+      return;
+    }
+    setStep(3);
+  };
+
+  // Step 3: Pricing & Leagues
+  const handleCreateOffer = async () => {
+    if (state.selectedLeagueIds.length === 0) {
+      alert('Please select at least one league');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await createOffer.mutateAsync({
+        associationId: state.associationId,
+        seasonId: state.seasonId,
+        contactId: state.contactId,
+        leagueIds: state.selectedLeagueIds,
+        costModel: state.costModel,
+        baseRateOverride: state.baseRateOverride,
+        expectedTeamsCount: state.expectedTeamsCount,
+      });
+      navigate(`/offers/${result._id}`);
+    } catch (err: any) {
+      alert(`Failed to create offer: ${err?.message || 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const selectedAssociation = associations?.find((a: any) => a._id === state.associationId);
+  const selectedSeason = seasons?.find((s: any) => s.id === state.seasonId);
+  const selectedContact = contacts?.find((c: any) => c._id === state.contactId);
+  const selectedLeagueNames = (leagues || [])
+    .filter((l: any) => state.selectedLeagueIds.includes(l.id))
+    .map((l: any) => l.name);
 
   return (
-    <div style={{
-      maxWidth: '600px',
-      margin: '0 auto',
-      padding: '2rem',
-    }}>
+    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+      <h1 style={{ marginBottom: '2rem' }}>Create New Offer</h1>
+
       {/* Progress Indicator */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginBottom: '2rem',
-        position: 'relative',
-      }}>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
         {[1, 2, 3].map((s) => (
           <div
             key={s}
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
               flex: 1,
+              padding: '0.75rem',
+              textAlign: 'center',
+              backgroundColor: s <= step ? '#0d6efd' : '#e9ecef',
+              color: s <= step ? '#fff' : '#6c757d',
+              borderRadius: '4px',
+              fontWeight: '500',
             }}
           >
-            <div
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                background: step >= s ? '#0d6efd' : '#e9ecef',
-                color: step >= s ? '#fff' : '#666',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 600,
-                fontSize: 14,
-                marginBottom: '0.5rem',
-              }}
-            >
-              {s}
-            </div>
-            <p style={{
-              margin: 0,
-              fontSize: 12,
-              color: step >= s ? '#0d6efd' : '#666',
-              textAlign: 'center',
-            }}>
-              {['Association', 'Leagues', 'Review'][s - 1]}
-            </p>
+            Step {s}
           </div>
         ))}
       </div>
 
-      <div style={{
-        background: '#fff',
-        border: '1px solid #dee2e6',
-        borderRadius: 8,
-        padding: '2rem',
-      }}>
-        {/* Step 1: Select Association & Season */}
-        {step === 1 && (
-          <Step1
-            associations={associations}
-            seasons={seasons}
-            selectedAssociationId={selectedAssociationId}
-            selectedSeasonId={selectedSeasonId}
-            onAssociationChange={setSelectedAssociationId}
-            onSeasonChange={(val) => setSelectedSeasonId(val ? Number(val) : '')}
-            onNext={handleStep1Next}
-            isLoading={createOffer.isPending}
-          />
-        )}
+      {/* STEP 1: Association & Season */}
+      {step === 1 && (
+        <div>
+          <h2 style={{ marginBottom: '1.5rem' }}>Step 1: Select Association & Season</h2>
 
-        {/* Step 2: Select Leagues */}
-        {step === 2 && (
-          <Step2
-            leagues={associationLeagues}
-            selectedLeagueIds={selectedLeagueIds}
-            onLeagueChange={(ids) => setSelectedLeagueIds(ids)}
-            onNext={handleStep2Next}
-            onBack={() => setStep(1)}
-            isLoading={createOffer.isPending}
-          />
-        )}
+          {!showNewAssociation ? (
+            <>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                  Association *
+                </label>
+                <select
+                  value={state.associationId}
+                  onChange={(e) => setState((prev) => ({ ...prev, associationId: e.target.value }))}
+                  disabled={isLoading || loadingAssociations}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '1px solid #dee2e6',
+                    borderRadius: '4px',
+                    fontSize: '1rem',
+                  }}
+                >
+                  <option value="">-- Select Association --</option>
+                  {(associations || []).map((a: any) => (
+                    <option key={a._id} value={a._id}>
+                      {a.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        {/* Step 3: Review & Create */}
-        {step === 3 && (
-          <Step3
-            selectedAssociation={associations.find((a: any) => a._id === selectedAssociationId)}
-            selectedSeason={selectedSeasonId}
-            selectedLeagues={associationLeagues.filter((l: any) => selectedLeagueIds.includes(l.id))}
-            contactId={contactId}
-            costModel={costModel}
-            baseRateOverride={baseRateOverride}
-            expectedTeamsCount={expectedTeamsCount}
-            onContactIdChange={setContactId}
-            onCostModelChange={setCostModel}
-            onBaseRateOverrideChange={setBaseRateOverride}
-            onExpectedTeamsCountChange={setExpectedTeamsCount}
-            onNext={handleStep3Next}
-            onBack={() => setStep(2)}
-            isLoading={createOffer.isPending}
-          />
-        )}
-      </div>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowNewAssociation(true)}
+                  disabled={isLoading}
+                >
+                  + Create New Association
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={{ marginBottom: '1.5rem', padding: '1.5rem', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+              <h3 style={{ marginBottom: '1rem' }}>Create New Association</h3>
+              <AssociationForm
+                onSubmit={handleAssociationCreated}
+                onCancel={() => setShowNewAssociation(false)}
+                isLoading={isLoading}
+              />
+            </div>
+          )}
+
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Season *
+            </label>
+            <select
+              value={state.seasonId}
+              onChange={(e) => setState((prev) => ({ ...prev, seasonId: parseInt(e.target.value) }))}
+              disabled={isLoading || loadingSeasons}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #dee2e6',
+                borderRadius: '4px',
+                fontSize: '1rem',
+              }}
+            >
+              <option value={0}>-- Select Season --</option>
+              {(seasons || []).map((s: any) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() => navigate('/offers')}
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleStep1Continue}
+              disabled={isLoading}
+            >
+              Next: Select Contact
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 2: Contact */}
+      {step === 2 && (
+        <div>
+          <h2 style={{ marginBottom: '1.5rem' }}>Step 2: Select or Create Contact</h2>
+
+          {!showNewContact ? (
+            <>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h3 style={{ marginBottom: '1rem' }}>Select Existing Contact</h3>
+                <ContactGrid
+                  contacts={contacts || []}
+                  selectedId={state.contactId}
+                  onSelect={(id) => setState((prev) => ({ ...prev, contactId: id }))}
+                  isLoading={isLoading}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowNewContact(true)}
+                  disabled={isLoading}
+                >
+                  + Create New Contact
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={{ padding: '1.5rem', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '1.5rem' }}>
+              <h3 style={{ marginBottom: '1rem' }}>Create New Contact</h3>
+              <ContactForm
+                onSubmit={handleContactCreated}
+                onCancel={() => setShowNewContact(false)}
+                isLoading={isLoading}
+              />
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() => setStep(1)}
+              disabled={isLoading}
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleStep2Continue}
+              disabled={isLoading}
+            >
+              Next: Set Pricing & Leagues
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 3: Pricing & Leagues */}
+      {step === 3 && (
+        <div>
+          <h2 style={{ marginBottom: '1.5rem' }}>Step 3: Set Pricing & Select Leagues</h2>
+
+          <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f0f8ff', borderRadius: '8px' }}>
+            <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Review Your Selections</h4>
+            <div style={{ fontSize: '0.875rem', color: '#495057' }}>
+              <div><strong>Association:</strong> {selectedAssociation?.name}</div>
+              <div><strong>Season:</strong> {selectedSeason?.name}</div>
+              <div><strong>Contact:</strong> {selectedContact?.name}</div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Cost Model
+            </label>
+            <select
+              value={state.costModel}
+              onChange={(e) => setState((prev) => ({ ...prev, costModel: e.target.value as 'SEASON' | 'GAMEDAY' }))}
+              disabled={isLoading}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #dee2e6',
+                borderRadius: '4px',
+                fontSize: '1rem',
+              }}
+            >
+              <option value="SEASON">Season Flat Fee</option>
+              <option value="GAMEDAY">Per Game Day</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Base Rate Override (€)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={state.baseRateOverride || ''}
+              onChange={(e) =>
+                setState((prev) => ({
+                  ...prev,
+                  baseRateOverride: e.target.value ? parseFloat(e.target.value) : null,
+                }))
+              }
+              placeholder="Leave empty for default (€50)"
+              disabled={isLoading}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #dee2e6',
+                borderRadius: '4px',
+                fontSize: '1rem',
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Expected Teams Count
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={state.expectedTeamsCount}
+              onChange={(e) =>
+                setState((prev) => ({
+                  ...prev,
+                  expectedTeamsCount: parseInt(e.target.value) || 0,
+                }))
+              }
+              placeholder="0"
+              disabled={isLoading}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #dee2e6',
+                borderRadius: '4px',
+                fontSize: '1rem',
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '500' }}>
+              Select Leagues * ({state.selectedLeagueIds.length} selected)
+            </label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {(leagues || []).map((league: any) => (
+                <div key={league.id} style={{ display: 'flex', alignItems: 'center' }}>
+                  <input
+                    type="checkbox"
+                    id={`league-${league.id}`}
+                    checked={state.selectedLeagueIds.includes(league.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setState((prev) => ({
+                          ...prev,
+                          selectedLeagueIds: [...prev.selectedLeagueIds, league.id],
+                        }));
+                      } else {
+                        setState((prev) => ({
+                          ...prev,
+                          selectedLeagueIds: prev.selectedLeagueIds.filter((id) => id !== league.id),
+                        }));
+                      }
+                    }}
+                    disabled={isLoading}
+                    style={{ marginRight: '0.5rem' }}
+                  />
+                  <label htmlFor={`league-${league.id}`} style={{ cursor: 'pointer', flex: 1 }}>
+                    {league.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() => setStep(2)}
+              disabled={isLoading}
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleCreateOffer}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Creating...' : 'Create Offer (Draft)'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-interface Step1Props extends StepProps {
-  associations: any[];
-  seasons: any[];
-  selectedAssociationId: string;
-  selectedSeasonId: number | '';
-  onAssociationChange: (id: string) => void;
-  onSeasonChange: (id: string) => void;
-}
-
-function Step1({
-  associations,
-  seasons,
-  selectedAssociationId,
-  selectedSeasonId,
-  onAssociationChange,
-  onSeasonChange,
-  onNext,
-  isLoading,
-}: Step1Props) {
-  return (
-    <>
-      <h2 style={{ margin: '0 0 1.5rem 0' }}>Select Association & Season</h2>
-
-      <div style={{ marginBottom: '1.5rem' }}>
-        <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: '0.5rem' }}>
-          Association *
-        </label>
-        <select
-          value={selectedAssociationId}
-          onChange={(e) => onAssociationChange(e.target.value)}
-          disabled={isLoading}
-          style={{
-            width: '100%',
-            padding: '0.5rem',
-            border: '1px solid #ddd',
-            borderRadius: 4,
-            boxSizing: 'border-box',
-          }}
-        >
-          <option value="">Choose an association</option>
-          {associations.map((a: any) => (
-            <option key={a._id} value={a._id}>{a.name}</option>
-          ))}
-        </select>
-      </div>
-
-      <div style={{ marginBottom: '1.5rem' }}>
-        <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: '0.5rem' }}>
-          Season *
-        </label>
-        <select
-          value={selectedSeasonId}
-          onChange={(e) => onSeasonChange(e.target.value)}
-          disabled={isLoading}
-          style={{
-            width: '100%',
-            padding: '0.5rem',
-            border: '1px solid #ddd',
-            borderRadius: 4,
-            boxSizing: 'border-box',
-          }}
-        >
-          <option value="">Choose a season</option>
-          {seasons.map((s: any) => (
-            <option key={s.id} value={s.id}>{s.name}</option>
-          ))}
-        </select>
-      </div>
-
-      <button
-        onClick={onNext}
-        disabled={!selectedAssociationId || !selectedSeasonId || isLoading}
-        style={{
-          width: '100%',
-          padding: '0.75rem',
-          background: selectedAssociationId && selectedSeasonId ? '#0d6efd' : '#ddd',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 4,
-          cursor: selectedAssociationId && selectedSeasonId ? 'pointer' : 'not-allowed',
-          fontSize: 14,
-          fontWeight: 500,
-        }}
-      >
-        Next
-      </button>
-    </>
-  );
-}
-
-interface Step2Props extends StepProps {
-  leagues: any[];
-  selectedLeagueIds: number[];
-  onLeagueChange: (ids: number[]) => void;
-  onBack: () => void;
-}
-
-function Step2({
-  leagues,
-  selectedLeagueIds,
-  onLeagueChange,
-  onNext,
-  onBack,
-  isLoading,
-}: Step2Props) {
-  return (
-    <>
-      <h2 style={{ margin: '0 0 1.5rem 0' }}>Select Leagues</h2>
-
-      <div style={{ marginBottom: '1.5rem' }}>
-        <p style={{ margin: '0 0 1rem 0', color: '#666' }}>
-          Selected: {selectedLeagueIds.length} of {leagues.length} leagues
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {leagues.map((league: any) => (
-            <label key={league.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input
-                type="checkbox"
-                checked={selectedLeagueIds.includes(league.id)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    onLeagueChange([...selectedLeagueIds, league.id]);
-                  } else {
-                    onLeagueChange(selectedLeagueIds.filter((id) => id !== league.id));
-                  }
-                }}
-                disabled={isLoading}
-              />
-              <span>{league.name}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: '1rem' }}>
-        <button
-          onClick={onBack}
-          disabled={isLoading}
-          style={{
-            flex: 1,
-            padding: '0.75rem',
-            background: '#6c757d',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            fontSize: 14,
-            fontWeight: 500,
-          }}
-        >
-          Back
-        </button>
-        <button
-          onClick={onNext}
-          disabled={selectedLeagueIds.length === 0 || isLoading}
-          style={{
-            flex: 1,
-            padding: '0.75rem',
-            background: selectedLeagueIds.length > 0 ? '#0d6efd' : '#ddd',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: selectedLeagueIds.length > 0 && !isLoading ? 'pointer' : 'not-allowed',
-            fontSize: 14,
-            fontWeight: 500,
-          }}
-        >
-          Next
-        </button>
-      </div>
-    </>
-  );
-}
-
-interface Step3Props extends StepProps {
-  selectedAssociation: any;
-  selectedSeason: number | '';
-  selectedLeagues: any[];
-  contactId: string;
-  costModel: string;
-  baseRateOverride: string;
-  expectedTeamsCount: string;
-  onContactIdChange: (id: string) => void;
-  onCostModelChange: (model: string) => void;
-  onBaseRateOverrideChange: (override: string) => void;
-  onExpectedTeamsCountChange: (count: string) => void;
-  onBack: () => void;
-}
-
-function Step3({
-  selectedAssociation,
-  selectedSeason,
-  selectedLeagues,
-  contactId,
-  costModel,
-  baseRateOverride,
-  expectedTeamsCount,
-  onContactIdChange,
-  onCostModelChange,
-  onBaseRateOverrideChange,
-  onExpectedTeamsCountChange,
-  onNext,
-  onBack,
-  isLoading,
-}: Step3Props) {
-  return (
-    <>
-      <h2 style={{ margin: '0 0 1.5rem 0' }}>Review & Create Offer</h2>
-
-      <div style={{
-        background: '#f8f9fa',
-        padding: '1rem',
-        borderRadius: 4,
-        marginBottom: '1.5rem',
-      }}>
-        <p style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: 12 }}>
-          <strong>Association:</strong> {selectedAssociation?.name}
-        </p>
-        <p style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: 12 }}>
-          <strong>Season:</strong> {selectedSeason}
-        </p>
-        <p style={{ margin: '0', color: '#666', fontSize: 12 }}>
-          <strong>Leagues:</strong> {selectedLeagues.length} selected
-        </p>
-      </div>
-
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: '0.5rem' }}>
-            Contact ID (Optional)
-          </label>
-          <input
-            type="text"
-            value={contactId}
-            onChange={(e) => onContactIdChange(e.target.value)}
-            disabled={isLoading}
-            placeholder="Enter contact ID"
-            style={{
-              width: '100%',
-              padding: '0.5rem',
-              border: '1px solid #ddd',
-              borderRadius: 4,
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: '0.5rem' }}>
-            Cost Model (Optional)
-          </label>
-          <input
-            type="text"
-            value={costModel}
-            onChange={(e) => onCostModelChange(e.target.value)}
-            disabled={isLoading}
-            placeholder="Enter cost model"
-            style={{
-              width: '100%',
-              padding: '0.5rem',
-              border: '1px solid #ddd',
-              borderRadius: 4,
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: '0.5rem' }}>
-            Base Rate Override (Optional)
-          </label>
-          <input
-            type="number"
-            step="0.01"
-            value={baseRateOverride}
-            onChange={(e) => onBaseRateOverrideChange(e.target.value)}
-            disabled={isLoading}
-            placeholder="0.00"
-            style={{
-              width: '100%',
-              padding: '0.5rem',
-              border: '1px solid #ddd',
-              borderRadius: 4,
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: '0.5rem' }}>
-            Expected Teams Count (Optional)
-          </label>
-          <input
-            type="number"
-            step="1"
-            min="0"
-            value={expectedTeamsCount}
-            onChange={(e) => onExpectedTeamsCountChange(e.target.value)}
-            disabled={isLoading}
-            placeholder="0"
-            style={{
-              width: '100%',
-              padding: '0.5rem',
-              border: '1px solid #ddd',
-              borderRadius: 4,
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: '1rem' }}>
-        <button
-          onClick={onBack}
-          disabled={isLoading}
-          style={{
-            flex: 1,
-            padding: '0.75rem',
-            background: '#6c757d',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            fontSize: 14,
-            fontWeight: 500,
-          }}
-        >
-          Back
-        </button>
-        <button
-          onClick={onNext}
-          disabled={isLoading}
-          style={{
-            flex: 1,
-            padding: '0.75rem',
-            background: '#0d6efd',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            fontSize: 14,
-            fontWeight: 500,
-          }}
-        >
-          {isLoading ? 'Creating…' : 'Create Offer'}
-        </button>
-      </div>
-    </>
-  );
-}
-
