@@ -1,5 +1,4 @@
 // src/client/lib/offerHelpers.ts
-import { Types } from 'mongoose';
 
 export interface OfferDisplay {
   id: string;
