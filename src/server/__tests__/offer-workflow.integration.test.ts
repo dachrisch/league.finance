@@ -93,7 +93,7 @@ describe('Offer Workflow Integration', () => {
         leagueIds: [2],
         contactId: contact._id,
       });
-      fail('Should have thrown duplicate key error');
+      expect.fail('Should have thrown duplicate key error');
     } catch (err: any) {
       expect(err.code).toBe(11000);
     }
