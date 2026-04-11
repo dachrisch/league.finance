@@ -4,9 +4,15 @@ import { router, protectedProcedure, adminProcedure } from '../../trpc';
 import { CreateContactSchema, UpdateContactSchema } from '../../../../shared/schemas/contact';
 import { Contact } from '../../models/Contact';
 
+const normalizeContact = (doc: any) => ({
+  ...doc,
+  _id: doc._id.toString(),
+});
+
 export const contactsRouter = router({
   list: protectedProcedure.query(async () => {
-    return Contact.find().sort({ name: 1 }).lean();
+    const contacts = await Contact.find().sort({ name: 1 }).lean();
+    return contacts.map(normalizeContact);
   }),
 
   get: protectedProcedure
@@ -14,14 +20,14 @@ export const contactsRouter = router({
     .query(async ({ input }) => {
       const contact = await Contact.findById(input.id).lean();
       if (!contact) throw new TRPCError({ code: 'NOT_FOUND' });
-      return contact;
+      return normalizeContact(contact);
     }),
 
   create: adminProcedure
     .input(CreateContactSchema)
     .mutation(async ({ input }) => {
       const contact = await Contact.create(input);
-      return contact.toObject();
+      return normalizeContact(contact.toObject());
     }),
 
   update: adminProcedure
@@ -31,7 +37,7 @@ export const contactsRouter = router({
         new: true,
       }).lean();
       if (!contact) throw new TRPCError({ code: 'NOT_FOUND' });
-      return contact;
+      return normalizeContact(contact);
     }),
 
   delete: adminProcedure

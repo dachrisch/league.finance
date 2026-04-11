@@ -4,10 +4,11 @@ export interface AssociationFormProps {
   onSubmit: (data: { name: string; description: string; email: string; phone: string }) => Promise<void>;
   onCancel?: () => void;
   isLoading?: boolean;
+  initialData?: { name: string; description: string; email: string; phone: string };
 }
 
-export function AssociationForm({ onSubmit, onCancel, isLoading = false }: AssociationFormProps) {
-  const [formData, setFormData] = useState({
+export function AssociationForm({ onSubmit, onCancel, isLoading = false, initialData }: AssociationFormProps) {
+  const [formData, setFormData] = useState(initialData || {
     name: '',
     description: '',
     email: '',
@@ -150,7 +151,7 @@ export function AssociationForm({ onSubmit, onCancel, isLoading = false }: Assoc
           </button>
         )}
         <button type="submit" className="btn btn-primary btn-sm" disabled={isLoading}>
-          {isLoading ? 'Creating...' : 'Create Association'}
+          {isLoading ? (initialData ? 'Updating...' : 'Creating...') : (initialData ? 'Update Association' : 'Create Association')}
         </button>
       </div>
     </form>

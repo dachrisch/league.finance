@@ -6,6 +6,23 @@ import { Offer } from '../../models/Offer';
 import { FinancialConfig } from '../../models/FinancialConfig';
 import { Contact } from '../../models/Contact';
 
+const normalizeOffer = (doc: any) => ({
+  ...doc.toObject?.() || doc,
+  _id: doc._id?.toString(),
+  contactId: doc.contactId?.toString?.() || doc.contactId,
+});
+
+const normalizeConfig = (doc: any) => ({
+  ...doc,
+  _id: doc._id?.toString(),
+  offerId: doc.offerId?.toString?.() || doc.offerId,
+});
+
+const normalizeContact = (doc: any) => ({
+  ...doc,
+  _id: doc._id?.toString(),
+});
+
 export const offersRouter = router({
   list: protectedProcedure
     .input(
@@ -19,10 +36,12 @@ export const offersRouter = router({
       if (input?.status) query.status = input.status;
       if (input?.associationId) query.associationId = input.associationId;
 
-      return Offer.find(query)
+      const offers = await Offer.find(query)
         .populate('contactId', 'name address')
         .sort({ createdAt: -1 })
         .lean();
+
+      return offers.map(normalizeOffer);
     }),
 
   get: protectedProcedure
@@ -37,7 +56,11 @@ export const offersRouter = router({
       // Get all configs for this offer
       const configs = await FinancialConfig.find({ offerId: input.id }).lean();
 
-      return { offer, contact: (offer as any).contactId, configs };
+      return {
+        offer: normalizeOffer(offer),
+        contact: (offer as any).contactId,
+        configs: configs.map(normalizeConfig)
+      };
     }),
 
   create: adminProcedure
@@ -76,8 +99,8 @@ export const offersRouter = router({
         );
 
         return {
-          ...offer.toObject(),
-          configs,
+          ...normalizeOffer(offer),
+          configs: configs.map(normalizeConfig),
         };
       } catch (err: any) {
         if (err.code === 11000) {
@@ -150,9 +173,9 @@ export const offersRouter = router({
       const contact = await Contact.findById(offer.contactId).lean();
 
       return {
-        ...offer.toObject(),
-        contact,
-        configs,
+        ...normalizeOffer(offer),
+        contact: contact ? normalizeContact(contact) : undefined,
+        configs: configs.map(normalizeConfig),
       };
     }),
 
@@ -188,7 +211,7 @@ export const offersRouter = router({
       ).lean();
 
       if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
-      return offer;
+      return normalizeOffer(offer);
     }),
 
   markAccepted: adminProcedure
@@ -201,6 +224,6 @@ export const offersRouter = router({
       ).lean();
 
       if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
-      return offer;
+      return normalizeOffer(offer);
     }),
 });

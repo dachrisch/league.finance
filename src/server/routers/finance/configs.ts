@@ -5,9 +5,22 @@ import { CreateFinancialConfigSchema, UpdateFinancialConfigSchema } from '../../
 import { FinancialConfig } from '../../models/FinancialConfig';
 import { Discount } from '../../models/Discount';
 
+const normalizeConfig = (doc: any) => ({
+  ...doc,
+  _id: doc._id?.toString(),
+  offerId: doc.offerId?.toString?.() || doc.offerId,
+});
+
+const normalizeDiscount = (doc: any) => ({
+  ...doc,
+  _id: doc._id?.toString(),
+  configId: doc.configId?.toString?.() || doc.configId,
+});
+
 export const configsRouter = router({
   list: protectedProcedure.query(async () => {
-    return FinancialConfig.find().sort({ createdAt: -1 }).lean();
+    const configs = await FinancialConfig.find().sort({ createdAt: -1 }).lean();
+    return configs.map(normalizeConfig);
   }),
 
   get: protectedProcedure
@@ -16,7 +29,7 @@ export const configsRouter = router({
       const config = await FinancialConfig.findById(input.id).lean();
       if (!config) throw new TRPCError({ code: 'NOT_FOUND' });
       const discounts = await Discount.find({ configId: input.id }).lean();
-      return { config, discounts };
+      return { config: normalizeConfig(config), discounts: discounts.map(normalizeDiscount) };
     }),
 
   create: adminProcedure
@@ -24,7 +37,7 @@ export const configsRouter = router({
     .mutation(async ({ input }) => {
       try {
         const config = await FinancialConfig.create(input);
-        return config.toObject();
+        return normalizeConfig(config.toObject());
       } catch (err: any) {
         if (err.code === 11000) {
           throw new TRPCError({
@@ -41,7 +54,7 @@ export const configsRouter = router({
     .mutation(async ({ input }) => {
       const config = await FinancialConfig.findByIdAndUpdate(input.id, input.data, { returnDocument: 'after' }).lean();
       if (!config) throw new TRPCError({ code: 'NOT_FOUND' });
-      return config;
+      return normalizeConfig(config);
     }),
 
   delete: adminProcedure

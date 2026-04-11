@@ -27,14 +27,14 @@ describe('Offer Model', () => {
   it('should create an offer with required fields', async () => {
     const offer = await Offer.create({
       status: 'draft',
-      associationId: 1,
+      associationId: 'assoc-1',
       seasonId: 1,
       leagueIds: [1, 2],
       contactId: contact._id,
     });
 
     expect(offer.status).toBe('draft');
-    expect(offer.associationId).toBe(1);
+    expect(offer.associationId).toBe('assoc-1');
     expect(offer.seasonId).toBe(1);
     expect(offer.leagueIds).toEqual([1, 2]);
     expect(offer.contactId).toEqual(contact._id);

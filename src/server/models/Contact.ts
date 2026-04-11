@@ -9,6 +9,7 @@ export interface IContact extends Document {
     country: string;
   };
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const ContactSchema = new Schema<IContact>(
@@ -21,7 +22,7 @@ const ContactSchema = new Schema<IContact>(
       country: { type: String, required: true },
     },
   },
-  { timestamps: { createdAt: true, updatedAt: false } }
+  { timestamps: true }
 );
 
 ContactSchema.index({ name: 1 });

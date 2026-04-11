@@ -10,10 +10,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "baseUrl": ".",
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
     "paths": {
       "@client/*": ["src/client/*"],
       "@shared/*": ["shared/*"]
     }
   },
-  "include": ["src/client/**/*", "shared/**/*", "vite.config.ts", "index.html"]
+  "include": ["src/client/**/*", "shared/**/*", "vite.config.ts", "index.html"],
+  "exclude": ["src/client/**/__tests__/**", "src/**/*.test.ts", "src/**/*.test.tsx"]
 }

@@ -42,8 +42,8 @@ export function OfferDetailPage() {
 
   const { data, isLoading, refetch } = trpc.finance.offers.get.useQuery({ id });
   const { data: association } = trpc.finance.associations.get.useQuery(
-    data?.associationId ? { id: data.associationId } : { id: '' },
-    { enabled: !!data?.associationId }
+    data?.offer?.associationId ? { id: data.offer.associationId.toString() } : { id: '' },
+    { enabled: !!data?.offer?.associationId }
   );
 
   const markSent = trpc.finance.offers.markSent.useMutation({
@@ -80,8 +80,8 @@ export function OfferDetailPage() {
     );
   }
 
-  const offer = data;
-  const configs = offer.configs || [];
+  const offer = data.offer;
+  const configs = data.configs || [];
   const totalPrice = configs.reduce((sum, config) => sum + config.finalPrice, 0);
 
   return (
@@ -136,7 +136,7 @@ export function OfferDetailPage() {
           </div>
           <div>
             <p style={{ margin: 0, color: '#666', fontSize: 12 }}>LEAGUES</p>
-            <p style={{ margin: '0.5rem 0 0 0', fontSize: 14, fontWeight: 500 }}>{offer.selectedLeagueIds.length}</p>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: 14, fontWeight: 500 }}>{offer.leagueIds.length}</p>
           </div>
         </div>
       </div>

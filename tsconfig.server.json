@@ -10,9 +10,11 @@
     "skipLibCheck": true,
     "outDir": "dist",
     "baseUrl": ".",
+    "types": ["vitest/globals"],
     "paths": {
       "@shared/*": ["shared/*"]
     }
   },
-  "include": ["src/server/**/*", "shared/**/*"]
+  "include": ["src/server/**/*", "shared/**/*"],
+  "exclude": ["src/server/**/__tests__/**", "src/**/*.test.ts"]
 }

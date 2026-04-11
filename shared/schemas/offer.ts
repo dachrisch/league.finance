@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Offer metadata only - financial config is separate
 export const CreateOfferSchema = z.object({
-  associationId: z.number().int().positive('Association ID must be positive'),
+  associationId: z.string().min(1, 'Association is required'),
   seasonId: z.number().int().positive('Season ID must be positive'),
   leagueIds: z.array(z.number().int().positive()).min(1, 'At least one league required'),
   contactId: z.string().min(1, 'Contact is required'),

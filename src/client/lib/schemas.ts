@@ -40,19 +40,12 @@ export const OfferSchema = z.object({
   _id: z.string(),
   associationId: z.string(),
   seasonId: z.number(),
-  selectedLeagueIds: z.array(z.number()),
+  leagueIds: z.array(z.number()),
   status: OfferStatusSchema,
-  driveFileId: z.string().nullable(),
-  sentTo: z.array(z.object({
-    email: z.string(),
-    sentAt: z.date().or(z.string()),
-  })),
-  notes: z.string(),
   createdAt: z.date().or(z.string()),
   updatedAt: z.date().or(z.string()),
-  sentAt: z.date().or(z.string()).nullable(),
-  viewedAt: z.date().or(z.string()).nullable(),
-  completedAt: z.date().or(z.string()).nullable(),
+  sentAt: z.date().or(z.string()).nullable().optional(),
+  acceptedAt: z.date().or(z.string()).nullable().optional(),
 });
 
 export type Offer = z.infer<typeof OfferSchema>;

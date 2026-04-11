@@ -3,6 +3,11 @@ import { TRPCError } from '@trpc/server';
 import { router, protectedProcedure } from '../../trpc';
 import { Association } from '../../models/Association';
 
+const normalizeAssociation = (doc: any) => ({
+  ...doc.toObject?.() || doc,
+  _id: doc._id.toString(),
+});
+
 export const associationsRouter = router({
   create: protectedProcedure
     .input(
@@ -15,12 +20,12 @@ export const associationsRouter = router({
     )
     .mutation(async ({ input }) => {
       const association = await Association.create(input);
-      return association;
+      return normalizeAssociation(association);
     }),
 
   list: protectedProcedure.query(async () => {
     const associations = await Association.find().sort({ name: 1 });
-    return associations;
+    return associations.map(normalizeAssociation);
   }),
 
   getById: protectedProcedure
@@ -30,7 +35,17 @@ export const associationsRouter = router({
       if (!association) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
-      return association;
+      return normalizeAssociation(association);
+    }),
+
+  get: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const association = await Association.findById(input.id);
+      if (!association) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+      return normalizeAssociation(association);
     }),
 
   update: protectedProcedure
@@ -50,7 +65,7 @@ export const associationsRouter = router({
       if (!association) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
-      return association;
+      return normalizeAssociation(association);
     }),
 
   delete: protectedProcedure

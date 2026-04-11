@@ -179,7 +179,7 @@ export function OfferTable({
                 </td>
                 <td style={{ padding: '1rem', fontSize: 14 }}>Season {offer.seasonId}</td>
                 <td style={{ padding: '1rem', fontSize: 14, textAlign: 'center' }}>
-                  {offer.selectedLeagueIds.length}
+                  {offer.leagueIds.length}
                 </td>
                 <td style={{ padding: '1rem', fontSize: 14 }}>
                   <div style={statusBadgeStyle(offer.status)}>{offer.status}</div>
