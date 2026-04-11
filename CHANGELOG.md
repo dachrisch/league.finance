@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5](https://github.com/dachrisch/league.finance/compare/v0.1.4...v0.1.5) (2026-04-11)
+
+
+### Features
+
+* add Association model with name, description, email, phone ([3dc2b60](https://github.com/dachrisch/league.finance/commit/3dc2b60bb2916371cf8bc6b0a24e02c6e435205b))
+* add Contact CRUD router ([45cc8f7](https://github.com/dachrisch/league.finance/commit/45cc8f7dd6294b93d458d7ca5f2e3bd5f7d329bb))
+* add Contact model and schema ([c50f52c](https://github.com/dachrisch/league.finance/commit/c50f52c9433cadfc12ae64e4d588b63b8ce6fb7d))
+* add Offer model and schema ([0fda0d0](https://github.com/dachrisch/league.finance/commit/0fda0d00502494e2464fce58d6a1987bb0b9c5ac))
+* add OfferCard component with status indicators ([b1046c2](https://github.com/dachrisch/league.finance/commit/b1046c231c4c3c4d6bd2b3d8ccf13134c1219f42))
+* add offerId field to FinancialConfig ([0dd2dd6](https://github.com/dachrisch/league.finance/commit/0dd2dd637dcf479a88c0583e653818e1e1dfc51a))
+* **components:** add collapsed offer card component ([a58b5a7](https://github.com/dachrisch/league.finance/commit/a58b5a78335a118856a9f13f5ad23c2da87e5892))
+* **components:** add expanded offer card with configs table ([295087f](https://github.com/dachrisch/league.finance/commit/295087f8a796e5e34346b881744831025b2daf9b))
+* **components:** add inline association creation form ([9b8b3d0](https://github.com/dachrisch/league.finance/commit/9b8b3d0d3a2e78d938126175034d0e72373bec96))
+* **components:** add inline contact creation form ([c883108](https://github.com/dachrisch/league.finance/commit/c883108b8d3c35e123f209473744500856e61530))
+* **components:** add selectable contact grid for wizard ([07e5aa7](https://github.com/dachrisch/league.finance/commit/07e5aa7de786657cd9e21d64cba417a6160e37a6))
+* **dashboard:** redesign to show offers as primary entity with expandable configs ([eb8bcbb](https://github.com/dachrisch/league.finance/commit/eb8bcbb588db65918dfa28d7b33a3ee349ae04ca))
+* **task-2:** create Offer model with comprehensive tests ([e8c8113](https://github.com/dachrisch/league.finance/commit/e8c81136e186b0a190ca93eaa907a218465146d1))
+* **task-3:** create OfferLineItem model with price calculations ([83f0791](https://github.com/dachrisch/league.finance/commit/83f0791dffefa3f81ee594be5eaad07eb12bbb16))
+* **task-4:** add offerId reference to FinancialConfig model ([a111a3e](https://github.com/dachrisch/league.finance/commit/a111a3e33a58fac53aff30e2bd7fbb6502dd55fd))
+* **task-5:** create offerCalculator utility for pricing calculations ([e934f29](https://github.com/dachrisch/league.finance/commit/e934f290141d537e6ae7b7088af37f40efb062b0))
+* **task-6:** create pdfGenerator utility for PDF offer generation ([e7b8c58](https://github.com/dachrisch/league.finance/commit/e7b8c58427fdb91d96362d0e9148bbcde0c9e6f9))
+* **task-7:** create driveUploader utility for Google Drive integration ([eb85877](https://github.com/dachrisch/league.finance/commit/eb8587710e2f0d1cf9edf5284171e79c61e78a9a))
+* **task-8:** create email utilities for offer delivery ([6c567c2](https://github.com/dachrisch/league.finance/commit/6c567c2722d44b79a9f39dcef35fea341d2dfce7))
+* **tasks-16-25:** implement frontend components and pages for offer tool ([ff64e86](https://github.com/dachrisch/league.finance/commit/ff64e8691a0fc92cd3b29de6d8103b9dcb5b6d39))
+* **tasks-9-15:** implement associations and offers routers ([438e25f](https://github.com/dachrisch/league.finance/commit/438e25f063e37a14ec6757e975d27b74c6367a3e))
+* update app routing for offer-first workflow ([f08dd09](https://github.com/dachrisch/league.finance/commit/f08dd09b4ae1345e2cf24676054e4af553533cfb))
+* **utils:** add offer display helper functions ([28f3e8b](https://github.com/dachrisch/league.finance/commit/28f3e8bff05565c21be34b19057c91d22c1bebf9))
+* **wizard:** rewrite offer creation with 3-step process and inline forms ([9834a00](https://github.com/dachrisch/league.finance/commit/9834a009f83b20624d2728ddcf3803eeb1eac08a))
+
+
+### Bug Fixes
+
+* align frontend pages with actual API endpoints ([1bba009](https://github.com/dachrisch/league.finance/commit/1bba0096673de5798919b619eb230d758d0a4d9b))
+* **build:** remove unused server utility files causing TypeScript build failures ([9d64356](https://github.com/dachrisch/league.finance/commit/9d64356b3a1acaa08613cb79354769be2d5c0122))
+* **build:** resolve TypeScript errors and type mismatches in CI ([268f767](https://github.com/dachrisch/league.finance/commit/268f767f3dd86748ef572f51a52a5114a13d20cd))
+* correct Offer router to match actual Offer model ([981daee](https://github.com/dachrisch/league.finance/commit/981daeed53f659bd5d134638f2cf73005e28ea5d))
+* correct test assertions in Association model tests ([6654770](https://github.com/dachrisch/league.finance/commit/6654770a70be4498bef30102ef084359dcaf3f1a))
+* correct undefined pendingCount variable in OffersPage ([314c9ec](https://github.com/dachrisch/league.finance/commit/314c9ec7e529d32374a6d7f1086282c0605bb94d))
+* mock Puppeteer in PDF tests to avoid sandbox errors in CI ([78a8526](https://github.com/dachrisch/league.finance/commit/78a852620d0dd9eac780cf0709395a22a55825e8))
+* **tests:** remove unsupported edit functionality test from AssociationForm ([90e5f8b](https://github.com/dachrisch/league.finance/commit/90e5f8bc49283b3ba167eadda42e2ee93728ce60))
+* use expect.fail instead of fail in test ([803a8e3](https://github.com/dachrisch/league.finance/commit/803a8e3487daeeb7098052e5f3c2053d1dc78e32))
+* **utils:** remove unused mongoose import from client helpers ([b2ee01a](https://github.com/dachrisch/league.finance/commit/b2ee01aaeb30469d758f674f763ac4c39f910836))
+* **wizard:** add base rate validation and contacts loading state ([4525cbc](https://github.com/dachrisch/league.finance/commit/4525cbc24fba07205c187cef302a6226c5547bb2))
+
 ### [0.1.4](https://github.com/dachrisch/league.finance/compare/v0.1.3...v0.1.4) (2026-04-10)
 
 ### [0.1.3](https://github.com/dachrisch/league.finance/compare/v0.1.2...v0.1.3) (2026-04-09)
