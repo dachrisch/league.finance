@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { trpc } from '../lib/trpc';
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -9,7 +11,7 @@ interface OfferState {
   costModel: 'SEASON' | 'GAMEDAY';
   baseRate: number | null;
   expectedTeams: number;
-  selectedLeagues: number[];
+  selectedLeagues: { id: string; name: string }[];
 }
 
 interface League {
@@ -1094,6 +1096,7 @@ function Step4Leagues({ state, onLeagueSelect, onLeagueDeselect }: any) {
 }
 
 export function OfferCreateWizardProto() {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [state, setState] = useState<OfferState>({
@@ -1105,6 +1108,16 @@ export function OfferCreateWizardProto() {
     expectedTeams: 0,
     selectedLeagues: [],
   });
+
+  // TRPC queries & mutations
+  const { data: associations } = trpc.finance.associations.list.useQuery();
+  const { data: contacts } = trpc.finance.contacts.list.useQuery();
+  const { data: seasons } = trpc.teams.seasons.useQuery();
+  const { data: leagues } = trpc.teams.leagues.useQuery();
+
+  const createAssociation = trpc.finance.associations.create.useMutation();
+  const createContact = trpc.finance.contacts.create.useMutation();
+  const createOffer = trpc.finance.offers.create.useMutation();
 
   const handleNext = () => {
     if (currentStep < 4) setCurrentStep((currentStep + 1) as Step);
@@ -1257,24 +1270,38 @@ export function OfferCreateWizardProto() {
                 </button>
               ) : (
                 <button
-                  onClick={() => {
-                    setSuccessMessage(
-                      'Offer created!\n\n' +
-                        JSON.stringify(
-                          {
-                            ...state,
-                            selectedLeagues: `${state.selectedLeagues.length} leagues selected`,
-                          },
-                          null,
-                          2
-                        )
-                    );
-                    setTimeout(() => setSuccessMessage(null), 5000);
+                  onClick={async () => {
+                    try {
+                      // Find the actual database IDs from the selected display objects
+                      const selectedAssociation = associations?.find(a => a.name === state.association?.name);
+                      const selectedSeason = seasons?.find(s => s.id === state.season?.id || s.name === state.season?.name);
+                      const selectedContact = contacts?.find(c => c.name === state.contact?.name);
+                      const leagueIds = state.selectedLeagues
+                        .map(l => leagues?.find(lg => lg.name === l.name)?.id || l.id)
+                        .filter(Boolean);
+
+                      const result = await createOffer.mutateAsync({
+                        associationId: selectedAssociation?._id || '',
+                        seasonId: selectedSeason?.id || 0,
+                        contactId: selectedContact?._id || '',
+                        leagueIds: leagueIds as string[],
+                        costModel: state.costModel,
+                        baseRateOverride: state.baseRate,
+                        expectedTeamsCount: state.expectedTeams,
+                      });
+                      setSuccessMessage('Offer created successfully!');
+                      setTimeout(() => {
+                        navigate(`/offers/${result._id}`);
+                      }, 1500);
+                    } catch (err: any) {
+                      setSuccessMessage(`Error: ${err?.message || 'Failed to create offer'}`);
+                      setTimeout(() => setSuccessMessage(null), 5000);
+                    }
                   }}
-                  disabled={!canProceed()}
+                  disabled={!canProceed() || createOffer.isPending}
                   className="proto-button proto-button-success"
                 >
-                  Create Offer (Draft)
+                  {createOffer.isPending ? 'Creating...' : 'Create Offer (Draft)'}
                 </button>
               )}
             </div>
