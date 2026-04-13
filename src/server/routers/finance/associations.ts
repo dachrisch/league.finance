@@ -13,9 +13,9 @@ export const associationsRouter = router({
     .input(
       z.object({
         name: z.string().min(1),
-        description: z.string(),
+        description: z.string().optional().default(''),
         email: z.string().email(),
-        phone: z.string(),
+        phone: z.string().optional().default(''),
       })
     )
     .mutation(async ({ input }) => {

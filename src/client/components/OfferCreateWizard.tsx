@@ -18,6 +18,15 @@ interface WizardState {
   selectedLeagueIds: number[];
 }
 
+interface ValidationErrors {
+  associationId?: string;
+  seasonId?: string;
+  contactId?: string;
+  selectedLeagueIds?: string;
+  baseRateOverride?: string;
+  general?: string;
+}
+
 export function OfferCreateWizard() {
   const navigate = useNavigate();
   const [step, setStep] = useState<WizardStep>(1);
@@ -34,9 +43,10 @@ export function OfferCreateWizard() {
   const [showNewAssociation, setShowNewAssociation] = useState(false);
   const [showNewContact, setShowNewContact] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<ValidationErrors>({});
 
   // TRPC queries & mutations
-  const { data: associations, isLoading: loadingAssociations } = trpc.finance.associations.list.useQuery();
+  const { data: associations, isLoading: loadingAssociations, refetch: refetchAssociations } = trpc.finance.associations.list.useQuery();
   const { data: contacts, isLoading: loadingContacts, refetch: refetchContacts } = trpc.finance.contacts.list.useQuery();
   const { data: seasons, isLoading: loadingSeasons } = trpc.teams.seasons.useQuery();
   const { data: leagues, isLoading: loadingLeagues } = trpc.teams.leagues.useQuery();
@@ -51,6 +61,7 @@ export function OfferCreateWizard() {
     try {
       const result = await createAssociation.mutateAsync(data);
       setState((prev) => ({ ...prev, associationId: result._id }));
+      await refetchAssociations();
       setShowNewAssociation(false);
     } catch (err) {
       console.error('Failed to create association:', err);
@@ -61,18 +72,32 @@ export function OfferCreateWizard() {
   };
 
   const handleStep1Continue = () => {
-    if (!state.associationId || !state.seasonId) {
-      alert('Please select an association and season');
-      return;
+    const newErrors: ValidationErrors = {};
+    if (!state.associationId) {
+      newErrors.associationId = 'Please select an association';
     }
-    setStep(2);
+    if (!state.seasonId) {
+      newErrors.seasonId = 'Please select a season';
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length === 0) {
+      setStep(2);
+    }
   };
 
   // Step 2: Contact
   const handleContactCreated = async (data: any) => {
     setIsLoading(true);
     try {
-      const result = await createContact.mutateAsync(data);
+      const result = await createContact.mutateAsync({
+        name: data.name,
+        address: {
+          street: data.street,
+          city: data.city,
+          postalCode: data.postalCode,
+          country: data.country,
+        },
+      });
       setState((prev) => ({ ...prev, contactId: result._id }));
       await refetchContacts();
       setShowNewContact(false);
@@ -85,22 +110,29 @@ export function OfferCreateWizard() {
   };
 
   const handleStep2Continue = () => {
+    const newErrors: ValidationErrors = {};
     if (!state.contactId) {
-      alert('Please select a contact');
-      return;
+      newErrors.contactId = 'Please select a contact';
     }
-    setStep(3);
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length === 0) {
+      setStep(3);
+    }
   };
 
   // Step 3: Pricing & Leagues
   const handleCreateOffer = async () => {
+    const newErrors: ValidationErrors = {};
     if (state.selectedLeagueIds.length === 0) {
-      alert('Please select at least one league');
-      return;
+      newErrors.selectedLeagueIds = 'Please select at least one league';
     }
 
     if (state.baseRateOverride !== null && state.baseRateOverride <= 0) {
-      alert('Base rate override must be greater than 0');
+      newErrors.baseRateOverride = 'Base rate override must be greater than 0';
+    }
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
       return;
     }
 
@@ -117,7 +149,9 @@ export function OfferCreateWizard() {
       });
       navigate(`/offers/${result._id}`);
     } catch (err: any) {
-      alert(`Failed to create offer: ${err?.message || 'Unknown error'}`);
+      setErrors({
+        general: err?.message || 'Failed to create offer',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -163,16 +197,19 @@ export function OfferCreateWizard() {
             <>
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                  Association *
+                  Association * {errors.associationId && <span style={{ color: '#dc3545', fontSize: '0.875rem' }}>- {errors.associationId}</span>}
                 </label>
                 <select
                   value={state.associationId}
-                  onChange={(e) => setState((prev) => ({ ...prev, associationId: e.target.value }))}
+                  onChange={(e) => {
+                    setState((prev) => ({ ...prev, associationId: e.target.value }));
+                    setErrors((prev) => ({ ...prev, associationId: undefined }));
+                  }}
                   disabled={isLoading || loadingAssociations}
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    border: '1px solid #dee2e6',
+                    border: errors.associationId ? '2px solid #dc3545' : '1px solid #dee2e6',
                     borderRadius: '4px',
                     fontSize: '1rem',
                   }}
@@ -210,16 +247,19 @@ export function OfferCreateWizard() {
 
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-              Season *
+              Season * {errors.seasonId && <span style={{ color: '#dc3545', fontSize: '0.875rem' }}>- {errors.seasonId}</span>}
             </label>
             <select
               value={state.seasonId}
-              onChange={(e) => setState((prev) => ({ ...prev, seasonId: parseInt(e.target.value) }))}
+              onChange={(e) => {
+                setState((prev) => ({ ...prev, seasonId: parseInt(e.target.value) }));
+                setErrors((prev) => ({ ...prev, seasonId: undefined }));
+              }}
               disabled={isLoading || loadingSeasons}
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                border: '1px solid #dee2e6',
+                border: errors.seasonId ? '2px solid #dc3545' : '1px solid #dee2e6',
                 borderRadius: '4px',
                 fontSize: '1rem',
               }}
@@ -262,11 +302,14 @@ export function OfferCreateWizard() {
           {!showNewContact ? (
             <>
               <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ marginBottom: '1rem' }}>Select Existing Contact</h3>
+                <h3 style={{ marginBottom: '0.5rem' }}>Select Existing Contact {errors.contactId && <span style={{ color: '#dc3545', fontSize: '0.875rem' }}>- {errors.contactId}</span>}</h3>
                 <ContactGrid
                   contacts={contacts || []}
                   selectedId={state.contactId}
-                  onSelect={(id) => setState((prev) => ({ ...prev, contactId: id }))}
+                  onSelect={(id) => {
+                    setState((prev) => ({ ...prev, contactId: id }));
+                    setErrors((prev) => ({ ...prev, contactId: undefined }));
+                  }}
                   isLoading={isLoading || loadingContacts}
                 />
               </div>
@@ -328,6 +371,12 @@ export function OfferCreateWizard() {
             </div>
           </div>
 
+          {errors.general && (
+            <div style={{ marginBottom: '1.5rem', padding: '0.75rem', backgroundColor: '#f8d7da', border: '1px solid #f5c6cb', borderRadius: '4px', color: '#721c24' }}>
+              {errors.general}
+            </div>
+          )}
+
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
               Cost Model
@@ -351,25 +400,26 @@ export function OfferCreateWizard() {
 
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-              Base Rate Override (€)
+              Base Rate Override (€) {errors.baseRateOverride && <span style={{ color: '#dc3545', fontSize: '0.875rem' }}>- {errors.baseRateOverride}</span>}
             </label>
             <input
               type="number"
               step="0.01"
               min="0"
               value={state.baseRateOverride || ''}
-              onChange={(e) =>
+              onChange={(e) => {
                 setState((prev) => ({
                   ...prev,
                   baseRateOverride: e.target.value ? parseFloat(e.target.value) : null,
-                }))
-              }
+                }));
+                setErrors((prev) => ({ ...prev, baseRateOverride: undefined }));
+              }}
               placeholder="Leave empty for default (€50)"
               disabled={isLoading}
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                border: '1px solid #dee2e6',
+                border: errors.baseRateOverride ? '2px solid #dc3545' : '1px solid #dee2e6',
                 borderRadius: '4px',
                 fontSize: '1rem',
               }}
@@ -403,10 +453,17 @@ export function OfferCreateWizard() {
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '500' }}>
-              Select Leagues * ({state.selectedLeagueIds.length} selected)
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Select Leagues * ({state.selectedLeagueIds.length} selected) {errors.selectedLeagueIds && <span style={{ color: '#dc3545', fontSize: '0.875rem' }}>- {errors.selectedLeagueIds}</span>}
             </label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              padding: '0.75rem',
+              border: errors.selectedLeagueIds ? '2px solid #dc3545' : '1px solid #dee2e6',
+              borderRadius: '4px'
+            }}>
               {(leagues || []).map((league: any) => (
                 <div key={league.id} style={{ display: 'flex', alignItems: 'center' }}>
                   <input
@@ -425,6 +482,7 @@ export function OfferCreateWizard() {
                           selectedLeagueIds: prev.selectedLeagueIds.filter((id) => id !== league.id),
                         }));
                       }
+                      setErrors((prev) => ({ ...prev, selectedLeagueIds: undefined }));
                     }}
                     disabled={isLoading}
                     style={{ marginRight: '0.5rem' }}

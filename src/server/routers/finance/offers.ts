@@ -5,6 +5,9 @@ import { CreateOfferSchema, UpdateOfferSchema } from '../../../../shared/schemas
 import { Offer } from '../../models/Offer';
 import { FinancialConfig } from '../../models/FinancialConfig';
 import { Contact } from '../../models/Contact';
+import { getMysqlPool } from '../../db/mysql';
+
+const DEFAULT_BASE_RATE = 50;
 
 const normalizeOffer = (doc: any) => ({
   ...doc.toObject?.() || doc,
@@ -22,6 +25,21 @@ const normalizeContact = (doc: any) => ({
   ...doc,
   _id: doc._id?.toString(),
 });
+
+const computeConfigPrices = (config: any, leagueName: string = 'Unknown League') => {
+  const baseRate = config.baseRateOverride ?? DEFAULT_BASE_RATE;
+  const basePrice = config.costModel === 'SEASON'
+    ? baseRate * config.expectedTeamsCount
+    : baseRate * config.expectedGamedaysCount * config.expectedTeamsPerGameday;
+
+  return {
+    ...config,
+    basePrice: Math.round(basePrice * 100) / 100,
+    customPrice: config.customPrice || null,
+    finalPrice: config.customPrice ? config.customPrice : Math.round(basePrice * 100) / 100,
+    leagueName: leagueName,
+  };
+};
 
 export const offersRouter = router({
   list: protectedProcedure
@@ -56,10 +74,23 @@ export const offersRouter = router({
       // Get all configs for this offer
       const configs = await FinancialConfig.find({ offerId: input.id }).lean();
 
+      // Fetch league data from MySQL to get league names
+      let leaguesMap: Record<number, string> = {};
+      try {
+        const pool = getMysqlPool();
+        const [rows] = await pool.query<any[]>('SELECT id, name FROM gamedays_league');
+        leaguesMap = rows.reduce((acc, row) => {
+          acc[row.id] = row.name;
+          return acc;
+        }, {});
+      } catch (err) {
+        console.error('Failed to fetch leagues:', err);
+      }
+
       return {
         offer: normalizeOffer(offer),
         contact: (offer as any).contactId,
-        configs: configs.map(normalizeConfig)
+        configs: configs.map((config) => computeConfigPrices(config, leaguesMap[config.leagueId] || 'Unknown League'))
       };
     }),
 

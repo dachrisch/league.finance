@@ -28,7 +28,7 @@ export function OffersPage() {
   };
 
   const handleCreateOffer = () => {
-    navigate('/offers/create');
+    navigate('/offers/new');
   };
 
   const handleViewOffer = (id: string) => {

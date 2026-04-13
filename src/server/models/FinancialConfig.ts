@@ -5,6 +5,7 @@ export interface IFinancialConfig extends Document {
   seasonId: number;
   costModel: 'SEASON' | 'GAMEDAY';
   baseRateOverride: number | null;
+  customPrice?: number | null;
   expectedTeamsCount: number;
   expectedGamedaysCount: number;
   expectedTeamsPerGameday: number;
@@ -13,12 +14,19 @@ export interface IFinancialConfig extends Document {
   updatedAt: Date;
 }
 
+export interface IFinancialConfigWithPrices extends IFinancialConfig {
+  basePrice: number;
+  finalPrice: number;
+  leagueName: string;
+}
+
 const FinancialConfigSchema = new Schema<IFinancialConfig>(
   {
     leagueId: { type: Number, required: true },
     seasonId: { type: Number, required: true },
     costModel: { type: String, enum: ['SEASON', 'GAMEDAY'], required: true },
     baseRateOverride: { type: Number, default: null },
+    customPrice: { type: Number, default: null },
     expectedTeamsCount: { type: Number, default: 0, min: 0 },
     expectedGamedaysCount: { type: Number, default: 0, min: 0 },
     expectedTeamsPerGameday: { type: Number, default: 0, min: 0 },
