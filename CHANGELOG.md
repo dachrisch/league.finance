@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.6](https://github.com/dachrisch/league.finance/compare/v0.1.5...v0.1.6) (2026-04-13)
+
+
+### Features
+
+* optimize app for mobile with responsive navigation ([f13ecea](https://github.com/dachrisch/league.finance/commit/f13ecea8a1343ce0fe93e4febbd8aa022800e5be))
+
 ### [0.1.5](https://github.com/dachrisch/league.finance/compare/v0.1.4...v0.1.5) (2026-04-11)
 
 
