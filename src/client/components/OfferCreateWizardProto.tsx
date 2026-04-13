@@ -5,13 +5,13 @@ import { trpc } from '../lib/trpc';
 type Step = 1 | 2 | 3 | 4;
 
 interface OfferState {
-  association: { id: string; name: string } | null;
-  season: { id: number; name: string } | null;
-  contact: { id: string; name: string; address: string } | null;
+  association: any | null;
+  season: any | null;
+  contact: any | null;
   costModel: 'SEASON' | 'GAMEDAY';
   baseRate: number | null;
   expectedTeams: number;
-  selectedLeagues: { id: string; name: string }[];
+  selectedLeagues: any[];
 }
 
 interface League {
@@ -777,24 +777,39 @@ function Step1AssociationSeason({
   onAssociationChange,
   onSeasonChange,
   onCreateAssociation,
+  associations = [],
 }: any) {
   const [showCreateAssoc, setShowCreateAssoc] = useState(false);
+  const { data: allAssociations } = trpc.finance.associations.list.useQuery();
+
+  const availableAssociations = allAssociations || associations;
 
   return (
     <div>
       <div className="proto-field">
         <label className="proto-label">Association *</label>
-        <div style={{ marginBottom: '0.75rem' }}>
-          {state.association ? (
-            <div style={{ padding: '1rem', background: '#dcfce7', border: '2px solid #86efac', borderRadius: '0.625rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 600, color: '#166534' }}>{state.association.name}</span>
-              <span style={{ color: '#16a34a', fontWeight: 'bold', fontSize: '1.25rem' }}>✓</span>
-            </div>
-          ) : (
-            <div style={{ padding: '1rem', background: '#f3f4f6', border: '2px dashed #cbd5e1', borderRadius: '0.625rem', textAlign: 'center', color: '#9ca3af' }}>
-              No association selected
-            </div>
-          )}
+        <div style={{ marginBottom: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {availableAssociations.map((assoc: any) => (
+            <button
+              key={assoc._id}
+              onClick={() => onAssociationChange(assoc)}
+              style={{
+                padding: '1rem',
+                background: state.association?._id === assoc._id ? '#dcfce7' : 'white',
+                border: `2px solid ${state.association?._id === assoc._id ? '#86efac' : '#e2e8f0'}`,
+                borderRadius: '0.625rem',
+                textAlign: 'left',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontWeight: 600,
+              }}
+            >
+              <span>{assoc.name}</span>
+              {state.association?._id === assoc._id && <span style={{ color: '#16a34a', fontSize: '1.25rem' }}>✓</span>}
+            </button>
+          ))}
         </div>
         <button
           onClick={() => setShowCreateAssoc(true)}
@@ -833,20 +848,23 @@ function Step1AssociationSeason({
 
 function Step2Contact({ state, onContactChange, onCreateContact }: any) {
   const [showCreateContact, setShowCreateContact] = useState(false);
+  const { data: allContacts } = trpc.finance.contacts.list.useQuery();
+
+  const displayContacts = allContacts || MOCK_CONTACTS;
 
   return (
     <div>
       <div className="proto-field">
         <label className="proto-label">Select Contact *</label>
         <div style={{ marginBottom: '1rem' }}>
-          {MOCK_CONTACTS.map((contact) => (
+          {displayContacts.map((contact: any) => (
             <button
-              key={contact.id}
+              key={contact._id || contact.id}
               onClick={() => onContactChange(contact)}
               className="proto-contact-card"
               style={{
-                borderColor: state.contact?.id === contact.id ? '#3b82f6' : '#e2e8f0',
-                background: state.contact?.id === contact.id ? '#f0f9ff' : 'white',
+                borderColor: state.contact?._id === contact._id || state.contact?.id === contact.id ? '#3b82f6' : '#e2e8f0',
+                background: state.contact?._id === contact._id || state.contact?.id === contact.id ? '#f0f9ff' : 'white',
                 width: '100%',
                 textAlign: 'left',
               }}
@@ -854,9 +872,9 @@ function Step2Contact({ state, onContactChange, onCreateContact }: any) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div className="proto-contact-name">{contact.name}</div>
-                  <div className="proto-contact-address">{contact.address}</div>
+                  <div className="proto-contact-address">{contact.address || contact.street || ''}</div>
                 </div>
-                {state.contact?.id === contact.id && <span style={{ color: '#0284c7', fontSize: '1.25rem' }}>✓</span>}
+                {(state.contact?._id === contact._id || state.contact?.id === contact.id) && <span style={{ color: '#0284c7', fontSize: '1.25rem' }}>✓</span>}
               </div>
             </button>
           ))}
@@ -966,11 +984,13 @@ function Step4Leagues({ state, onLeagueSelect, onLeagueDeselect }: any) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const { data: allLeagues } = trpc.teams.leagues.useQuery();
 
+  const leagues = allLeagues || MOCK_LEAGUES;
   const categories = ['Youth', 'Regional', 'Division', 'Other'];
 
   const filtered = useMemo(() => {
-    return MOCK_LEAGUES.filter((league) => {
+    return leagues.filter((league: any) => {
       const matchesSearch = league.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = !categoryFilter || league.category === categoryFilter;
       return matchesSearch && matchesCategory;
@@ -1272,19 +1292,11 @@ export function OfferCreateWizardProto() {
                 <button
                   onClick={async () => {
                     try {
-                      // Find the actual database IDs from the selected display objects
-                      const selectedAssociation = associations?.find(a => a.name === state.association?.name);
-                      const selectedSeason = seasons?.find(s => s.id === state.season?.id || s.name === state.season?.name);
-                      const selectedContact = contacts?.find(c => c.name === state.contact?.name);
-                      const leagueIds = state.selectedLeagues
-                        .map(l => leagues?.find(lg => lg.name === l.name)?.id || l.id)
-                        .filter(Boolean);
-
                       const result = await createOffer.mutateAsync({
-                        associationId: selectedAssociation?._id || '',
-                        seasonId: selectedSeason?.id || 0,
-                        contactId: selectedContact?._id || '',
-                        leagueIds: leagueIds as string[],
+                        associationId: state.association?._id || '',
+                        seasonId: state.season?.id || 0,
+                        contactId: state.contact?._id || '',
+                        leagueIds: state.selectedLeagues.map((l: any) => l.id || l),
                         costModel: state.costModel,
                         baseRateOverride: state.baseRate,
                         expectedTeamsCount: state.expectedTeams,
