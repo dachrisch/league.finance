@@ -824,7 +824,12 @@ function Step1AssociationSeason({
         <label className="proto-label">Season *</label>
         <select
           value={state.season?.id || ''}
-          onChange={(e) => onSeasonChange({ id: parseInt(e.target.value), name: e.target.value })}
+          onChange={(e) => {
+            const selectedId = e.target.value;
+            if (selectedId) {
+              onSeasonChange({ id: parseInt(selectedId), name: selectedId });
+            }
+          }}
           className="proto-select"
         >
           <option value="">Select a season</option>
