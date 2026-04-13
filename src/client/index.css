@@ -172,3 +172,66 @@ main {
   padding: 2px 4px;
   border-radius: 4px;
 }
+
+/* Mobile Responsive Navigation */
+@media (max-width: 768px) {
+  /* Hide sidebar on mobile, show hamburger menu */
+  #nav-sidebar {
+    transform: translateX(-100%);
+    z-index: 999;
+  }
+
+  #mobile-menu-button {
+    display: block;
+  }
+
+  #mobile-menu-backdrop {
+    display: none;
+  }
+
+  /* Show backdrop and sidebar when menu is open */
+  #mobile-menu-backdrop.mobile-menu-open,
+  #mobile-menu-backdrop[style*="display: block"] {
+    display: block !important;
+  }
+
+  #nav-sidebar.mobile-menu-open {
+    transform: translateX(0);
+  }
+
+  /* Adjust main content for mobile */
+  .app-main {
+    flex-direction: column;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding-top: 3rem;
+    width: 100%;
+  }
+
+  /* Ensure body doesn't scroll when mobile menu is open */
+  body.mobile-menu-open {
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 769px) {
+  /* Desktop: show sidebar, hide menu button */
+  #nav-sidebar {
+    transform: translateX(0);
+  }
+
+  #mobile-menu-button {
+    display: none;
+  }
+
+  #mobile-menu-backdrop {
+    display: none;
+  }
+
+  /* Add margin for desktop layout */
+  .main-content {
+    margin-left: 200px;
+  }
+}

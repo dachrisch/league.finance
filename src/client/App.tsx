@@ -47,13 +47,13 @@ export function App() {
   return (
     <BrowserRouter>
       <div id="app-wrapper" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <main style={{ flex: 1, display: 'flex' }}>
+        <main style={{ flex: 1, display: 'flex' }} className="app-main">
           {isDbDown ? (
             <DbDownScreen />
           ) : (
             <>
               <Navigation />
-              <div style={{ flex: 1, marginLeft: '200px' }}>
+              <div style={{ flex: 1 }} className="main-content">
                 <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/login/callback" element={<AuthCallbackPage />} />
