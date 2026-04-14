@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.8](https://github.com/dachrisch/league.finance/compare/v0.1.7...v0.1.8) (2026-04-14)
+
+
+### Features
+
+* add automatic GitHub release creation and link version in footer ([6d19a3d](https://github.com/dachrisch/league.finance/commit/6d19a3d413c87c1e77c84ceaa302386a0b4e8d00))
+* add duplicate detection and entity creation to Step1 ([ea559b1](https://github.com/dachrisch/league.finance/commit/ea559b16788860ebc04b9313cb81a68ae7a0674b))
+* add email and phone fields to contact schema ([137a4f3](https://github.com/dachrisch/league.finance/commit/137a4f336c1a6badc056c9e921782de355f29217))
+* add migration for association and contact schema changes ([a62c69e](https://github.com/dachrisch/league.finance/commit/a62c69eba0ccd3e499aafeb4c8b3e9c807e45ecd))
+* add search endpoints for duplicate detection in contacts & associations ([48971c3](https://github.com/dachrisch/league.finance/commit/48971c3a291fb1a914c796a8c55460060de3eb12))
+* add text extraction utility for association & contact parsing ([694c191](https://github.com/dachrisch/league.finance/commit/694c191f152ab2dfde878de537e6bd4aa3926852))
+* create OfferWizardStep1 component with extraction and dropdown options ([2a864b1](https://github.com/dachrisch/league.finance/commit/2a864b17f89a3053cf52f8da3801e59c23f28756))
+* create unified AssociationContactForm component with text extraction ([46add26](https://github.com/dachrisch/league.finance/commit/46add26fc916bcc52fb01fbaededcfd55b583ac3))
+* **hooks:** add useOfferCreation hook for wizard state management ([bf9dfcc](https://github.com/dachrisch/league.finance/commit/bf9dfcc29187e486964027dd87549e3ada837ba5))
+* implement custom price save mutation for offer details ([ed888f0](https://github.com/dachrisch/league.finance/commit/ed888f00828b9e509527801e5b9c833b07cbb644))
+* **offer-wizard:** add wizard state types and interfaces ([9ad8465](https://github.com/dachrisch/league.finance/commit/9ad846567197049daf966fc973e70ccfef39af8b))
+* **schemas:** add offer wizard validation schemas ([8fd719d](https://github.com/dachrisch/league.finance/commit/8fd719d4ae98db34fc09964016791187c09ea9ec))
+* **styles:** add offer wizard design system and component styles ([3f83eb8](https://github.com/dachrisch/league.finance/commit/3f83eb8093cb516b51029000d43f23e23b28479f))
+* update association schema to address-based model ([ac4b0cd](https://github.com/dachrisch/league.finance/commit/ac4b0cd261d08f00a63c85bf338569cd3ac608c7))
+
+
+### Bug Fixes
+
+* add configId to UpdateFinancialConfigSchema for spec compliance ([fd4ef54](https://github.com/dachrisch/league.finance/commit/fd4ef5477e25683151be05dd60074a3d5221f7a3))
+* add logout endpoint, validate JWT payload, strengthen CSRF protection ([5f9dbba](https://github.com/dachrisch/league.finance/commit/5f9dbbad2ac79a11540815754b41fb8635e5421c))
+* add max(100) validation for PERCENT discounts ([93ecd61](https://github.com/dachrisch/league.finance/commit/93ecd612321b211e5b3aac95a92d38ede777dee8))
+* add required fields to test data - email for contacts, address for associations ([baebe0f](https://github.com/dachrisch/league.finance/commit/baebe0fb2e51996ac438a505980018006ae1a0b6))
+* address critical security and functional issues in custom price save ([4d28ffc](https://github.com/dachrisch/league.finance/commit/4d28ffc9788059b26f254edaa057bbc014f6cb63))
+* atomic offer creation with transaction rollback ([223dc3e](https://github.com/dachrisch/league.finance/commit/223dc3e2769667fdffe3cf190dbd11715306ea4e))
+* correct @types/cookie-parser version to available 1.4.10 ([5774a4e](https://github.com/dachrisch/league.finance/commit/5774a4e4a75170794bc729067cda5fb83cf395fa))
+* critical migration issues - env var, tracking, sparse index ([a6fd027](https://github.com/dachrisch/league.finance/commit/a6fd0278e36ca957e9068e5085a1c41d9d893958))
+* **database:** Fix FinancialConfig index to support multiple offers per league/season ([1df415e](https://github.com/dachrisch/league.finance/commit/1df415e7588a932d600d78b6e0c72bc3f99a693e))
+* exclude vitest test files from TypeScript compilation ([c9fb121](https://github.com/dachrisch/league.finance/commit/c9fb121dbbb503b37303a13f1ef8d73fc910032a))
+* improve auth error handler pathname check to avoid false positives ([e108d42](https://github.com/dachrisch/league.finance/commit/e108d425516eec8541721cd8a37ad6ec7952ed65))
+* improve migration idempotency and ordering ([d528df9](https://github.com/dachrisch/league.finance/commit/d528df97acf07af8490b1155f408b169c7f68ea8))
+* improve transaction error handling in offer creation ([395ce8a](https://github.com/dachrisch/league.finance/commit/395ce8a18c2988b5f7506089497096f08441ec87))
+* invalidate queries after entity creation to show new items in dropdowns ([db0f4b2](https://github.com/dachrisch/league.finance/commit/db0f4b227f4010895c83b9c10538b9a3e525e5ef))
+* Pass credentials to fetch in httpBatchLink ([5c4b188](https://github.com/dachrisch/league.finance/commit/5c4b188d2e072a5e219dc602de79220ad43f5af2))
+* proper tRPC mutation handling in OfferWizardStep1 for entity creation ([0540923](https://github.com/dachrisch/league.finance/commit/0540923f06ac4a2c5c2ff49d0f9462c59a7592f5))
+* Secure JWT token in HttpOnly cookie instead of URL query parameter ([c52ba9e](https://github.com/dachrisch/league.finance/commit/c52ba9efe87d6d2f933a2565379cf3000518d028))
+* use correct tRPC mutation calls for entity creation in Step1 ([079086a](https://github.com/dachrisch/league.finance/commit/079086a6079aaa73f73d231fec6d46338e49c8fb))
+
 ### [0.1.7](https://github.com/dachrisch/league.finance/compare/v0.1.6...v0.1.7) (2026-04-14)
 
 
