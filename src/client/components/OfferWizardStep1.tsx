@@ -44,7 +44,11 @@ export function OfferWizardStep1({
   const [createdAssociationId, setCreatedAssociationId] = useState<string | null>(null);
   const [createdContactId, setCreatedContactId] = useState<string | null>(null);
 
-  // Note: tRPC mutations are defined inline in handlers to avoid context issues in tests
+  // tRPC mutations - these hooks are called unconditionally to avoid React Hook rules violations
+  const searchAssociation = trpc.finance.associations.search.useMutation();
+  const searchContact = trpc.finance.contacts.search.useMutation();
+  const createAssociation = trpc.finance.associations.create.useMutation();
+  const createContact = trpc.finance.contacts.create.useMutation();
 
   const handleExtractedData = async (data: any) => {
     setExtractedData({
@@ -53,20 +57,6 @@ export function OfferWizardStep1({
     });
 
     try {
-      // Define mutations inline to avoid tRPC context issues in tests
-      let searchAssociation, searchContact, createAssociation, createContact;
-      try {
-        searchAssociation = trpc.finance.associations.search.useMutation();
-        searchContact = trpc.finance.contacts.search.useMutation();
-        createAssociation = trpc.finance.associations.create.useMutation();
-        createContact = trpc.finance.contacts.create.useMutation();
-      } catch {
-        // If tRPC not available (e.g., in tests), just use selected data as-is
-        setSelectedAssociationId('');
-        setSelectedContactId('');
-        return;
-      }
-
       // Search for existing association
       const existingAssoc = await searchAssociation.mutateAsync({
         name: data.association.name,
@@ -104,9 +94,11 @@ export function OfferWizardStep1({
         setCreatedContactId(newContact._id);
         setSelectedContactId(newContact._id);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to process extracted data:', err);
-      setErrors({ associationContact: 'Failed to process extracted data' });
+      setErrors({
+        associationContact: err?.message || 'Failed to process extracted data'
+      });
     }
   };
 
