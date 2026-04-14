@@ -9,7 +9,7 @@ import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { AssociationsPage } from './pages/AssociationsPage';
 import { OffersPage } from './pages/OffersPage';
 import { OfferDetailPage } from './pages/OfferDetailPage';
-import { OfferCreateWizard } from './components/OfferCreateWizard';
+import OfferNewPage from './pages/OfferNewPage';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { trpc } from './lib/trpc';
@@ -62,7 +62,7 @@ export function App() {
                 <Route path="/config/new" element={<ConfigNewPage />} />
                 <Route path="/config/:id" element={<ConfigDetailPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/offers/new" element={<OfferCreateWizard />} />
+                <Route path="/offers/new" element={<OfferNewPage />} />
                 <Route path="/offers/:id" element={<OfferDetailPage />} />
                 <Route path="/offers" element={<OffersPage />} />
                 <Route path="/associations" element={<AssociationsPage />} />
