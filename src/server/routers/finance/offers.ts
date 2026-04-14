@@ -104,37 +104,46 @@ export const offersRouter = router({
       expectedTeamsPerGameday: z.number().int().min(0).optional(),
     }))
     .mutation(async ({ input }) => {
-      try {
-        // Create offer
-        const offer = await Offer.create({
-          status: 'draft',
-          associationId: input.associationId,
-          seasonId: input.seasonId,
-          leagueIds: input.leagueIds,
-          contactId: input.contactId,
-        });
+      const session = await Offer.startSession();
+      session.startTransaction();
 
-        // Auto-create FinancialConfig for each league
-        const configs = await Promise.all(
-          input.leagueIds.map((leagueId) =>
-            FinancialConfig.create({
-              leagueId,
-              seasonId: input.seasonId,
-              costModel: input.costModel,
-              baseRateOverride: input.baseRateOverride ?? null,
-              expectedTeamsCount: input.expectedTeamsCount,
-              expectedGamedaysCount: input.expectedGamedaysCount ?? 0,
-              expectedTeamsPerGameday: input.expectedTeamsPerGameday ?? 0,
-              offerId: offer._id,
-            })
-          )
+      try {
+        // Create offer within transaction
+        const [offer] = await Offer.create(
+          [{
+            status: 'draft',
+            associationId: input.associationId,
+            seasonId: input.seasonId,
+            leagueIds: input.leagueIds,
+            contactId: input.contactId,
+          }],
+          { session }
         );
+
+        // Auto-create FinancialConfig for each league within transaction
+        const configs = await FinancialConfig.insertMany(
+          input.leagueIds.map((leagueId) => ({
+            leagueId,
+            seasonId: input.seasonId,
+            costModel: input.costModel,
+            baseRateOverride: input.baseRateOverride ?? null,
+            expectedTeamsCount: input.expectedTeamsCount,
+            expectedGamedaysCount: input.expectedGamedaysCount ?? 0,
+            expectedTeamsPerGameday: input.expectedTeamsPerGameday ?? 0,
+            offerId: offer._id,
+          })),
+          { session }
+        );
+
+        await session.commitTransaction();
 
         return {
           ...normalizeOffer(offer),
           configs: configs.map(normalizeConfig),
         };
       } catch (err: any) {
+        await session.abortTransaction();
+
         if (err.code === 11000) {
           throw new TRPCError({
             code: 'CONFLICT',
@@ -142,6 +151,8 @@ export const offersRouter = router({
           });
         }
         throw err;
+      } finally {
+        await session.endSession();
       }
     }),
 
