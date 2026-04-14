@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { router, protectedProcedure } from '../../trpc';
+import { router, protectedProcedure, publicProcedure } from '../../trpc';
 import { Association } from '../../models/Association';
 
 const normalizeAssociation = (doc: any) => ({
@@ -76,5 +76,25 @@ export const associationsRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
       return { success: true };
+    }),
+
+  search: publicProcedure
+    .input(z.object({
+      name: z.string(),
+    }))
+    .query(async ({ input }) => {
+      // Exact name match
+      const association = await Association.findOne({
+        name: { $regex: `^${input.name}$`, $options: 'i' },
+      });
+
+      if (association) {
+        return {
+          _id: association._id.toString(),
+          name: association.name,
+        };
+      }
+
+      return null;
     }),
 });

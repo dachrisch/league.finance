@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { router, protectedProcedure, adminProcedure } from '../../trpc';
+import { router, protectedProcedure, adminProcedure, publicProcedure } from '../../trpc';
 import { CreateContactSchema, UpdateContactSchema } from '../../../../shared/schemas/contact';
 import { Contact } from '../../models/Contact';
 
@@ -46,5 +46,34 @@ export const contactsRouter = router({
       const contact = await Contact.findByIdAndDelete(input.id);
       if (!contact) throw new TRPCError({ code: 'NOT_FOUND' });
       return { success: true };
+    }),
+
+  search: publicProcedure
+    .input(z.object({
+      email: z.string().email().optional(),
+      name: z.string().optional(),
+      city: z.string().optional(),
+    }))
+    .query(async ({ input }) => {
+      if (!input.email && !input.name) {
+        return null;
+      }
+
+      // Search by name + city (exact match)
+      if (input.name && input.city) {
+        const contact = await Contact.findOne({
+          name: { $regex: `^${input.name}$`, $options: 'i' },
+          'address.city': { $regex: `^${input.city}$`, $options: 'i' },
+        });
+        if (contact) {
+          return {
+            _id: contact._id.toString(),
+            name: contact.name,
+            address: contact.address,
+          };
+        }
+      }
+
+      return null;
     }),
 });
