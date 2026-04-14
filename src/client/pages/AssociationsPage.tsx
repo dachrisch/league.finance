@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { trpc } from '../lib/trpc';
+import { AssociationContactForm } from '../components/AssociationContactForm';
 import { AssociationForm } from '../components/AssociationForm';
 import { AssociationList } from '../components/AssociationList';
 import { AssociationInput } from '../lib/schemas';
@@ -110,14 +111,28 @@ export function AssociationsPage() {
             }}
           >
             <h2 style={{ margin: '0 0 1.5rem 0' }}>
-              {modal.type === 'create' ? 'Create Association' : 'Edit Association'}
+              {modal.type === 'create' ? 'Create Association & Contact' : 'Edit Association'}
             </h2>
-            <AssociationForm
-              initialData={editingAssociation}
-              onSubmit={handleFormSubmit}
-              isLoading={createAssociation.isPending || updateAssociation.isPending}
-              onCancel={handleCloseModal}
-            />
+            {modal.type === 'create' ? (
+              <AssociationContactForm
+                onSubmit={async (data) => {
+                  await createAssociation.mutateAsync({
+                    name: data.association.name,
+                    address: data.association.address,
+                  });
+                  handleCloseModal();
+                }}
+                isLoading={createAssociation.isPending}
+                onCancel={handleCloseModal}
+              />
+            ) : (
+              <AssociationForm
+                initialData={editingAssociation}
+                onSubmit={handleFormSubmit}
+                isLoading={updateAssociation.isPending}
+                onCancel={handleCloseModal}
+              />
+            )}
           </div>
         </div>
       )}
