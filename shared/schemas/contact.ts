@@ -8,8 +8,10 @@ export const AddressSchema = z.object({
 });
 
 export const CreateContactSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(255).trim(),
+  name: z.string().min(2, 'Name must be at least 2 characters').max(255).trim(),
   address: AddressSchema,
+  email: z.string().email('Invalid email address'),
+  phone: z.string().optional(),
 });
 
 export const UpdateContactSchema = CreateContactSchema.partial();
