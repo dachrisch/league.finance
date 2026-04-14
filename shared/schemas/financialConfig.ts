@@ -27,9 +27,7 @@ export const CreateFinancialConfigSchema = z.object({
   offerId: z.string().optional(),
 });
 
-export const UpdateFinancialConfigSchema = CreateFinancialConfigSchema.partial().omit({
-  leagueId: true,
-  seasonId: true,
-}).extend({
+export const UpdateFinancialConfigSchema = z.object({
+  configId: z.string().min(1, 'Config ID is required'),
   customPrice: z.number().positive('Custom price must be positive').nullable(),
 });

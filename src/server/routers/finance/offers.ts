@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { router, protectedProcedure, adminProcedure } from '../../trpc';
 import { CreateOfferSchema, UpdateOfferSchema } from '../../../../shared/schemas/offer';
+import { UpdateFinancialConfigSchema } from '../../../../shared/schemas/financialConfig';
 import { Offer } from '../../models/Offer';
 import { FinancialConfig } from '../../models/FinancialConfig';
 import { Contact } from '../../models/Contact';
@@ -259,10 +260,7 @@ export const offersRouter = router({
     }),
 
   updateConfig: protectedProcedure
-    .input(z.object({
-      configId: z.string().min(1, 'Config ID is required'),
-      customPrice: z.number().positive('Custom price must be positive').nullable(),
-    }))
+    .input(UpdateFinancialConfigSchema)
     .mutation(async ({ input }) => {
       const config = await FinancialConfig.findById(input.configId);
       if (!config) throw new TRPCError({ code: 'NOT_FOUND', message: 'Configuration not found' });
