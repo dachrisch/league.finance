@@ -38,7 +38,7 @@ const FinancialConfigSchema = new Schema<IFinancialConfig>(
 // Composite unique index: one config per offer+league+season
 FinancialConfigSchema.index(
   { offerId: 1, leagueId: 1, seasonId: 1 },
-  { unique: true }
+  { unique: true, sparse: true }
 );
 // Query index for finding configs by offer
 FinancialConfigSchema.index({ offerId: 1 });
