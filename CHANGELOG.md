@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.7](https://github.com/dachrisch/league.finance/compare/v0.1.6...v0.1.7) (2026-04-14)
+
+
+### Features
+
+* replace legacy offer creation with redesigned wizard ([73db4c5](https://github.com/dachrisch/league.finance/commit/73db4c53ded1176cdbbd8535e02fc131d3f8dd01))
+* wire up TRPC mutations to actually create offers ([48823a3](https://github.com/dachrisch/league.finance/commit/48823a39b0b785283caf1dbb9f9b38f0a10c304c))
+
+
+### Bug Fixes
+
+* improve offer creation data collection in wizard ([bcdf7e1](https://github.com/dachrisch/league.finance/commit/bcdf7e1ec776ab9627ded699a4a6f85039385f4b))
+* improve season selection handling ([49a03d0](https://github.com/dachrisch/league.finance/commit/49a03d0565c85a959f8c88f6da06b38a6bc0dc79))
+* replace alert dialogs with proper field validation in OfferCreateWizard ([6e68074](https://github.com/dachrisch/league.finance/commit/6e68074cdab4c68c580905def170c76f456838eb))
+* switch to real OfferCreateWizard with backend integration ([20363e4](https://github.com/dachrisch/league.finance/commit/20363e4a7eb43d2d1c7a65a264aca2703f552ec5))
+
 ### [0.1.6](https://github.com/dachrisch/league.finance/compare/v0.1.5...v0.1.6) (2026-04-13)
 
 
