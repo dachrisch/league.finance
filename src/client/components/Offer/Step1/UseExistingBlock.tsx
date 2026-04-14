@@ -36,6 +36,7 @@ export function UseExistingBlock({
       <div
         className={`${styles.blockHeader} ${isActive ? styles.open : ''}`}
         onClick={onToggle}
+        style={{ cursor: 'pointer' }}
       >
         <div className={`${styles.blockIcon} ${isDone ? styles.done : (isActive ? styles.active : '')}`}>
           {isDone ? '✓' : '1'}

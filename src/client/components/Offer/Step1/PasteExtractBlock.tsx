@@ -1,6 +1,6 @@
 // src/client/components/Offer/Step1/PasteExtractBlock.tsx
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { ExtractedData } from '../types';
 import { getExtractionFeedback } from '../../../hooks/useExtraction';
 import styles from '../../../styles/OfferWizard.module.css';
@@ -26,16 +26,23 @@ export function PasteExtractBlock({
   onEmailChange,
   onPhoneChange,
 }: PasteExtractBlockProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   const feedback = useMemo(
     () => (extractedData ? getExtractionFeedback(extractedData) : null),
     [extractedData]
   );
 
   const isDisabled = !pasteInput.trim() || isExtracting;
+  const shouldShowBody = isExpanded || extractedData;
 
   return (
     <div className={styles.block}>
-      <div className={`${styles.blockHeader} ${extractedData ? styles.open : ''}`}>
+      <div
+        className={`${styles.blockHeader} ${shouldShowBody ? styles.open : ''}`}
+        onClick={() => setIsExpanded(!isExpanded)}
+        style={{ cursor: 'pointer' }}
+      >
         <div className={`${styles.blockIcon} ${extractedData ? styles.done : styles.active}`}>
           {extractedData ? '✓' : '1'}
         </div>
@@ -50,7 +57,7 @@ export function PasteExtractBlock({
         <span className={styles.blockChevron}>▼</span>
       </div>
 
-      <div className={`${styles.blockBody} ${extractedData ? styles.open : ''}`}>
+      <div className={`${styles.blockBody} ${shouldShowBody ? styles.open : ''}`}>
         <div className={styles.blockInner}>
           {/* Paste textarea */}
           <div className={styles.field}>
