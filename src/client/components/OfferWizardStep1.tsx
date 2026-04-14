@@ -44,9 +44,7 @@ export function OfferWizardStep1({
   const [createdAssociationId, setCreatedAssociationId] = useState<string | null>(null);
   const [createdContactId, setCreatedContactId] = useState<string | null>(null);
 
-  // tRPC mutations - these hooks are called unconditionally to avoid React Hook rules violations
-  const searchAssociation = trpc.finance.associations.search.useMutation();
-  const searchContact = trpc.finance.contacts.search.useMutation();
+  // tRPC mutations for creating entities
   const createAssociation = trpc.finance.associations.create.useMutation();
   const createContact = trpc.finance.contacts.create.useMutation();
 
@@ -57,43 +55,23 @@ export function OfferWizardStep1({
     });
 
     try {
-      // Search for existing association
-      const existingAssoc = await searchAssociation.mutateAsync({
+      // Create new association
+      const newAssoc = await createAssociation.mutateAsync({
         name: data.association.name,
+        address: data.association.address,
       });
+      setCreatedAssociationId(newAssoc._id);
+      setSelectedAssociationId(newAssoc._id);
 
-      // Search for existing contact
-      const existingContact = await searchContact.mutateAsync({
+      // Create new contact
+      const newContact = await createContact.mutateAsync({
+        name: data.contact.name,
         email: data.contact.email,
+        phone: data.contact.phone || '',
+        address: data.association.address, // Reuse association address for contact
       });
-
-      if (existingAssoc) {
-        setSelectedAssociationId(existingAssoc._id);
-        setCreatedAssociationId(null);
-      } else {
-        // Create new association
-        const newAssoc = await createAssociation.mutateAsync({
-          name: data.association.name,
-          address: data.association.address,
-        });
-        setCreatedAssociationId(newAssoc._id);
-        setSelectedAssociationId(newAssoc._id);
-      }
-
-      if (existingContact) {
-        setSelectedContactId(existingContact._id);
-        setCreatedContactId(null);
-      } else {
-        // Create new contact
-        const newContact = await createContact.mutateAsync({
-          name: data.contact.name,
-          email: data.contact.email,
-          phone: data.contact.phone || '',
-          address: data.association.address, // Reuse association address for contact
-        });
-        setCreatedContactId(newContact._id);
-        setSelectedContactId(newContact._id);
-      }
+      setCreatedContactId(newContact._id);
+      setSelectedContactId(newContact._id);
     } catch (err: any) {
       console.error('Failed to process extracted data:', err);
       setErrors({
