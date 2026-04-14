@@ -2,6 +2,7 @@ import { initTRPC, TRPCError } from '@trpc/server';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import jwt from 'jsonwebtoken';
 import type { JwtPayload } from '../../shared/types';
+import { JwtPayloadSchema } from '../../shared/schemas/user';
 
 export interface Context {
   user: JwtPayload | null;
@@ -22,7 +23,8 @@ export function createContext({ req }: trpcExpress.CreateExpressContextOptions):
   if (!token) return { user: null };
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!, { algorithms: ['HS256'] }) as JwtPayload;
+    const verifiedPayload = jwt.verify(token, process.env.JWT_SECRET!, { algorithms: ['HS256'] });
+    const payload = JwtPayloadSchema.parse(verifiedPayload);
     return { user: payload };
   } catch {
     return { user: null };

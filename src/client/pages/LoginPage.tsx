@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const { data: user, isLoading } = trpc.auth.me.useQuery(undefined, {
     retry: false,
   });
@@ -12,7 +13,6 @@ export function LoginPage() {
     if (user && !isLoading) navigate('/dashboard', { replace: true });
   }, [user, isLoading, navigate]);
 
-  const params = new URLSearchParams(window.location.search);
   const error = params.get('error');
 
   return (

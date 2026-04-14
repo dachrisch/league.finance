@@ -71,13 +71,18 @@ export function createApp() {
       res.cookie('auth_token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'strict',
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         path: '/',
       });
       res.redirect(`${CLIENT_URL}/login/callback`);
     }
   );
+
+  app.get('/auth/logout', (req, res) => {
+    res.clearCookie('auth_token', { path: '/' });
+    res.redirect(`${CLIENT_URL}/login`);
+  });
 
   // tRPC handler
   app.use(
