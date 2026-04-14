@@ -16,7 +16,8 @@ async function up() {
     await collection.dropIndex('leagueId_1_seasonId_1');
     console.log('✓ Dropped old index: leagueId_1_seasonId_1');
   } catch (err) {
-    if (err.message.includes('index not found')) {
+    // Error code 27 is the stable MongoDB IndexNotFound error
+    if (err.code === 27 || err.message.includes('index not found')) {
       console.log('✓ Old index already removed');
     } else {
       throw err;

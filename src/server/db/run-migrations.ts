@@ -9,7 +9,9 @@ async function runMigrations() {
   console.log('Connected to MongoDB');
 
   const migrationsDir = path.join(__dirname, 'migrations');
-  const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.js'));
+  const files = fs.readdirSync(migrationsDir)
+    .filter(f => f.endsWith('.js'))
+    .sort();
 
   for (const file of files) {
     console.log(`\n→ Running migration: ${file}`);
