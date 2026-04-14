@@ -83,14 +83,14 @@ export function Step1({
     <div className={styles.wizard}>
       <div className={styles.wizardHeader}>
         <h1 className={styles.wizardTitle}>Create New Offer</h1>
-        <div className={styles.progressIndicator}>
+        <div className={styles.progressIndicator} role="progressbar" aria-valuenow={1} aria-valuemin={1} aria-valuemax={2}>
           <div className={styles.progressStep}>
-            <div className={`${styles.progressDot} ${styles.active}`}>1</div>
+            <div className={`${styles.progressDot} ${styles.active}`} aria-current="step" aria-label="Step 1: Association, Contact & Season">1</div>
             <span className={styles.progressLabel}>Association, Contact & Season</span>
           </div>
-          <span className={styles.progressSeparator}>›</span>
+          <span className={styles.progressSeparator} aria-hidden="true">›</span>
           <div className={styles.progressStep}>
-            <div className={styles.progressDot}>2</div>
+            <div className={styles.progressDot} aria-label="Step 2: Pricing & Leagues">2</div>
             <span className={styles.progressLabel}>Pricing & Leagues</span>
           </div>
         </div>

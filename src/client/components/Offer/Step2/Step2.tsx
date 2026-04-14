@@ -55,14 +55,14 @@ export function Step2({
     <div className={styles.wizard} style={{ maxWidth: '650px' }}>
       <div className={styles.wizardHeader}>
         <h1 className={styles.wizardTitle}>Create New Offer</h1>
-        <div className={styles.progressIndicator}>
+        <div className={styles.progressIndicator} role="progressbar" aria-valuenow={2} aria-valuemin={1} aria-valuemax={2}>
           <div className={styles.progressStep}>
-            <div className={`${styles.progressDot} ${styles.active}`} style={{ background: '#ecfdf5', color: '#10b981', borderColor: '#10b981' }}>✓</div>
+            <div className={`${styles.progressDot} ${styles.active}`} style={{ background: '#ecfdf5', color: '#10b981', borderColor: '#10b981' }} aria-label="Step 1 complete">✓</div>
             <span className={styles.progressLabel}>Association, Contact & Season</span>
           </div>
-          <span className={styles.progressSeparator}>›</span>
+          <span className={styles.progressSeparator} aria-hidden="true">›</span>
           <div className={styles.progressStep}>
-            <div className={`${styles.progressDot} ${styles.active}`}>2</div>
+            <div className={`${styles.progressDot} ${styles.active}`} aria-current="step" aria-label="Step 2: Pricing & Leagues">2</div>
             <span className={styles.progressLabel}>Pricing & Leagues</span>
           </div>
         </div>
