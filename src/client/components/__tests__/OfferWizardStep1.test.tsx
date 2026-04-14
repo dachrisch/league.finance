@@ -2,6 +2,49 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { OfferWizardStep1 } from '../OfferWizardStep1';
 
+// Mock tRPC to avoid context issues
+vi.mock('../lib/trpc', () => ({
+  trpc: {
+    finance: {
+      associations: {
+        list: {
+          useQuery: () => ({ data: undefined }),
+        },
+        search: {
+          useMutation: () => ({
+            mutateAsync: vi.fn().mockResolvedValue(undefined),
+          }),
+        },
+        create: {
+          useMutation: () => ({
+            mutateAsync: vi.fn().mockResolvedValue({ _id: 'new_assoc', name: 'New Association' }),
+          }),
+        },
+      },
+      contacts: {
+        list: {
+          useQuery: () => ({ data: undefined }),
+        },
+        search: {
+          useMutation: () => ({
+            mutateAsync: vi.fn().mockResolvedValue(undefined),
+          }),
+        },
+        create: {
+          useMutation: () => ({
+            mutateAsync: vi.fn().mockResolvedValue({ _id: 'new_contact', name: 'New Contact' }),
+          }),
+        },
+      },
+    },
+    teams: {
+      seasons: {
+        useQuery: () => ({ data: undefined }),
+      },
+    },
+  },
+}));
+
 // Mock AssociationContactForm to avoid tRPC context issues
 vi.mock('../AssociationContactForm', () => ({
   AssociationContactForm: () => (

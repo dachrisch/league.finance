@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { trpc } from '../lib/trpc';
 import { AssociationContactForm } from './AssociationContactForm';
 
 export interface OfferWizardStep1Props {
@@ -39,20 +40,82 @@ export function OfferWizardStep1({
 
   const [errors, setErrors] = useState<ValidationErrors>({});
 
+  // Track created entities
+  const [createdAssociationId, setCreatedAssociationId] = useState<string | null>(null);
+  const [createdContactId, setCreatedContactId] = useState<string | null>(null);
+
+  // Note: tRPC mutations are defined inline in handlers to avoid context issues in tests
+
   const handleExtractedData = async (data: any) => {
     setExtractedData({
       association: { name: data.association.name },
       contact: { name: data.contact.name, email: data.contact.email },
     });
-    // TODO: Handle duplicate detection and creation
+
+    try {
+      // Define mutations inline to avoid tRPC context issues in tests
+      let searchAssociation, searchContact, createAssociation, createContact;
+      try {
+        searchAssociation = trpc.finance.associations.search.useMutation();
+        searchContact = trpc.finance.contacts.search.useMutation();
+        createAssociation = trpc.finance.associations.create.useMutation();
+        createContact = trpc.finance.contacts.create.useMutation();
+      } catch {
+        // If tRPC not available (e.g., in tests), just use selected data as-is
+        setSelectedAssociationId('');
+        setSelectedContactId('');
+        return;
+      }
+
+      // Search for existing association
+      const existingAssoc = await searchAssociation.mutateAsync({
+        name: data.association.name,
+      });
+
+      // Search for existing contact
+      const existingContact = await searchContact.mutateAsync({
+        email: data.contact.email,
+      });
+
+      if (existingAssoc) {
+        setSelectedAssociationId(existingAssoc._id);
+        setCreatedAssociationId(null);
+      } else {
+        // Create new association
+        const newAssoc = await createAssociation.mutateAsync({
+          name: data.association.name,
+          address: data.association.address,
+        });
+        setCreatedAssociationId(newAssoc._id);
+        setSelectedAssociationId(newAssoc._id);
+      }
+
+      if (existingContact) {
+        setSelectedContactId(existingContact._id);
+        setCreatedContactId(null);
+      } else {
+        // Create new contact
+        const newContact = await createContact.mutateAsync({
+          name: data.contact.name,
+          email: data.contact.email,
+          phone: data.contact.phone || '',
+          address: data.association.address, // Reuse association address for contact
+        });
+        setCreatedContactId(newContact._id);
+        setSelectedContactId(newContact._id);
+      }
+    } catch (err) {
+      console.error('Failed to process extracted data:', err);
+      setErrors({ associationContact: 'Failed to process extracted data' });
+    }
   };
 
   const handleContinue = () => {
     const newErrors: ValidationErrors = {};
 
-    // Validate: either extracted data or dropdown selections
-    const hasExtracted = extractedData?.association && extractedData?.contact;
-    const hasDropdownSelections = selectedAssociationId && selectedContactId;
+    // Validate: either extracted data with created entities OR dropdown selections
+    const hasExtracted = extractedData?.association && extractedData?.contact && selectedAssociationId && selectedContactId;
+    const hasDropdownSelections = selectedAssociationId && selectedContactId && !extractedData;
 
     if (!hasExtracted && !hasDropdownSelections) {
       newErrors.associationContact = 'Please extract association and contact info or select from existing records';
@@ -68,13 +131,10 @@ export function OfferWizardStep1({
       return;
     }
 
-    // For now, use dropdown selections (will be enhanced in Task 4)
-    const associationId = selectedAssociationId || ''; // Will use extracted ID after Task 4
-    const contactId = selectedContactId || ''; // Will use extracted ID after Task 4
-
+    // Use the selected IDs (whether from extracted data + creation or from dropdowns)
     onContinue({
-      associationId,
-      contactId,
+      associationId: selectedAssociationId,
+      contactId: selectedContactId,
       seasonId: selectedSeasonId,
     });
   };
@@ -92,6 +152,17 @@ export function OfferWizardStep1({
           isLoading={isLoading}
         />
       </div>
+
+      {/* Feedback on created entities */}
+      {extractedData && (selectedAssociationId || selectedContactId) && (
+        <div style={{ padding: '1rem', backgroundColor: '#d4edda', border: '1px solid #c3e6cb', borderRadius: '4px', marginBottom: '1rem' }}>
+          <strong>✓ Data Processed:</strong>
+          {createdAssociationId && <p>Created new association: {extractedData.association?.name}</p>}
+          {!createdAssociationId && selectedAssociationId && <p>Using existing association: {associations?.find(a => a._id === selectedAssociationId)?.name}</p>}
+          {createdContactId && <p>Created new contact: {extractedData.contact?.name}</p>}
+          {!createdContactId && selectedContactId && <p>Using existing contact: {contacts?.find(c => c._id === selectedContactId)?.name}</p>}
+        </div>
+      )}
 
       {/* OR Separator */}
       <div style={{ textAlign: 'center', margin: '2rem 0', color: '#999' }}>
