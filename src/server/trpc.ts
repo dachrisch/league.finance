@@ -8,6 +8,13 @@ export interface Context {
   user: JwtPayload | null;
 }
 
+export function createInnerTRPCContext(partial: Partial<Context> = {}): Context {
+  return {
+    user: null,
+    ...partial,
+  };
+}
+
 export function createContext({ req }: trpcExpress.CreateExpressContextOptions): Context {
   // Try to get token from Authorization header first (for backwards compatibility)
   let token: string | undefined;

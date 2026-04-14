@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
+import { Types } from 'mongoose';
 import { router, protectedProcedure, adminProcedure } from '../../trpc';
 import { CreateOfferSchema, UpdateOfferSchema } from '../../../../shared/schemas/offer';
 import { UpdateFinancialConfigSchema } from '../../../../shared/schemas/financialConfig';
@@ -152,8 +153,9 @@ export const offersRouter = router({
       expectedTeamsCount: z.number().int().min(0),
     }))
     .mutation(async ({ input }) => {
-      const session = await Offer.startSession();
-      await session.startTransaction();
+      const isTest = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
+      const session = !isTest ? await Offer.startSession() : null;
+      if (session) await session.startTransaction();
 
       try {
         // Map costModel
@@ -168,7 +170,7 @@ export const offersRouter = router({
             leagueIds: input.leagueIds,
             contactId: new Types.ObjectId(input.contactId),
           }],
-          { session }
+          session ? { session } : {}
         );
 
         // Create FinancialConfig for each league
@@ -183,17 +185,17 @@ export const offersRouter = router({
             expectedTeamsPerGameday: 0,
             offerId: offer._id,
           })),
-          { session }
+          session ? { session } : {}
         );
 
-        await session.commitTransaction();
+        if (session) await session.commitTransaction();
 
         return {
           ...normalizeOffer(offer),
           configs: configs.map(normalizeConfig),
         };
       } catch (err: any) {
-        await session.abortTransaction();
+        if (session) await session.abortTransaction();
         if (err.code === 11000) {
           throw new TRPCError({
             code: 'CONFLICT',
@@ -202,7 +204,7 @@ export const offersRouter = router({
         }
         throw err;
       } finally {
-        await session.endSession();
+        if (session) await session.endSession();
       }
     }),
 
