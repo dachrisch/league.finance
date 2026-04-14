@@ -17,7 +17,7 @@ const normalizeOffer = (doc: any) => ({
 });
 
 const normalizeConfig = (doc: any) => ({
-  ...doc,
+  ...(doc.toObject?.() || doc),
   _id: doc._id?.toString(),
   offerId: doc.offerId?.toString?.() || doc.offerId,
 });
@@ -105,7 +105,7 @@ export const offersRouter = router({
     }))
     .mutation(async ({ input }) => {
       const session = await Offer.startSession();
-      session.startTransaction();
+      await session.startTransaction();
 
       try {
         // Create offer within transaction
@@ -142,7 +142,13 @@ export const offersRouter = router({
           configs: configs.map(normalizeConfig),
         };
       } catch (err: any) {
-        await session.abortTransaction();
+        // Abort on error (only if transaction is still active)
+        try {
+          await session.abortTransaction();
+        } catch (abortErr) {
+          // Log abort error but preserve the original error
+          console.error('Transaction abort failed:', abortErr);
+        }
 
         if (err.code === 11000) {
           throw new TRPCError({
