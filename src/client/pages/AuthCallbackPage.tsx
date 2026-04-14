@@ -1,19 +1,13 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { setToken } from '../lib/trpc';
 
 export function AuthCallbackPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    if (token) {
-      setToken(token);
-      navigate('/dashboard', { replace: true });
-    } else {
-      navigate('/login?error=auth', { replace: true });
-    }
+    // Token is now in HttpOnly cookie, automatically sent with all requests
+    // Redirect to dashboard - authentication will be verified by tRPC via cookie
+    navigate('/dashboard', { replace: true });
   }, [navigate]);
 
   return <p>Signing you in…</p>;

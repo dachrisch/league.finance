@@ -8,10 +8,19 @@ export interface Context {
 }
 
 export function createContext({ req }: trpcExpress.CreateExpressContextOptions): Context {
-  const header = req.headers.authorization;
-  if (!header?.startsWith('Bearer ')) return { user: null };
+  // Try to get token from Authorization header first (for backwards compatibility)
+  let token: string | undefined;
 
-  const token = header.slice(7);
+  const header = req.headers.authorization;
+  if (header?.startsWith('Bearer ')) {
+    token = header.slice(7);
+  } else {
+    // Fall back to reading from HttpOnly cookie
+    token = (req.cookies as Record<string, string>)?.auth_token;
+  }
+
+  if (!token) return { user: null };
+
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET!, { algorithms: ['HS256'] }) as JwtPayload;
     return { user: payload };

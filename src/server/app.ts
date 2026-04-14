@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
@@ -16,6 +17,7 @@ export function createApp() {
 
   app.use(cors({ origin: CLIENT_URL, credentials: true }));
   app.use(express.json());
+  app.use(cookieParser());
 
   // Google OAuth strategy
   passport.use(
@@ -66,7 +68,14 @@ export function createApp() {
         process.env.JWT_SECRET!,
         { expiresIn: '24h', algorithm: 'HS256' }
       );
-      res.redirect(`${CLIENT_URL}/login/callback?token=${token}`);
+      res.cookie('auth_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        path: '/',
+      });
+      res.redirect(`${CLIENT_URL}/login/callback`);
     }
   );
 

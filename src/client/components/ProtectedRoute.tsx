@@ -1,8 +1,12 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { getToken } from '../lib/trpc';
+import { trpc } from '../lib/trpc';
 
 export function ProtectedRoute() {
-  const token = getToken();
-  if (!token) return <Navigate to="/login" replace />;
+  const { data: user, isLoading } = trpc.auth.me.useQuery(undefined, {
+    retry: false,
+  });
+
+  if (isLoading) return <p>Loading…</p>;
+  if (!user) return <Navigate to="/login" replace />;
   return <Outlet />;
 }
