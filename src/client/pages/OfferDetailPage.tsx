@@ -177,19 +177,24 @@ export function OfferDetailPage() {
                   <td style={{ padding: '1rem', fontSize: 14, textAlign: 'right' }}>{formatPrice(config.basePrice)}</td>
                   <td style={{ padding: '1rem', fontSize: 14, textAlign: 'right' }}>
                     {editingLeagueId === config.leagueId && offer.status === 'draft' ? (
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={editingPrice || config.customPrice || config.basePrice}
-                        onChange={(e) => setEditingPrice(Number(e.target.value))}
-                        style={{
-                          width: '100px',
-                          padding: '0.4rem',
-                          border: '1px solid #0d6efd',
-                          borderRadius: 4,
-                        }}
-                      />
+                      <div>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={editingPrice ?? config.customPrice ?? config.basePrice}
+                          onChange={(e) => setEditingPrice(Number(e.target.value))}
+                          style={{
+                            width: '100px',
+                            padding: '0.4rem',
+                            border: '1px solid #0d6efd',
+                            borderRadius: 4,
+                          }}
+                        />
+                        <div style={{ fontSize: 12, color: '#dc3545', marginTop: '0.25rem' }}>
+                          Price must be greater than 0
+                        </div>
+                      </div>
                     ) : config.customPrice ? (
                       formatPrice(config.customPrice)
                     ) : (
@@ -205,24 +210,22 @@ export function OfferDetailPage() {
                         <>
                           <button
                             onClick={() => {
-                              if (editingPrice !== null) {
-                                updateConfig.mutate({
-                                  configId: config._id,
-                                  customPrice: editingPrice,
-                                });
-                              }
+                              updateConfig.mutate({
+                                configId: config._id,
+                                customPrice: editingPrice,
+                              });
                             }}
-                            disabled={updateConfig.isPending}
+                            disabled={editingPrice === null || editingPrice <= 0 || updateConfig.isPending}
                             style={{
                               padding: '0.3rem 0.6rem',
                               background: '#198754',
                               color: '#fff',
                               border: 'none',
                               borderRadius: 4,
-                              cursor: updateConfig.isPending ? 'not-allowed' : 'pointer',
+                              cursor: (editingPrice === null || editingPrice <= 0 || updateConfig.isPending) ? 'not-allowed' : 'pointer',
                               fontSize: 12,
                               marginRight: '0.25rem',
-                              opacity: updateConfig.isPending ? 0.6 : 1,
+                              opacity: (editingPrice === null || editingPrice <= 0 || updateConfig.isPending) ? 0.6 : 1,
                             }}
                           >
                             {updateConfig.isPending ? 'Saving…' : 'Save'}
@@ -232,14 +235,16 @@ export function OfferDetailPage() {
                               setEditingLeagueId(null);
                               setEditingPrice(null);
                             }}
+                            disabled={updateConfig.isPending}
                             style={{
                               padding: '0.3rem 0.6rem',
                               background: '#6c757d',
                               color: '#fff',
                               border: 'none',
                               borderRadius: 4,
-                              cursor: 'pointer',
+                              cursor: updateConfig.isPending ? 'not-allowed' : 'pointer',
                               fontSize: 12,
+                              opacity: updateConfig.isPending ? 0.6 : 1,
                             }}
                           >
                             Cancel

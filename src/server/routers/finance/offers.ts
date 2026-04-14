@@ -36,8 +36,8 @@ const computeConfigPrices = (config: any, leagueName: string = 'Unknown League')
   return {
     ...config,
     basePrice: Math.round(basePrice * 100) / 100,
-    customPrice: config.customPrice || null,
-    finalPrice: config.customPrice ? config.customPrice : Math.round(basePrice * 100) / 100,
+    customPrice: config.customPrice ?? null,
+    finalPrice: config.customPrice != null ? config.customPrice : Math.round(basePrice * 100) / 100,
     leagueName: leagueName,
   };
 };
@@ -259,7 +259,7 @@ export const offersRouter = router({
       return normalizeOffer(offer);
     }),
 
-  updateConfig: protectedProcedure
+  updateConfig: adminProcedure
     .input(UpdateFinancialConfigSchema)
     .mutation(async ({ input }) => {
       const config = await FinancialConfig.findById(input.configId);
@@ -280,6 +280,6 @@ export const offersRouter = router({
         console.error('Failed to fetch league name:', err);
       }
 
-      return computeConfigPrices(config, leagueName);
+      return computeConfigPrices(config.toObject(), leagueName);
     }),
 });
