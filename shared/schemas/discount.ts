@@ -9,11 +9,23 @@ export const DiscountSchema = z.object({
   value: z.number().positive(),
   description: z.string(),
   createdAt: z.date(),
-});
+}).refine(
+  (discount) => discount.type === 'FIXED' || discount.value <= 100,
+  {
+    message: 'PERCENT discounts must have a value <= 100',
+    path: ['value'],
+  }
+);
 
 export const AddDiscountSchema = z.object({
   configId: z.string(),
   type: DiscountTypeSchema,
   value: z.number().positive(),
   description: z.string().default(''),
-});
+}).refine(
+  (discount) => discount.type === 'FIXED' || discount.value <= 100,
+  {
+    message: 'PERCENT discounts must have a value <= 100',
+    path: ['value'],
+  }
+);
