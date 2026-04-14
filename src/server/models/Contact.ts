@@ -2,6 +2,8 @@ import { Schema, model, Document } from 'mongoose';
 
 export interface IContact extends Document {
   name: string;
+  email: string;
+  phone?: string;
   address: {
     street: string;
     city: string;
@@ -15,6 +17,8 @@ export interface IContact extends Document {
 const ContactSchema = new Schema<IContact>(
   {
     name: { type: String, required: true },
+    email: { type: String, required: true },
+    phone: { type: String, default: '' },
     address: {
       street: { type: String, required: true },
       city: { type: String, required: true },

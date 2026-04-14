@@ -2,9 +2,12 @@ import { Schema, model, Document } from 'mongoose';
 
 export interface IAssociation extends Document {
   name: string;
-  description?: string;
-  email: string;
-  phone?: string;
+  address: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -12,9 +15,12 @@ export interface IAssociation extends Document {
 const AssociationSchema = new Schema<IAssociation>(
   {
     name: { type: String, required: true },
-    description: { type: String, default: '' },
-    email: { type: String, required: true },
-    phone: { type: String, default: '' },
+    address: {
+      street: { type: String, required: true },
+      city: { type: String, required: true },
+      postalCode: { type: String, required: true },
+      country: { type: String, required: true },
+    },
   },
   { timestamps: true }
 );
