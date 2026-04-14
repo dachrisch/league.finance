@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { trpc } from '../lib/trpc';
 import { AssociationContactForm } from './AssociationContactForm';
 
@@ -44,6 +45,9 @@ export function OfferWizardStep1({
   const [createdAssociationId, setCreatedAssociationId] = useState<string | null>(null);
   const [createdContactId, setCreatedContactId] = useState<string | null>(null);
 
+  // Get query client to invalidate queries after mutations
+  const queryClient = useQueryClient();
+
   // tRPC mutations for creating entities
   const createAssociation = trpc.finance.associations.create.useMutation();
   const createContact = trpc.finance.contacts.create.useMutation();
@@ -72,6 +76,14 @@ export function OfferWizardStep1({
       });
       setCreatedContactId(newContact._id);
       setSelectedContactId(newContact._id);
+
+      // Invalidate queries to refetch with new data
+      await queryClient.invalidateQueries({
+        queryKey: [['finance', 'associations', 'list']]
+      });
+      await queryClient.invalidateQueries({
+        queryKey: [['finance', 'contacts', 'list']]
+      });
     } catch (err: any) {
       console.error('Failed to process extracted data:', err);
       setErrors({
