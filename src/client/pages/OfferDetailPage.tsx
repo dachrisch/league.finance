@@ -58,6 +58,17 @@ export function OfferDetailPage() {
     },
   });
 
+  const updateConfig = trpc.finance.offers.updateConfig.useMutation({
+    onSuccess: () => {
+      setEditingLeagueId(null);
+      setEditingPrice(null);
+      refetch();
+    },
+    onError: (error) => {
+      alert(`Failed to save price: ${error.message}`);
+    },
+  });
+
   if (isLoading) {
     return <div className="container"><p>Loading offer...</p></div>;
   }
@@ -195,23 +206,26 @@ export function OfferDetailPage() {
                           <button
                             onClick={() => {
                               if (editingPrice !== null) {
-                                // Placeholder for customize price mutation
-                                setEditingLeagueId(null);
-                                setEditingPrice(null);
+                                updateConfig.mutate({
+                                  configId: config._id,
+                                  customPrice: editingPrice,
+                                });
                               }
                             }}
+                            disabled={updateConfig.isPending}
                             style={{
                               padding: '0.3rem 0.6rem',
                               background: '#198754',
                               color: '#fff',
                               border: 'none',
                               borderRadius: 4,
-                              cursor: 'pointer',
+                              cursor: updateConfig.isPending ? 'not-allowed' : 'pointer',
                               fontSize: 12,
                               marginRight: '0.25rem',
+                              opacity: updateConfig.isPending ? 0.6 : 1,
                             }}
                           >
-                            Save
+                            {updateConfig.isPending ? 'Saving…' : 'Save'}
                           </button>
                           <button
                             onClick={() => {

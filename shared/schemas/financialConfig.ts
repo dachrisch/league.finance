@@ -30,4 +30,6 @@ export const CreateFinancialConfigSchema = z.object({
 export const UpdateFinancialConfigSchema = CreateFinancialConfigSchema.partial().omit({
   leagueId: true,
   seasonId: true,
+}).extend({
+  customPrice: z.number().positive('Custom price must be positive').nullable(),
 });

@@ -257,4 +257,31 @@ export const offersRouter = router({
       if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
       return normalizeOffer(offer);
     }),
+
+  updateConfig: protectedProcedure
+    .input(z.object({
+      configId: z.string().min(1, 'Config ID is required'),
+      customPrice: z.number().positive('Custom price must be positive').nullable(),
+    }))
+    .mutation(async ({ input }) => {
+      const config = await FinancialConfig.findById(input.configId);
+      if (!config) throw new TRPCError({ code: 'NOT_FOUND', message: 'Configuration not found' });
+
+      config.customPrice = input.customPrice;
+      await config.save();
+
+      // Get league name from MySQL for normalization
+      let leagueName = 'Unknown League';
+      try {
+        const pool = getMysqlPool();
+        const [rows] = await pool.query<any[]>('SELECT name FROM gamedays_league WHERE id = ?', [config.leagueId]);
+        if (rows && rows.length > 0) {
+          leagueName = rows[0].name;
+        }
+      } catch (err) {
+        console.error('Failed to fetch league name:', err);
+      }
+
+      return computeConfigPrices(config, leagueName);
+    }),
 });
