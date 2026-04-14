@@ -2,11 +2,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
-import { AssociationForm } from './AssociationForm';
-import { ContactForm } from './ContactForm';
-import { ContactGrid } from './ContactGrid';
+import { OfferWizardStep1 } from './OfferWizardStep1';
 
-type WizardStep = 1 | 2 | 3;
+type WizardStep = 1 | 2;
 
 interface WizardState {
   associationId: string;
@@ -40,84 +38,34 @@ export function OfferCreateWizard() {
     selectedLeagueIds: [],
   });
 
-  const [showNewAssociation, setShowNewAssociation] = useState(false);
-  const [showNewContact, setShowNewContact] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
 
   // TRPC queries & mutations
-  const { data: associations, isLoading: loadingAssociations, refetch: refetchAssociations } = trpc.finance.associations.list.useQuery();
-  const { data: contacts, isLoading: loadingContacts, refetch: refetchContacts } = trpc.finance.contacts.list.useQuery();
-  const { data: seasons, isLoading: loadingSeasons } = trpc.teams.seasons.useQuery();
-  const { data: leagues, isLoading: loadingLeagues } = trpc.teams.leagues.useQuery();
+  const { data: associations } = trpc.finance.associations.list.useQuery();
+  const { data: contacts } = trpc.finance.contacts.list.useQuery();
+  const { data: seasons } = trpc.teams.seasons.useQuery();
+  const { data: leagues } = trpc.teams.leagues.useQuery();
 
-  const createAssociation = trpc.finance.associations.create.useMutation();
-  const createContact = trpc.finance.contacts.create.useMutation();
   const createOffer = trpc.finance.offers.create.useMutation();
 
-  // Step 1: Association & Season
-  const handleAssociationCreated = async (data: any) => {
-    setIsLoading(true);
-    try {
-      const result = await createAssociation.mutateAsync(data);
-      setState((prev) => ({ ...prev, associationId: result._id }));
-      await refetchAssociations();
-      setShowNewAssociation(false);
-    } catch (err) {
-      console.error('Failed to create association:', err);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
+  // Step 1: Association, Contact & Season (unified)
+  const handleStep1Data = (data: {
+    associationId: string;
+    contactId: string;
+    seasonId: number;
+  }) => {
+    setState((prev) => ({
+      ...prev,
+      associationId: data.associationId,
+      contactId: data.contactId,
+      seasonId: data.seasonId,
+    }));
+    setStep(2);
   };
 
-  const handleStep1Continue = () => {
-    const newErrors: ValidationErrors = {};
-    if (!state.associationId) {
-      newErrors.associationId = 'Please select an association';
-    }
-    if (!state.seasonId) {
-      newErrors.seasonId = 'Please select a season';
-    }
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length === 0) {
-      setStep(2);
-    }
-  };
-
-  // Step 2: Contact
-  const handleContactCreated = async (data: any) => {
-    setIsLoading(true);
-    try {
-      const result = await createContact.mutateAsync({
-        name: data.name,
-        address: {
-          street: data.street,
-          city: data.city,
-          postalCode: data.postalCode,
-          country: data.country,
-        },
-      });
-      setState((prev) => ({ ...prev, contactId: result._id }));
-      await refetchContacts();
-      setShowNewContact(false);
-    } catch (err) {
-      console.error('Failed to create contact:', err);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleStep2Continue = () => {
-    const newErrors: ValidationErrors = {};
-    if (!state.contactId) {
-      newErrors.contactId = 'Please select a contact';
-    }
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length === 0) {
-      setStep(3);
-    }
+  const handleStep1Cancel = () => {
+    navigate('/offers');
   };
 
   // Step 3: Pricing & Leagues
@@ -170,7 +118,7 @@ export function OfferCreateWizard() {
 
       {/* Progress Indicator */}
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-        {[1, 2, 3].map((s) => (
+        {[1, 2].map((s) => (
           <div
             key={s}
             style={{
@@ -188,179 +136,22 @@ export function OfferCreateWizard() {
         ))}
       </div>
 
-      {/* STEP 1: Association & Season */}
+      {/* STEP 1: Association, Contact & Season */}
       {step === 1 && (
-        <div>
-          <h2 style={{ marginBottom: '1.5rem' }}>Step 1: Select Association & Season</h2>
-
-          {!showNewAssociation ? (
-            <>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                  Association * {errors.associationId && <span style={{ color: '#dc3545', fontSize: '0.875rem' }}>- {errors.associationId}</span>}
-                </label>
-                <select
-                  value={state.associationId}
-                  onChange={(e) => {
-                    setState((prev) => ({ ...prev, associationId: e.target.value }));
-                    setErrors((prev) => ({ ...prev, associationId: undefined }));
-                  }}
-                  disabled={isLoading || loadingAssociations}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: errors.associationId ? '2px solid #dc3545' : '1px solid #dee2e6',
-                    borderRadius: '4px',
-                    fontSize: '1rem',
-                  }}
-                >
-                  <option value="">-- Select Association --</option>
-                  {(associations || []).map((a: any) => (
-                    <option key={a._id} value={a._id}>
-                      {a.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div style={{ marginBottom: '1.5rem' }}>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowNewAssociation(true)}
-                  disabled={isLoading}
-                >
-                  + Create New Association
-                </button>
-              </div>
-            </>
-          ) : (
-            <div style={{ marginBottom: '1.5rem', padding: '1.5rem', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-              <h3 style={{ marginBottom: '1rem' }}>Create New Association</h3>
-              <AssociationForm
-                onSubmit={handleAssociationCreated}
-                onCancel={() => setShowNewAssociation(false)}
-                isLoading={isLoading}
-              />
-            </div>
-          )}
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-              Season * {errors.seasonId && <span style={{ color: '#dc3545', fontSize: '0.875rem' }}>- {errors.seasonId}</span>}
-            </label>
-            <select
-              value={state.seasonId}
-              onChange={(e) => {
-                setState((prev) => ({ ...prev, seasonId: parseInt(e.target.value) }));
-                setErrors((prev) => ({ ...prev, seasonId: undefined }));
-              }}
-              disabled={isLoading || loadingSeasons}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: errors.seasonId ? '2px solid #dc3545' : '1px solid #dee2e6',
-                borderRadius: '4px',
-                fontSize: '1rem',
-              }}
-            >
-              <option value={0}>-- Select Season --</option>
-              {(seasons || []).map((s: any) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={() => navigate('/offers')}
-              disabled={isLoading}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleStep1Continue}
-              disabled={isLoading}
-            >
-              Next: Select Contact
-            </button>
-          </div>
-        </div>
+        <OfferWizardStep1
+          onContinue={handleStep1Data}
+          onCancel={handleStep1Cancel}
+          isLoading={isLoading}
+          associations={associations || []}
+          contacts={contacts || []}
+          seasons={seasons || []}
+        />
       )}
 
-      {/* STEP 2: Contact */}
+      {/* STEP 2: Pricing & Leagues */}
       {step === 2 && (
         <div>
-          <h2 style={{ marginBottom: '1.5rem' }}>Step 2: Select or Create Contact</h2>
-
-          {!showNewContact ? (
-            <>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ marginBottom: '0.5rem' }}>Select Existing Contact {errors.contactId && <span style={{ color: '#dc3545', fontSize: '0.875rem' }}>- {errors.contactId}</span>}</h3>
-                <ContactGrid
-                  contacts={contacts || []}
-                  selectedId={state.contactId}
-                  onSelect={(id) => {
-                    setState((prev) => ({ ...prev, contactId: id }));
-                    setErrors((prev) => ({ ...prev, contactId: undefined }));
-                  }}
-                  isLoading={isLoading || loadingContacts}
-                />
-              </div>
-
-              <div style={{ marginBottom: '1.5rem' }}>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowNewContact(true)}
-                  disabled={isLoading}
-                >
-                  + Create New Contact
-                </button>
-              </div>
-            </>
-          ) : (
-            <div style={{ padding: '1.5rem', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '1.5rem' }}>
-              <h3 style={{ marginBottom: '1rem' }}>Create New Contact</h3>
-              <ContactForm
-                onSubmit={handleContactCreated}
-                onCancel={() => setShowNewContact(false)}
-                isLoading={isLoading}
-              />
-            </div>
-          )}
-
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={() => setStep(1)}
-              disabled={isLoading}
-            >
-              Back
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleStep2Continue}
-              disabled={isLoading}
-            >
-              Next: Set Pricing & Leagues
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 3: Pricing & Leagues */}
-      {step === 3 && (
-        <div>
-          <h2 style={{ marginBottom: '1.5rem' }}>Step 3: Set Pricing & Select Leagues</h2>
+          <h2 style={{ marginBottom: '1.5rem' }}>Step 2: Pricing & Leagues</h2>
 
           <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f0f8ff', borderRadius: '8px' }}>
             <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Review Your Selections</h4>
@@ -499,10 +290,10 @@ export function OfferCreateWizard() {
             <button
               type="button"
               className="btn btn-outline"
-              onClick={() => setStep(2)}
+              onClick={() => setStep(1)}
               disabled={isLoading}
             >
-              Back
+              Back: Association & Contact
             </button>
             <button
               type="button"
