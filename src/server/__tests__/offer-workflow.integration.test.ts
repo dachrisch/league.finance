@@ -19,6 +19,7 @@ describe('Offer Workflow Integration', () => {
     // Step 1: Create contact
     const contact = await Contact.create({
       name: 'Integration Test Contact',
+      email: 'integration@example.com',
       address: {
         street: '999 Integration St',
         city: 'TestCity',
@@ -67,6 +68,7 @@ describe('Offer Workflow Integration', () => {
   it('should prevent duplicate draft offers', async () => {
     const contact = await Contact.create({
       name: 'Duplicate Test',
+      email: 'duplicate@example.com',
       address: {
         street: '111 Test Ave',
         city: 'TestCity',
@@ -102,6 +104,7 @@ describe('Offer Workflow Integration', () => {
   it('should allow accepted offers and new draft offers for same association-season', async () => {
     const contact = await Contact.create({
       name: 'Accepted Test',
+      email: 'accepted@example.com',
       address: {
         street: '222 Test Blvd',
         city: 'TestCity',
@@ -137,6 +140,7 @@ describe('Offer Workflow Integration', () => {
   it('should cascade delete configs when deleting offer', async () => {
     const contact = await Contact.create({
       name: 'Delete Test',
+      email: 'delete@example.com',
       address: {
         street: '333 Test Ln',
         city: 'TestCity',
@@ -186,6 +190,7 @@ describe('Offer Workflow Integration', () => {
   it('should track offer status transitions', async () => {
     const contact = await Contact.create({
       name: 'Status Test',
+      email: 'status@example.com',
       address: {
         street: '444 Status Way',
         city: 'TestCity',

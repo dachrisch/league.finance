@@ -13,8 +13,14 @@ export const associationsRouter = router({
     .input(
       z.object({
         name: z.string().min(1),
+        address: z.object({
+          street: z.string(),
+          city: z.string(),
+          postalCode: z.string(),
+          country: z.string(),
+        }),
         description: z.string().optional().default(''),
-        email: z.string().email(),
+        email: z.string().email().optional().default(''),
         phone: z.string().optional().default(''),
       })
     )

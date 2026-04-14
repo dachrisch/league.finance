@@ -10,6 +10,7 @@ describe('Offer Model', () => {
     await connectMongo();
     const contact = await Contact.create({
       name: 'Test Contact',
+      email: 'test@example.com',
       address: {
         street: '123 Main St',
         city: 'Berlin',

@@ -22,6 +22,12 @@ describe('Associations Router', () => {
       description: 'Test',
       email: 'a@league.local',
       phone: '555-1111',
+      address: {
+        street: '100 League St',
+        city: 'League City',
+        postalCode: '11111',
+        country: 'Test Country',
+      },
     });
 
     const caller = associationsRouter.createCaller({ user: { userId: '1', email: 'test@test.com', role: 'admin' } });
@@ -36,6 +42,12 @@ describe('Associations Router', () => {
       description: 'Test',
       email: 'b@league.local',
       phone: '555-2222',
+      address: {
+        street: '200 League St',
+        city: 'League City',
+        postalCode: '22222',
+        country: 'Test Country',
+      },
     });
 
     const caller = associationsRouter.createCaller({ user: { userId: '1', email: 'test@test.com', role: 'admin' } });
@@ -50,6 +62,12 @@ describe('Associations Router', () => {
       description: 'Test',
       email: 'test@league.local',
       phone: '555-1234',
+      address: {
+        street: '300 League St',
+        city: 'League City',
+        postalCode: '33333',
+        country: 'Test Country',
+      },
     });
 
     expect(result._id).toBeDefined();
@@ -62,6 +80,12 @@ describe('Associations Router', () => {
       description: 'Test',
       email: 'c@league.local',
       phone: '555-3333',
+      address: {
+        street: '400 League St',
+        city: 'League City',
+        postalCode: '44444',
+        country: 'Test Country',
+      },
     });
 
     const caller = associationsRouter.createCaller({ user: { userId: '1', email: 'test@test.com', role: 'admin' } });
@@ -79,6 +103,12 @@ describe('Associations Router', () => {
       description: 'Test',
       email: 'd@league.local',
       phone: '555-4444',
+      address: {
+        street: '500 League St',
+        city: 'League City',
+        postalCode: '55555',
+        country: 'Test Country',
+      },
     });
 
     const caller = associationsRouter.createCaller({ user: { userId: '1', email: 'test@test.com', role: 'admin' } });

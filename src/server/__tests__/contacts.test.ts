@@ -14,6 +14,7 @@ describe('Contact Model', () => {
   it('should create a contact with name and full address', async () => {
     const contact = await Contact.create({
       name: 'John Smith',
+      email: 'john@example.com',
       address: {
         street: '123 Main St',
         city: 'Berlin',
@@ -42,6 +43,7 @@ describe('Contact Model', () => {
   it('should be reusable across multiple offers', async () => {
     const contact = await Contact.create({
       name: 'Jane Doe',
+      email: 'jane@example.com',
       address: {
         street: '456 Oak Ave',
         city: 'Munich',
