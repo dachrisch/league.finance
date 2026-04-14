@@ -9,7 +9,12 @@ export function createTrpcClient() {
     links: [
       httpBatchLink({
         url: '/trpc',
-        credentials: 'include', // Send cookies with every request
+        fetch: async (url, options) => {
+          return fetch(url, {
+            ...options,
+            credentials: 'include', // Send cookies with every request
+          });
+        },
       }),
     ],
   });
