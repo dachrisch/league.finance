@@ -8,8 +8,9 @@ vi.stubGlobal('__VERSION__', 'v0.1.1');
 
 test('renders footer with version, git hash and copyright', () => {
   render(<Footer />);
-  expect(screen.getByText('v0.1.1')).toBeDefined();
-  expect(screen.getByText('abc1234')).toBeDefined();
+  const versionLink = screen.getByRole('link', { name: 'v0.1.1' });
+  expect(versionLink).toBeDefined();
+  expect(versionLink).toHaveAttribute('title', 'abc1234');
   expect(screen.getByText(/2026 bumbleflies UG/)).toBeDefined();
   expect(screen.getByText(/Made in 🥨 with ♥️/)).toBeDefined();
 });
