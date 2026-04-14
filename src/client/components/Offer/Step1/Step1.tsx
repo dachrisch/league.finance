@@ -24,9 +24,9 @@ interface Season {
 interface Step1Props {
   pasteInput: string;
   pathChoice?: PathChoice;
-  selectedAssociationId: string;
-  selectedContactId: string;
-  selectedSeasonId: string;
+  selectedAssociationId?: string;
+  selectedContactId?: string;
+  selectedSeasonId?: string;
   isExtracting: boolean;
   extractedData?: ExtractedData;
   extractionError?: string;
@@ -39,8 +39,7 @@ interface Step1Props {
   onSelectAssociation: (id: string) => void;
   onSelectContact: (id: string) => void;
   onSelectSeason: (id: string) => void;
-  onEmailChange?: (email: string) => void;
-  onPhoneChange?: (phone: string) => void;
+  onUpdateExtractedData: (data: Partial<ExtractedData>) => void;
   onNext: () => void;
   onCancel: () => void;
 }
@@ -63,8 +62,7 @@ export function Step1({
   onSelectAssociation,
   onSelectContact,
   onSelectSeason,
-  onEmailChange,
-  onPhoneChange,
+  onUpdateExtractedData,
   onNext,
   onCancel,
 }: Step1Props) {
@@ -107,8 +105,8 @@ export function Step1({
             onSelectPath('paste');
             onExtract(text);
           }}
-          onEmailChange={onEmailChange}
-          onPhoneChange={onPhoneChange}
+          onEmailChange={(email) => onUpdateExtractedData({ email })}
+          onPhoneChange={(phone) => onUpdateExtractedData({ phone })}
         />
 
         <div className={styles.divider}>or use existing records</div>

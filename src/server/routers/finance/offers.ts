@@ -14,6 +14,7 @@ const DEFAULT_BASE_RATE = 50;
 const normalizeOffer = (doc: any) => ({
   ...doc.toObject?.() || doc,
   _id: doc._id?.toString(),
+  associationId: doc.associationId?.toString() || doc.associationId,
   contactId: doc.contactId?.toString?.() || doc.contactId,
 });
 
@@ -120,8 +121,8 @@ export const offersRouter = router({
       // Simple duplicate detection (simulated)
       const duplicates = {
         type: 'none' as const,
-        associations: [] as any[],
-        contacts: [] as any[]
+        associationMatches: [] as any[],
+        contactMatches: [] as any[]
       };
 
       if (organizationName) {
@@ -154,7 +155,8 @@ export const offersRouter = router({
     }))
     .mutation(async ({ input }) => {
       const isTest = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
-      const session = !isTest ? await Offer.startSession() : null;
+      const isDev = process.env.NODE_ENV === 'development';
+      const session = (!isTest && !isDev) ? await Offer.startSession() : null;
       if (session) await session.startTransaction();
 
       try {

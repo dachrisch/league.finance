@@ -27,20 +27,27 @@ export function OfferCreateWizard() {
   // Mutations
   const extractMutation = trpc.finance.offers.extractContact.useMutation();
   const createMutation = trpc.finance.offers.create.useMutation();
+  const createAssociationMutation = trpc.finance.associations.create.useMutation();
+  const createContactMutation = trpc.finance.contacts.create.useMutation();
 
   // Handlers
   const handleExtract = async (text: string) => {
     wizard.setExtracting(true);
     try {
-      // Local extraction first for instant feedback (optional but good)
-      // const localData = extractContactInfo(text);
-      
       // Server-side enhancement & duplicate detection
       const serverResult = await extractMutation.mutateAsync({ text });
       
       wizard.setExtractedData(serverResult.data);
       wizard.setDuplicateCheck(serverResult.duplicates);
       wizard.selectPath('paste');
+
+      // Auto-select if exact match found
+      if (serverResult.duplicates.associationMatches?.length === 1 && serverResult.duplicates.associationMatches[0].type === 'exact') {
+        wizard.selectAssociation(serverResult.duplicates.associationMatches[0]._id);
+      }
+      if (serverResult.duplicates.contactMatches?.length === 1 && serverResult.duplicates.contactMatches[0].type === 'exact') {
+        wizard.selectContact(serverResult.duplicates.contactMatches[0]._id);
+      }
     } catch (err: any) {
       wizard.setExtractionError(err.message || 'Failed to extract information');
     } finally {
@@ -51,10 +58,48 @@ export function OfferCreateWizard() {
   const handleCreateOffer = async () => {
     setIsCreating(true);
     try {
+      let associationId = wizard.step1.selectedAssociationId;
+      let contactId = wizard.step1.selectedContactId;
+
+      // If in paste mode and no ID selected, create them first
+      if (wizard.step1.pathChoice === 'paste' && wizard.step1.extractedData) {
+        if (!associationId) {
+          const newAssoc = await createAssociationMutation.mutateAsync({
+            name: wizard.step1.extractedData.organizationName,
+            address: {
+              street: wizard.step1.extractedData.street,
+              city: wizard.step1.extractedData.city,
+              postalCode: wizard.step1.extractedData.postalCode,
+              country: wizard.step1.extractedData.country,
+            }
+          });
+          associationId = newAssoc._id;
+        }
+
+        if (!contactId) {
+          const newContact = await createContactMutation.mutateAsync({
+            name: wizard.step1.extractedData.contactName,
+            email: wizard.step1.extractedData.email,
+            phone: wizard.step1.extractedData.phone,
+            address: {
+              street: wizard.step1.extractedData.street,
+              city: wizard.step1.extractedData.city,
+              postalCode: wizard.step1.extractedData.postalCode,
+              country: wizard.step1.extractedData.country,
+            }
+          });
+          contactId = newContact._id;
+        }
+      }
+
+      if (!associationId || !contactId || !wizard.step1.selectedSeasonId) {
+        throw new Error('Missing required information: association, contact, or season');
+      }
+
       const payload = {
-        associationId: wizard.step1.selectedAssociationId!,
-        contactId: wizard.step1.selectedContactId!,
-        seasonId: parseInt(wizard.step1.selectedSeasonId!),
+        associationId,
+        contactId,
+        seasonId: parseInt(wizard.step1.selectedSeasonId),
         ...wizard.step2.pricing,
         leagueIds: wizard.step2.selectedLeagueIds.map(id => parseInt(id)),
       };
@@ -97,13 +142,14 @@ export function OfferCreateWizard() {
         {...wizard.step1}
         associations={associations}
         contacts={contacts}
-        seasons={seasons.map(s => ({ ...s, _id: s._id.toString() }))}
+        seasons={seasons.map(s => ({ ...s, _id: s._id.toString(), year: s.year }))}
         onUpdatePasteInput={wizard.updatePasteInput}
         onSelectPath={wizard.selectPath}
         onExtract={handleExtract}
         onSelectAssociation={wizard.selectAssociation}
         onSelectContact={wizard.selectContact}
         onSelectSeason={wizard.selectSeason}
+        onUpdateExtractedData={wizard.updateExtractedData}
         onNext={wizard.nextStep}
         onCancel={() => navigate('/offers')}
       />

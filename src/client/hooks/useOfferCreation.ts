@@ -102,6 +102,16 @@ export function useOfferCreation() {
     }));
   }, []);
 
+  const updateExtractedData = useCallback((data: Partial<ExtractedData>) => {
+    setState((prev) => ({
+      ...prev,
+      step1: {
+        ...prev.step1,
+        extractedData: prev.step1.extractedData ? { ...prev.step1.extractedData, ...data } : undefined,
+      },
+    }));
+  }, []);
+
   // Step 1: Duplicate detection
   const setDuplicateCheck = useCallback((check: DuplicateCheck) => {
     setState((prev) => ({
@@ -203,6 +213,7 @@ export function useOfferCreation() {
     setExtractedData,
     setExtracting,
     setExtractionError,
+    updateExtractedData,
     setDuplicateCheck,
     selectAssociation,
     selectContact,

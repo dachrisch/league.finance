@@ -10,7 +10,7 @@ interface Season {
 
 interface SeasonBlockProps {
   seasons: Season[];
-  selectedSeasonId: string;
+  selectedSeasonId?: string;
   onSeasonChange: (id: string) => void;
   showBlock: boolean;
 }
