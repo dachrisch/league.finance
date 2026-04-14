@@ -1,11 +1,18 @@
 import { z } from 'zod';
 
 // Association schemas
+export const AddressSchema = z.object({
+  street: z.string().min(1, 'Street is required'),
+  city: z.string().min(1, 'City is required'),
+  state: z.string().min(1, 'State is required'),
+  zipCode: z.string().min(1, 'Zip code is required'),
+});
+
+export type Address = z.infer<typeof AddressSchema>;
+
 export const AssociationInputSchema = z.object({
   name: z.string().min(1, 'Name is required').min(2, 'Name must be at least 2 characters'),
-  description: z.string().min(1, 'Description is required'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().min(1, 'Phone is required'),
+  address: AddressSchema,
 });
 
 export type AssociationInput = z.infer<typeof AssociationInputSchema>;
