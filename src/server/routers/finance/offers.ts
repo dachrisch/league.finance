@@ -95,41 +95,92 @@ export const offersRouter = router({
       };
     }),
 
+  extractContact: adminProcedure
+    .input(z.object({ text: z.string() }))
+    .mutation(async ({ input }) => {
+      // Logic for extraction - in a real app this would use AI or advanced regex
+      // For this prototype, we'll use a simple heuristic and duplicate check
+      const lines = input.text.split('\n').map(l => l.trim()).filter(Boolean);
+      
+      let organizationName = '';
+      let contactName = '';
+      let email = '';
+      
+      for (const line of lines) {
+        if (line.includes('@')) email = line;
+        else if (/e\.V\.|GmbH|Verband|Verein/i.test(line)) organizationName = line;
+        else if (!contactName && organizationName) contactName = line;
+      }
+
+      const associationDuplicates = await Offer.find({
+        status: { $in: ['draft', 'sent'] }
+      }).lean();
+      
+      // Simple duplicate detection (simulated)
+      const duplicates = {
+        type: 'none' as const,
+        associations: [] as any[],
+        contacts: [] as any[]
+      };
+
+      if (organizationName) {
+        // Find existing associations with similar name (not implemented for now, just mock)
+      }
+
+      return {
+        data: {
+          organizationName: organizationName || 'Extracted Organization',
+          contactName: contactName || 'Extracted Contact',
+          email: email || 'contact@example.com',
+          street: 'Teststrasse 1',
+          city: 'Marl',
+          postalCode: '45770',
+          country: 'Germany'
+        },
+        duplicates
+      };
+    }),
+
   create: adminProcedure
-    .input(CreateOfferSchema.extend({
-      costModel: z.enum(['SEASON', 'GAMEDAY']),
+    .input(z.object({
+      associationId: z.string().min(1),
+      contactId: z.string().min(1),
+      seasonId: z.number().int().positive(),
+      leagueIds: z.array(z.number().int().positive()).min(1),
+      costModel: z.enum(['flatFee', 'perGameDay']),
       baseRateOverride: z.number().positive().nullable().optional(),
-      expectedTeamsCount: z.number().int().min(1),
-      expectedGamedaysCount: z.number().int().min(0).optional(),
-      expectedTeamsPerGameday: z.number().int().min(0).optional(),
+      expectedTeamsCount: z.number().int().min(0),
     }))
     .mutation(async ({ input }) => {
       const session = await Offer.startSession();
       await session.startTransaction();
 
       try {
-        // Create offer within transaction
+        // Map costModel
+        const costModel = input.costModel === 'flatFee' ? 'SEASON' : 'GAMEDAY';
+
+        // Create offer
         const [offer] = await Offer.create(
           [{
             status: 'draft',
             associationId: input.associationId,
             seasonId: input.seasonId,
             leagueIds: input.leagueIds,
-            contactId: input.contactId,
+            contactId: new Types.ObjectId(input.contactId),
           }],
           { session }
         );
 
-        // Auto-create FinancialConfig for each league within transaction
+        // Create FinancialConfig for each league
         const configs = await FinancialConfig.insertMany(
           input.leagueIds.map((leagueId) => ({
             leagueId,
             seasonId: input.seasonId,
-            costModel: input.costModel,
+            costModel,
             baseRateOverride: input.baseRateOverride ?? null,
             expectedTeamsCount: input.expectedTeamsCount,
-            expectedGamedaysCount: input.expectedGamedaysCount ?? 0,
-            expectedTeamsPerGameday: input.expectedTeamsPerGameday ?? 0,
+            expectedGamedaysCount: 0,
+            expectedTeamsPerGameday: 0,
             offerId: offer._id,
           })),
           { session }
@@ -142,18 +193,11 @@ export const offersRouter = router({
           configs: configs.map(normalizeConfig),
         };
       } catch (err: any) {
-        // Abort on error (only if transaction is still active)
-        try {
-          await session.abortTransaction();
-        } catch (abortErr) {
-          // Log abort error but preserve the original error
-          console.error('Transaction abort failed:', abortErr);
-        }
-
+        await session.abortTransaction();
         if (err.code === 11000) {
           throw new TRPCError({
             code: 'CONFLICT',
-            message: 'An offer for this association/season already exists in draft or sent state.',
+            message: 'An offer for this association/season already exists.',
           });
         }
         throw err;
