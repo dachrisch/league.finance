@@ -1,6 +1,6 @@
 /**
  * Migration: Fix FinancialConfig index to support multiple offers per league/season
- *
+ * 
  * The old unique index on { leagueId, seasonId } blocks multiple associations
  * from having offers in the same season. Replace with composite index on
  * { offerId, leagueId, seasonId }.
@@ -16,11 +16,10 @@ async function up() {
     await collection.dropIndex('leagueId_1_seasonId_1');
     console.log('✓ Dropped old index: leagueId_1_seasonId_1');
   } catch (err) {
-    // Error code 27 is the stable MongoDB IndexNotFound error
-    if (err.code === 27 || err.message.includes('index not found')) {
+    if (err.message.includes('index not found')) {
       console.log('✓ Old index already removed');
     } else {
-      throw err;
+      console.warn('Warning dropping index:', err.message);
     }
   }
 
