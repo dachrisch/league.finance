@@ -20,7 +20,7 @@ describe('AddDiscountSchema', () => {
       description: 'Invalid percent',
     });
     expect(result.success).toBe(false);
-    expect(result.error?.issues[0].path).toContain('value');
+    expect(result.error?.issues[0].path).toEqual(['value']);
   });
 
   it('should allow PERCENT discount with value <= 100', () => {
@@ -31,5 +31,25 @@ describe('AddDiscountSchema', () => {
       description: 'Valid percent',
     });
     expect(result.success).toBe(true);
+  });
+
+  it('should allow PERCENT discount with value = 100 (exact boundary)', () => {
+    const result = AddDiscountSchema.safeParse({
+      configId: '123',
+      type: 'PERCENT',
+      value: 100,
+      description: 'Max percent',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('should reject discount with value = 0 (not positive)', () => {
+    const result = AddDiscountSchema.safeParse({
+      configId: '123',
+      type: 'PERCENT',
+      value: 0,
+      description: 'Zero discount',
+    });
+    expect(result.success).toBe(false);
   });
 });
