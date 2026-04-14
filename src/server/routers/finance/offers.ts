@@ -8,6 +8,7 @@ import { Offer } from '../../models/Offer';
 import { FinancialConfig } from '../../models/FinancialConfig';
 import { Contact } from '../../models/Contact';
 import { getMysqlPool } from '../../db/mysql';
+import { extractContactInfo } from '../../../../shared/lib/extraction';
 
 const DEFAULT_BASE_RATE = 50;
 
@@ -100,24 +101,8 @@ export const offersRouter = router({
   extractContact: adminProcedure
     .input(z.object({ text: z.string() }))
     .mutation(async ({ input }) => {
-      // Logic for extraction - in a real app this would use AI or advanced regex
-      // For this prototype, we'll use a simple heuristic and duplicate check
-      const lines = input.text.split('\n').map(l => l.trim()).filter(Boolean);
-      
-      let organizationName = '';
-      let contactName = '';
-      let email = '';
-      
-      for (const line of lines) {
-        if (line.includes('@')) email = line;
-        else if (/e\.V\.|GmbH|Verband|Verein/i.test(line)) organizationName = line;
-        else if (!contactName && organizationName) contactName = line;
-      }
+      const result = extractContactInfo(input.text);
 
-      const associationDuplicates = await Offer.find({
-        status: { $in: ['draft', 'sent'] }
-      }).lean();
-      
       // Simple duplicate detection (simulated)
       const duplicates = {
         type: 'none' as const,
@@ -125,19 +110,16 @@ export const offersRouter = router({
         contactMatches: [] as any[]
       };
 
-      if (organizationName) {
-        // Find existing associations with similar name (not implemented for now, just mock)
-      }
-
       return {
         data: {
-          organizationName: organizationName || 'Extracted Organization',
-          contactName: contactName || 'Extracted Contact',
-          email: email || 'contact@example.com',
-          street: 'Teststrasse 1',
-          city: 'Marl',
-          postalCode: '45770',
-          country: 'Germany'
+          organizationName: result.organizationName || 'Extracted Organization',
+          contactName: result.contactName || 'Extracted Contact',
+          email: result.email || '',
+          phone: result.phone || '',
+          street: result.street || '',
+          city: result.city || '',
+          postalCode: result.postalCode || '',
+          country: result.country || 'Germany'
         },
         duplicates
       };
