@@ -17,5 +17,5 @@
     }
   },
   "include": ["src/client/**/*", "shared/**/*", "vite.config.ts", "index.html"],
-  "exclude": ["src/client/**/__tests__/**", "src/**/*.test.ts", "src/**/*.test.tsx"]
+  "exclude": ["src/client/**/__tests__/**", "src/**/*.test.ts", "src/**/*.test.tsx", "shared/**/__tests__/**"]
 }

@@ -16,5 +16,5 @@
     }
   },
   "include": ["src/server/**/*", "shared/**/*"],
-  "exclude": ["src/server/**/__tests__/**", "src/**/*.test.ts"]
+  "exclude": ["src/server/**/__tests__/**", "src/**/*.test.ts", "shared/**/__tests__/**"]
 }

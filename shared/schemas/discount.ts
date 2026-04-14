@@ -8,7 +8,7 @@ const percentValuePredicate = (d: { type: string; value: number }) =>
 const percentValueError = {
   message: 'PERCENT discounts must have a value <= 100',
   path: ['value'],
-} as const;
+};
 
 export const DiscountSchema = z.object({
   _id: z.string(),
