@@ -11,7 +11,12 @@ const queryClient = new QueryClient({
       // Handle global 401s (UNAUTHORIZED)
       // Token is in HttpOnly cookie, so the server will handle clearing it on logout
       if ((error as any)?.data?.code === 'UNAUTHORIZED') {
-        window.location.href = '/login';
+        // Don't redirect if already on login page (auth.me is expected to fail there)
+        const path = window.location.pathname;
+        const isLoginPage = path === '/login' || path.startsWith('/login/');
+        if (!isLoginPage) {
+          window.location.href = '/login';
+        }
       }
     },
   }),
