@@ -1,0 +1,82 @@
+<h2>Option B: Smart Form - Ambiguous/Failure Case</h2>
+<p class="subtitle">Text extraction needs manual verification</p>
+
+<div class="mockup">
+  <div class="mockup-header">Paste & Extract Flow</div>
+  <div class="mockup-body" style="padding: 1rem;">
+    <div style="margin-bottom: 1.5rem;">
+      <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Paste text here:</label>
+      <textarea style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; font-family: monospace; font-size: 0.85rem; min-height: 80px; border-radius: 4px;" disabled>LFVB e.V. Fabian Pawlowski contact@example.com
+Halterner Str. 193, 45770 Marl Germany
++49 2365 12345</textarea>
+      <button style="margin-top: 0.75rem; padding: 0.5rem 1rem; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer;">Auto-fill from text</button>
+    </div>
+
+    <div style="background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 0.75rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 0.9rem;">
+      ⚠ Could not parse text with confidence. Please review and correct extracted data below.
+    </div>
+
+    <div style="background: #f9f9f9; padding: 1rem; border-radius: 4px; border-left: 3px solid #ffc107; margin-bottom: 1rem;">
+      <h4 style="margin-bottom: 0.75rem; color: #333;">Association Details</h4>
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.85rem; font-weight: 500;">Association Name <span style="color: #dc3545;">*</span></label>
+        <input style="width: 100%; padding: 0.5rem; border: 2px solid #ffc107; background: #fffbf0; border-radius: 4px;" value="LFVB e.V." placeholder="Extracted from text, please verify">
+        <div style="font-size: 0.8rem; color: #666; margin-top: 0.25rem;">⚠ Uncertain extraction - please verify</div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
+        <div>
+          <label style="font-size: 0.85rem; font-weight: 500;">Street</label>
+          <input style="width: 100%; padding: 0.5rem; border: 2px solid #ffc107; background: #fffbf0; border-radius: 4px;" value="Halterner Str. 193">
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; font-weight: 500;">City</label>
+          <input style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;" value="Marl">
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <label style="font-size: 0.85rem; font-weight: 500;">Postal Code</label>
+          <input style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;" value="45770">
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; font-weight: 500;">Country</label>
+          <input style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;" value="Germany">
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #f9f9f9; padding: 1rem; border-radius: 4px; border-left: 3px solid #ffc107;">
+      <h4 style="margin-bottom: 0.75rem; color: #333;">Contact Details</h4>
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.85rem; font-weight: 500;">Contact Name <span style="color: #dc3545;">*</span></label>
+        <input style="width: 100%; padding: 0.5rem; border: 2px solid #ffc107; background: #fffbf0; border-radius: 4px;" value="Fabian Pawlowski">
+        <div style="font-size: 0.8rem; color: #666; margin-top: 0.25rem;">⚠ Uncertain extraction - please verify</div>
+      </div>
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.85rem; font-weight: 500;">Email <span style="color: #dc3545;">*</span></label>
+        <input style="width: 100%; padding: 0.5rem; border: 2px solid #ffc107; background: #fffbf0; border-radius: 4px;" type="email" value="contact@example.com">
+        <div style="font-size: 0.8rem; color: #856404; margin-top: 0.25rem;">⚠ Generic email found - verify this is the correct contact email</div>
+      </div>
+      <div>
+        <label style="font-size: 0.85rem; font-weight: 500;">Phone <span style="color: #666; font-weight: normal;">(optional)</span></label>
+        <input style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;" type="tel" value="+49 2365 12345">
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem;">
+      <button style="padding: 0.5rem 1rem; background: #f0f0f0; color: #333; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">Cancel</button>
+      <button style="padding: 0.5rem 1rem; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer;">Create</button>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee;">
+  <h4>Key observations:</h4>
+  <ul style="margin-left: 1.5rem; line-height: 1.6;">
+    <li>⚠ Extracted fields are <strong>enabled</strong> (editable) = uncertain extraction</li>
+    <li>⚠ Yellow highlights warn user: "please verify"</li>
+    <li>⚠ Generic/suspicious values get special warnings (e.g., "contact@example.com")</li>
+    <li>✓ User can edit before submitting</li>
+    <li>✓ User must verify & approve before creating</li>
+  </ul>
+</div>

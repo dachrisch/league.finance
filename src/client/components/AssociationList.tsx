@@ -37,8 +37,7 @@ export function AssociationList({ associations, onEdit, onDelete, isLoading = fa
         <thead>
           <tr style={{ borderBottom: '2px solid #dee2e6', background: '#f8f9fa' }}>
             <th style={{ padding: '1rem', textAlign: 'left', fontSize: 14, fontWeight: 600 }}>Name</th>
-            <th style={{ padding: '1rem', textAlign: 'left', fontSize: 14, fontWeight: 600 }}>Email</th>
-            <th style={{ padding: '1rem', textAlign: 'left', fontSize: 14, fontWeight: 600 }}>Phone</th>
+            <th style={{ padding: '1rem', textAlign: 'left', fontSize: 14, fontWeight: 600 }}>Address</th>
             <th style={{ padding: '1rem', textAlign: 'center', fontSize: 14, fontWeight: 600 }}>Actions</th>
           </tr>
         </thead>
@@ -48,8 +47,15 @@ export function AssociationList({ associations, onEdit, onDelete, isLoading = fa
               <td style={{ padding: '1rem', fontSize: 14 }}>
                 <strong>{association.name}</strong>
               </td>
-              <td style={{ padding: '1rem', fontSize: 14 }}>{association.email}</td>
-              <td style={{ padding: '1rem', fontSize: 14 }}>{association.phone}</td>
+              <td style={{ padding: '1rem', fontSize: 14 }}>
+                {association.address ? (
+                  <>
+                    {association.address.street}, {association.address.postalCode} {association.address.city}, {association.address.country}
+                  </>
+                ) : (
+                  <span style={{ color: '#999' }}>No address</span>
+                )}
+              </td>
               <td style={{ padding: '1rem', textAlign: 'center' }}>
                 <button
                   onClick={() => onEdit(association._id)}

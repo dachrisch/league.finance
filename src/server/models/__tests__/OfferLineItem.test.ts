@@ -9,6 +9,7 @@ describe('OfferLineItem Model', () => {
 
   beforeAll(async () => {
     await connectMongo();
+    await OfferLineItem.init(); // Wait for indexes to build
     const contact = await Contact.create({
       name: 'Test Contact',
       email: 'test@example.com',

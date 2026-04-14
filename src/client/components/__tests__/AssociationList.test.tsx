@@ -8,18 +8,24 @@ describe('AssociationList', () => {
     {
       _id: '1',
       name: 'Association 1',
-      description: 'Description 1',
-      email: 'assoc1@example.com',
-      phone: '123456789',
+      address: {
+        street: 'Street 1',
+        postalCode: '12345',
+        city: 'City 1',
+        country: 'Germany',
+      },
       createdAt: new Date(),
       updatedAt: new Date(),
     },
     {
       _id: '2',
       name: 'Association 2',
-      description: 'Description 2',
-      email: 'assoc2@example.com',
-      phone: '987654321',
+      address: {
+        street: 'Street 2',
+        postalCode: '67890',
+        city: 'City 2',
+        country: 'Germany',
+      },
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -43,8 +49,8 @@ describe('AssociationList', () => {
 
     expect(screen.getByText('Association 1')).toBeInTheDocument();
     expect(screen.getByText('Association 2')).toBeInTheDocument();
-    expect(screen.getByText('assoc1@example.com')).toBeInTheDocument();
-    expect(screen.getByText('assoc2@example.com')).toBeInTheDocument();
+    expect(screen.getByText(/Street 1, 12345 City 1, Germany/i)).toBeInTheDocument();
+    expect(screen.getByText(/Street 2, 67890 City 2, Germany/i)).toBeInTheDocument();
   });
 
   it('calls onEdit when edit button is clicked', () => {
@@ -96,8 +102,7 @@ describe('AssociationList', () => {
     render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
 
     expect(screen.getByText('Name')).toBeInTheDocument();
-    expect(screen.getByText('Email')).toBeInTheDocument();
-    expect(screen.getByText('Phone')).toBeInTheDocument();
+    expect(screen.getByText('Address')).toBeInTheDocument();
     expect(screen.getByText('Actions')).toBeInTheDocument();
   });
 });

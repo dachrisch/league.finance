@@ -43,7 +43,7 @@
 
 **Reasoning:** Refine validation at schema level so both client and server reject invalid discounts uniformly. Since Zod doesn't have conditional field validation directly, we use `refine()` to check the object.
 
-- [ ] **Step 1: Update discount schema with conditional max validation**
+- [x] **Step 1: Update discount schema with conditional max validation**
 
 ```typescript
 // shared/schemas/discount.ts
@@ -74,7 +74,7 @@ export const AddDiscountSchema = z.object({
 );
 ```
 
-- [ ] **Step 2: Verify schema in a test (manual)**
+- [x] **Step 2: Verify schema in a test (manual)**
 
 Create a small test file to confirm the validation works:
 
@@ -117,7 +117,7 @@ Expected output:
 ✓ PERCENT with value 50 passes
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /home/cda/dev/leagues.finance
@@ -145,7 +145,7 @@ PERCENT must be <= 100."
 
 **Reasoning:** Custom price is per-league-per-offer (FinancialConfig), not per-offer. The mutation updates the specific config document. The client refetches offer data after success to show updated finalPrice.
 
-- [ ] **Step 1: Create FinancialConfig update schema**
+- [x] **Step 1: Create FinancialConfig update schema**
 
 ```typescript
 // shared/schemas/financial-config.ts
@@ -159,7 +159,7 @@ export const UpdateFinancialConfigSchema = z.object({
 export type UpdateFinancialConfigInput = z.infer<typeof UpdateFinancialConfigSchema>;
 ```
 
-- [ ] **Step 2: Add `updateConfig` mutation to offers router**
+- [x] **Step 2: Add `updateConfig` mutation to offers router**
 
 Open `src/server/routers/finance/offers.ts` and add this procedure at the end of `offersRouter` (before the closing `});`):
 
@@ -184,7 +184,7 @@ Open `src/server/routers/finance/offers.ts` and add this procedure at the end of
 
 The line numbers will shift after adding to `offersRouter`. Insert it just before the final `});` closing the router.
 
-- [ ] **Step 3: Test the mutation works (manual)**
+- [x] **Step 3: Test the mutation works (manual)**
 
 Start the server in one terminal:
 ```bash
@@ -207,7 +207,7 @@ node /tmp/test-mutation.mjs
 
 Expected: No errors, confirms input shape matches schema.
 
-- [ ] **Step 4: Update OfferDetailPage to wire Save button**
+- [x] **Step 4: Update OfferDetailPage to wire Save button**
 
 Find the Save button in `src/client/pages/OfferDetailPage.tsx` around line 196. Replace the placeholder onClick:
 
@@ -251,7 +251,7 @@ You also need to add the mutation hook at the top of the component (after the ot
   const updateConfig = trpc.finance.offers.updateConfig.useMutation();
 ```
 
-- [ ] **Step 5: Test Save button in browser**
+- [x] **Step 5: Test Save button in browser**
 
 Start dev server:
 ```bash
@@ -264,7 +264,7 @@ Navigate to an offer in draft status, click Edit on a custom price, enter a valu
 - On success: closes edit UI, shows updated price, no error
 - On error: shows alert with error message
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /home/cda/dev/leagues.finance
@@ -301,7 +301,7 @@ The fix is to set the token in an HttpOnly, Secure, SameSite cookie and redirect
 - Sent automatically with every request (CORS with credentials: true)
 - Not logged in access logs (only "has cookie" not the value)
 
-- [ ] **Step 1: Update server to set JWT in HttpOnly cookie**
+- [x] **Step 1: Update server to set JWT in HttpOnly cookie**
 
 Open `src/server/app.ts` and find the callback handler (around line 59-71). Replace the redirect line:
 
@@ -322,7 +322,7 @@ Open `src/server/app.ts` and find the callback handler (around line 59-71). Repl
       res.redirect(`${CLIENT_URL}/login/callback`);
 ```
 
-- [ ] **Step 2: Verify cookie is set (manual)**
+- [x] **Step 2: Verify cookie is set (manual)**
 
 After making the change, rebuild and test:
 
@@ -337,7 +337,7 @@ In the browser developer tools (Network tab), initiate a Google login flow. In t
 set-cookie: auth_token=eyJ...; HttpOnly; Secure; SameSite=Lax; Max-Age=86400; Path=/
 ```
 
-- [ ] **Step 3: Update client to read token from cookie**
+- [x] **Step 3: Update client to read token from cookie**
 
 Find where the auth callback is handled. This is likely in `src/client/pages/LoginCallback.tsx` or a route handler. The current code reads from URL:
 
@@ -372,7 +372,7 @@ const headers = { Authorization: `Bearer ${token}` };
 
 **Location hint:** Find where `localStorage.setItem('auth_token')` is called. That's the place to change.
 
-- [ ] **Step 4: Update trpc client to include credentials**
+- [x] **Step 4: Update trpc client to include credentials**
 
 Open `src/client/lib/trpc.ts` or wherever the trpc client is initialized. Ensure the HTTP link includes `credentials: 'include'`:
 
@@ -383,7 +383,7 @@ http({
 })
 ```
 
-- [ ] **Step 5: Test the flow**
+- [x] **Step 5: Test the flow**
 
 1. Clear browser cookies and localStorage
 2. Start dev server: `npm run dev`
@@ -396,7 +396,7 @@ http({
 
 Expected: Everything works, token never appears in URLs or logs.
 
-- [ ] **Step 6: Remove any client-side token reading from URL**
+- [x] **Step 6: Remove any client-side token reading from URL**
 
 Search for any other code that reads the token from the URL:
 ```bash
@@ -407,7 +407,7 @@ grep -r "URLSearchParams" src/client/
 
 Remove or update any other instances to not read from URL params.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 cd /home/cda/dev/leagues.finance
@@ -442,7 +442,7 @@ The fix:
 
 **Reasoning:** Each `FinancialConfig` represents a single league's pricing for a single offer. The natural key is `(offerId, leagueId, seasonId)`. A global `(leagueId, seasonId)` index blocks the multi-association use case.
 
-- [ ] **Step 1: Update FinancialConfig schema**
+- [x] **Step 1: Update FinancialConfig schema**
 
 Open `src/server/models/FinancialConfig.ts` and replace lines 38-39:
 
@@ -463,7 +463,7 @@ FinancialConfigSchema.index(
 FinancialConfigSchema.index({ offerId: 1 });
 ```
 
-- [ ] **Step 2: Create a migration script**
+- [x] **Step 2: Create a migration script**
 
 Create a new file `src/server/db/migrations/001-fix-financial-config-index.js`:
 
@@ -517,7 +517,7 @@ async function down() {
 module.exports = { up, down };
 ```
 
-- [ ] **Step 3: Create migration runner script**
+- [x] **Step 3: Create migration runner script**
 
 Create `src/server/db/run-migrations.ts`:
 
@@ -557,7 +557,7 @@ runMigrations().catch(err => {
 });
 ```
 
-- [ ] **Step 4: Run the migration (manual)**
+- [x] **Step 4: Run the migration (manual)**
 
 Before deploying, test the migration on a copy of your dev database:
 
@@ -581,7 +581,7 @@ Connected to MongoDB
 ✓ All migrations completed
 ```
 
-- [ ] **Step 5: Verify new index is created**
+- [x] **Step 5: Verify new index is created**
 
 After running the server, check the index in MongoDB:
 
@@ -601,7 +601,7 @@ You should see:
 }
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /home/cda/dev/leagues.finance
@@ -633,7 +633,7 @@ MongoDB supports multi-document transactions. We wrap the offer + all configs in
 
 **Reasoning:** Atomic creation ensures either the entire offer+configs succeed together, or nothing changes. No orphans, no confusing retry errors.
 
-- [ ] **Step 1: Update the create mutation to use transactions**
+- [x] **Step 1: Update the create mutation to use transactions**
 
 Open `src/server/routers/finance/offers.ts` and replace the `create` mutation (lines 97-145):
 
@@ -761,7 +761,7 @@ Open `src/server/routers/finance/offers.ts` and replace the `create` mutation (l
 - `abortTransaction()` on any error (automatic rollback)
 - `endSession()` in finally block (cleanup)
 
-- [ ] **Step 2: Verify MongoDB supports transactions (manual)**
+- [x] **Step 2: Verify MongoDB supports transactions (manual)**
 
 Ensure your MongoDB instance supports transactions. This requires:
 - MongoDB 4.0+ (release 2018)
@@ -786,7 +786,7 @@ docker run -d \
 docker exec mongodb mongosh --eval "rs.initiate()"
 ```
 
-- [ ] **Step 3: Test transaction rollback (manual)**
+- [x] **Step 3: Test transaction rollback (manual)**
 
 Create a test scenario where config creation would fail:
 
@@ -798,7 +798,7 @@ Create a test scenario where config creation would fail:
 
 Expected: No orphan offers, no "already exists" on retry.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /home/cda/dev/leagues.finance
@@ -820,19 +820,19 @@ previously left orphan offer documents with no configs."
 
 After all tasks complete, run this verification:
 
-- [ ] Unit test for discount validation (PERCENT ≤ 100)
+- [x] Unit test for discount validation (PERCENT ≤ 100)
 ```bash
 cd /home/cda/dev/leagues.finance
 npm test -- shared/schemas/discount.ts
 ```
 
-- [ ] E2E: Create offer, edit custom price, save (verify data persists)
+- [x] E2E: Create offer, edit custom price, save (verify data persists)
 ```bash
 npm run dev
 # Navigate to offer, edit custom price, click Save, refresh page → price persists
 ```
 
-- [ ] E2E: Login flow (verify token in cookie, not URL)
+- [x] E2E: Login flow (verify token in cookie, not URL)
 ```bash
 npm run dev
 # Complete OAuth login, check DevTools Network/Cookies
@@ -840,14 +840,14 @@ npm run dev
 # Check Request headers for Cookie: auth_token=...
 ```
 
-- [ ] E2E: Create offer with multiple leagues in same season (verify no index conflict)
+- [x] E2E: Create offer with multiple leagues in same season (verify no index conflict)
 ```bash
 # Create offer 1 for association A with leagues [1,2]
 # Create offer 2 for association B with leagues [1,2]
 # Both should succeed (no unique constraint violation)
 ```
 
-- [ ] Unit test for transaction rollback (inject error, verify rollback)
+- [x] Unit test for transaction rollback (inject error, verify rollback)
 ```bash
 # Add a test that mocks FinancialConfig.insertMany to throw
 # Verify Offer was not created (no orphan)

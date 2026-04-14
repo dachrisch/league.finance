@@ -19,9 +19,6 @@ export const associationsRouter = router({
           postalCode: z.string(),
           country: z.string(),
         }),
-        description: z.string().optional().default(''),
-        email: z.string().email().optional().default(''),
-        phone: z.string().optional().default(''),
       })
     )
     .mutation(async ({ input }) => {
@@ -60,9 +57,12 @@ export const associationsRouter = router({
         id: z.string(),
         data: z.object({
           name: z.string().optional(),
-          description: z.string().optional(),
-          email: z.string().email().optional(),
-          phone: z.string().optional(),
+          address: z.object({
+            street: z.string(),
+            city: z.string(),
+            postalCode: z.string(),
+            country: z.string(),
+          }).optional(),
         }),
       })
     )

@@ -41,11 +41,11 @@
 **Files:**
 - Modify: `src/client/lib/schemas.ts`
 
-- [ ] **Step 1: Read current schema**
+- [x] **Step 1: Read current schema**
 
 Read the file to understand current structure.
 
-- [ ] **Step 2: Update AssociationInputSchema**
+- [x] **Step 2: Update AssociationInputSchema**
 
 Replace the entire `AssociationInputSchema` with:
 
@@ -71,13 +71,13 @@ export const AssociationSchema = AssociationInputSchema.extend({
 export type Association = z.infer<typeof AssociationSchema>;
 ```
 
-- [ ] **Step 3: Verify no other code references removed fields**
+- [x] **Step 3: Verify no other code references removed fields**
 
 Run: `grep -r "description\|email\|phone" src/client --include="*.tsx" | grep -i association`
 
 Expected: No references to association.description, association.email, or association.phone.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/client/lib/schemas.ts
@@ -91,11 +91,11 @@ git commit -m "refactor: update association schema - remove email/phone/descript
 **Files:**
 - Modify: `shared/schemas/contact.ts`
 
-- [ ] **Step 1: Read current schema**
+- [x] **Step 1: Read current schema**
 
 Read the file to understand current structure.
 
-- [ ] **Step 2: Add email and phone fields**
+- [x] **Step 2: Add email and phone fields**
 
 Update the `CreateContactSchema` to:
 
@@ -129,7 +129,7 @@ export type UpdateContactInput = z.infer<typeof UpdateContactSchema>;
 export type Contact = z.infer<typeof ContactSchema>;
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add shared/schemas/contact.ts
@@ -144,7 +144,7 @@ git commit -m "feat: add email and phone fields to contact schema"
 - Create: `src/client/lib/extractionUtils.ts`
 - Create: `src/client/lib/__tests__/extractionUtils.test.ts`
 
-- [ ] **Step 1: Write failing tests for extraction**
+- [x] **Step 1: Write failing tests for extraction**
 
 Create `src/client/lib/__tests__/extractionUtils.test.ts`:
 
@@ -268,7 +268,7 @@ Germany`;
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 ```bash
 npm test -- src/client/lib/__tests__/extractionUtils.test.ts
@@ -276,7 +276,7 @@ npm test -- src/client/lib/__tests__/extractionUtils.test.ts
 
 Expected: All tests fail with "parseContactAssociationText is not defined"
 
-- [ ] **Step 3: Implement extraction utility**
+- [x] **Step 3: Implement extraction utility**
 
 Create `src/client/lib/extractionUtils.ts`:
 
@@ -439,7 +439,7 @@ function createEmptyResult(confidence: 'low' | 'medium' | 'high'): ExtractionRes
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 ```bash
 npm test -- src/client/lib/__tests__/extractionUtils.test.ts
@@ -447,7 +447,7 @@ npm test -- src/client/lib/__tests__/extractionUtils.test.ts
 
 Expected: All tests pass
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/client/lib/extractionUtils.ts src/client/lib/__tests__/extractionUtils.test.ts
@@ -462,11 +462,11 @@ git commit -m "feat: add text extraction utility for association & contact parsi
 - Modify: `src/server/routers/contacts.ts`
 - Modify: `src/server/routers/associations.ts`
 
-- [ ] **Step 1: Check existing contact router**
+- [x] **Step 1: Check existing contact router**
 
 Read `src/server/routers/contacts.ts` to understand the structure.
 
-- [ ] **Step 2: Add search endpoint for contacts**
+- [x] **Step 2: Add search endpoint for contacts**
 
 Add this procedure to the contacts router:
 
@@ -519,11 +519,11 @@ search: publicProcedure
   }),
 ```
 
-- [ ] **Step 3: Check existing association router**
+- [x] **Step 3: Check existing association router**
 
 Read `src/server/routers/associations.ts` to understand the structure.
 
-- [ ] **Step 4: Add search endpoint for associations**
+- [x] **Step 4: Add search endpoint for associations**
 
 Add this procedure to the associations router:
 
@@ -550,7 +550,7 @@ search: publicProcedure
   }),
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/server/routers/contacts.ts src/server/routers/associations.ts
@@ -565,7 +565,7 @@ git commit -m "feat: add search endpoints for duplicate detection in contacts & 
 - Create: `src/client/components/AssociationContactForm.tsx`
 - Create: `src/client/components/__tests__/AssociationContactForm.test.tsx`
 
-- [ ] **Step 1: Write failing test for form render**
+- [x] **Step 1: Write failing test for form render**
 
 Create `src/client/components/__tests__/AssociationContactForm.test.tsx`:
 
@@ -694,7 +694,7 @@ Country`);
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 ```bash
 npm test -- src/client/components/__tests__/AssociationContactForm.test.tsx
@@ -702,7 +702,7 @@ npm test -- src/client/components/__tests__/AssociationContactForm.test.tsx
 
 Expected: Tests fail with "AssociationContactForm is not defined"
 
-- [ ] **Step 3: Create basic component structure**
+- [x] **Step 3: Create basic component structure**
 
 Create `src/client/components/AssociationContactForm.tsx`:
 
@@ -1142,7 +1142,7 @@ export function AssociationContactForm({
 }
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 ```bash
 npm test -- src/client/components/__tests__/AssociationContactForm.test.tsx
@@ -1150,7 +1150,7 @@ npm test -- src/client/components/__tests__/AssociationContactForm.test.tsx
 
 Tests will still fail due to missing implementation details. Fix them iteratively.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/client/components/AssociationContactForm.tsx src/client/components/__tests__/AssociationContactForm.test.tsx
@@ -1164,7 +1164,7 @@ git commit -m "feat: create unified AssociationContactForm component with text e
 **Files:**
 - Modify: `src/client/pages/AssociationsPage.tsx`
 
-- [ ] **Step 1: Replace form import**
+- [x] **Step 1: Replace form import**
 
 Replace:
 ```typescript
@@ -1176,7 +1176,7 @@ With:
 import { AssociationContactForm } from '../components/AssociationContactForm';
 ```
 
-- [ ] **Step 2: Update form rendering**
+- [x] **Step 2: Update form rendering**
 
 Replace the existing `<AssociationForm ... />` with:
 
@@ -1195,13 +1195,13 @@ Replace the existing `<AssociationForm ... />` with:
 />
 ```
 
-- [ ] **Step 3: Run the page and verify it works**
+- [x] **Step 3: Run the page and verify it works**
 
 Start dev server: `npm run dev`  
 Navigate to Associations page  
 Verify form appears and works
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/client/pages/AssociationsPage.tsx
@@ -1215,7 +1215,7 @@ git commit -m "refactor: update AssociationsPage to use new unified form"
 **Files:**
 - Create: `src/server/migrations/[TIMESTAMP]_update_associations_and_contacts.ts`
 
-- [ ] **Step 1: Create migration file**
+- [x] **Step 1: Create migration file**
 
 Create migration file in `src/server/migrations/`:
 
@@ -1290,7 +1290,7 @@ export async function down() {
 }
 ```
 
-- [ ] **Step 2: Update mongoose models**
+- [x] **Step 2: Update mongoose models**
 
 Update `src/server/models/Association.ts`:
 - Remove email, phone, description fields
@@ -1298,7 +1298,7 @@ Update `src/server/models/Association.ts`:
 
 Update contact model to include email and phone
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/server/migrations/
@@ -1312,7 +1312,7 @@ git commit -m "feat: add migration for association & contact schema changes"
 **Files:**
 - No files modified
 
-- [ ] **Step 1: Run all tests**
+- [x] **Step 1: Run all tests**
 
 ```bash
 npm test
@@ -1320,11 +1320,11 @@ npm test
 
 Expected: All tests pass
 
-- [ ] **Step 2: If tests fail, debug and fix**
+- [x] **Step 2: If tests fail, debug and fix**
 
 Address any test failures in previous tasks
 
-- [ ] **Step 3: Commit if fixes needed**
+- [x] **Step 3: Commit if fixes needed**
 
 ```bash
 git add .
@@ -1338,13 +1338,13 @@ git commit -m "fix: resolve test failures in extraction and form components"
 **Files:**
 - No files modified
 
-- [ ] **Step 1: Start dev server**
+- [x] **Step 1: Start dev server**
 
 ```bash
 npm run dev
 ```
 
-- [ ] **Step 2: Test success case**
+- [x] **Step 2: Test success case**
 
 Navigate to Associations page → Create Association
 Paste text:
@@ -1364,7 +1364,7 @@ Verify:
 - Email field shows extracted email
 - All address fields populated
 
-- [ ] **Step 3: Test ambiguous case**
+- [x] **Step 3: Test ambiguous case**
 
 Clear form and paste:
 ```
@@ -1380,14 +1380,14 @@ Verify:
 - Generic email gets special warning
 - User can edit fields
 
-- [ ] **Step 4: Test form submission**
+- [x] **Step 4: Test form submission**
 
 Fill required fields and submit
 Verify:
 - Association is created in database
 - Page shows success or redirects appropriately
 
-- [ ] **Step 5: Test manual entry fallback**
+- [x] **Step 5: Test manual entry fallback**
 
 Clear textarea and manually enter data
 Verify:

@@ -12,10 +12,11 @@ describe('AssociationForm', () => {
   it('renders form with all fields', () => {
     render(<AssociationForm onSubmit={mockOnSubmit} />);
 
-    expect(screen.getByLabelText(/Name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Description/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Phone/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Association Name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Street/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Postal Code/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/City/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Country/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Create Association/i })).toBeInTheDocument();
   });
 
@@ -26,38 +27,38 @@ describe('AssociationForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
+      expect(screen.getByText(/Association name is required/i)).toBeInTheDocument();
     });
   });
 
-  it('validates email format', () => {
-    render(<AssociationForm onSubmit={mockOnSubmit} />);
-
-    const emailInput = screen.getByLabelText(/Email/i) as HTMLInputElement;
-    // Email field should exist and be required
-    expect(emailInput).toBeInTheDocument();
-    expect(emailInput.type).toBe('email');
-  });
-
   it('submits form with valid data', async () => {
-    const slowSubmit = vi.fn(() => Promise.resolve());
-    render(<AssociationForm onSubmit={slowSubmit} />);
+    const successSubmit = vi.fn(() => Promise.resolve());
+    render(<AssociationForm onSubmit={successSubmit} />);
 
-    const nameInput = screen.getByLabelText(/Name/i) as HTMLInputElement;
-    const descriptionInput = screen.getByLabelText(/Description/i) as HTMLInputElement;
-    const emailInput = screen.getByLabelText(/Email/i) as HTMLInputElement;
-    const phoneInput = screen.getByLabelText(/Phone/i) as HTMLInputElement;
+    const nameInput = screen.getByLabelText(/Association Name/i) as HTMLInputElement;
+    const streetInput = screen.getByLabelText(/Street/i) as HTMLInputElement;
+    const postalCodeInput = screen.getByLabelText(/Postal Code/i) as HTMLInputElement;
+    const cityInput = screen.getByLabelText(/City/i) as HTMLInputElement;
 
     fireEvent.change(nameInput, { target: { value: 'Test Association' } });
-    fireEvent.change(descriptionInput, { target: { value: 'Test Description' } });
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    fireEvent.change(phoneInput, { target: { value: '+49 123 456789' } });
+    fireEvent.change(streetInput, { target: { value: 'Teststrasse 1' } });
+    fireEvent.change(postalCodeInput, { target: { value: '12345' } });
+    fireEvent.change(cityInput, { target: { value: 'Berlin' } });
 
     const submitButton = screen.getByRole('button', { name: /Create Association/i });
     fireEvent.click(submitButton);
 
-    // Just check that submit button was clicked - form validation happens
-    expect(submitButton).toBeInTheDocument();
+    await waitFor(() => {
+      expect(successSubmit).toHaveBeenCalledWith({
+        name: 'Test Association',
+        address: {
+          street: 'Teststrasse 1',
+          postalCode: '12345',
+          city: 'Berlin',
+          country: 'Germany',
+        },
+      });
+    });
   });
 
   it('calls onCancel when cancel button is clicked', () => {
@@ -71,10 +72,9 @@ describe('AssociationForm', () => {
   });
 
   it('disables form during submission', async () => {
-    const slowSubmit = vi.fn(() => new Promise(resolve => setTimeout(resolve, 100)));
-    render(<AssociationForm onSubmit={slowSubmit} isLoading={true} />);
+    render(<AssociationForm onSubmit={vi.fn()} isLoading={true} />);
 
-    const nameInput = screen.getByLabelText(/Name/i) as HTMLInputElement;
+    const nameInput = screen.getByLabelText(/Association Name/i) as HTMLInputElement;
     const submitButton = screen.getByRole('button', { name: /Creating/i });
 
     expect(nameInput).toBeDisabled();
