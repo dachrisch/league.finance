@@ -1,5 +1,6 @@
 // src/client/components/Offer/Step1/SeasonBlock.tsx
 
+import { useState } from 'react';
 import styles from '../../../styles/OfferWizard.module.css';
 
 interface Season {
@@ -20,11 +21,19 @@ export function SeasonBlock({
   onSeasonChange,
   showBlock,
 }: SeasonBlockProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   if (!showBlock) return null;
+
+  const shouldShowBody = isExpanded || selectedSeasonId;
 
   return (
     <div className={styles.block}>
-      <div className={`${styles.blockHeader} ${selectedSeasonId ? styles.open : ''}`}>
+      <div
+        className={`${styles.blockHeader} ${shouldShowBody ? styles.open : ''}`}
+        onClick={() => setIsExpanded(!isExpanded)}
+        style={{ cursor: 'pointer' }}
+      >
         <div className={`${styles.blockIcon} ${selectedSeasonId ? styles.done : styles.active}`}>
           {selectedSeasonId ? '✓' : '2'}
         </div>
@@ -34,10 +43,10 @@ export function SeasonBlock({
             Required to complete the offer
           </span>
         </div>
-        <span className={styles.blockChevron} >▼</span>
+        <span className={styles.blockChevron}>▼</span>
       </div>
 
-      <div className={`${styles.blockBody} ${selectedSeasonId ? styles.open : ''}`}>
+      <div className={`${styles.blockBody} ${shouldShowBody ? styles.open : ''}`}>
         <div className={styles.blockInner}>
           <div className={styles.field}>
             <label className={styles.fieldLabel} htmlFor="season-paste-select">
