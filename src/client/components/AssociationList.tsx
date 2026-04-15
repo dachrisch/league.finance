@@ -15,12 +15,11 @@ const statusStyle = (isLoading?: boolean): React.CSSProperties => ({
 export function AssociationList({ associations, onEdit, onDelete, isLoading = false }: AssociationListProps) {
   if (associations.length === 0) {
     return (
-      <div style={{
-        padding: '2rem',
+      <div className="card" style={{
+        padding: 'var(--spacing-xl)',
         textAlign: 'center',
-        background: '#f8f9fa',
-        borderRadius: 8,
-        color: '#666',
+        background: 'var(--bg-secondary)',
+        color: 'var(--text-muted)',
       }}>
         <p>No associations found. Create one to get started.</p>
       </div>
@@ -28,70 +27,60 @@ export function AssociationList({ associations, onEdit, onDelete, isLoading = fa
   }
 
   return (
-    <div style={{ overflowX: 'auto', ...statusStyle(isLoading) }}>
-      <table style={{
+    <div style={{ ...statusStyle(isLoading) }}>
+      <table className="mobile-cards-table" style={{
         width: '100%',
         borderCollapse: 'collapse',
-        background: '#fff',
+        background: 'var(--bg-primary)',
+        borderRadius: 'var(--border-radius-lg)',
+        overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
       }}>
-        <thead>
-          <tr style={{ borderBottom: '2px solid #dee2e6', background: '#f8f9fa' }}>
-            <th style={{ padding: '1rem', textAlign: 'left', fontSize: 14, fontWeight: 600 }}>Name</th>
-            <th style={{ padding: '1rem', textAlign: 'left', fontSize: 14, fontWeight: 600 }}>Address</th>
-            <th style={{ padding: '1rem', textAlign: 'center', fontSize: 14, fontWeight: 600 }}>Actions</th>
+        <thead style={{ background: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)' }}>
+          <tr>
+            <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Name</th>
+            <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Address</th>
+            <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {associations.map((association) => (
-            <tr key={association._id} style={{ borderBottom: '1px solid #dee2e6' }}>
-              <td style={{ padding: '1rem', fontSize: 14 }}>
-                <strong>{association.name}</strong>
+            <tr key={association._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+              <td data-label="Name" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>
+                <strong style={{ color: 'var(--primary-color)' }}>{association.name}</strong>
               </td>
-              <td style={{ padding: '1rem', fontSize: 14 }}>
+              <td data-label="Address" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', color: 'var(--text-main)' }}>
                 {association.address ? (
                   <>
                     {association.address.street}, {association.address.postalCode} {association.address.city}, {association.address.country}
                   </>
                 ) : (
-                  <span style={{ color: '#999' }}>No address</span>
+                  <span style={{ color: 'var(--text-muted)' }}>No address</span>
                 )}
               </td>
-              <td style={{ padding: '1rem', textAlign: 'center' }}>
-                <button
-                  onClick={() => onEdit(association._id)}
-                  disabled={isLoading}
-                  style={{
-                    padding: '0.4rem 0.8rem',
-                    background: '#0d6efd',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 4,
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    fontSize: 12,
-                    marginRight: '0.5rem',
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => {
-                    if (window.confirm(`Delete "${association.name}"?`)) {
-                      onDelete(association._id);
-                    }
-                  }}
-                  disabled={isLoading}
-                  style={{
-                    padding: '0.4rem 0.8rem',
-                    background: '#dc3545',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 4,
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    fontSize: 12,
-                  }}
-                >
-                  Delete
-                </button>
+              <td data-label="Actions" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
+                <div style={{ display: 'flex', gap: 'var(--spacing-sm)', justifyContent: 'center' }}>
+                  <button
+                    className="btn btn-primary"
+                    style={{ minHeight: '32px', padding: '4px 12px', fontSize: 'var(--font-size-xs)' }}
+                    onClick={() => onEdit(association._id)}
+                    disabled={isLoading}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    style={{ minHeight: '32px', padding: '4px 12px', fontSize: 'var(--font-size-xs)', background: 'var(--danger-color)' }}
+                    onClick={() => {
+                      if (window.confirm(`Delete "${association.name}"?`)) {
+                        onDelete(association._id);
+                      }
+                    }}
+                    disabled={isLoading}
+                  >
+                    Delete
+                  </button>
+                </div>
               </td>
             </tr>
           ))}

@@ -58,22 +58,13 @@ export function AssociationsPage() {
   }
 
   return (
-    <div className="container" style={{ paddingBottom: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ margin: 0 }}>League Associations</h1>
+    <div className="container" style={{ paddingBottom: 'var(--spacing-xl)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-xl)' }}>
+        <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary-color)' }}>League Associations</h1>
         <button
+          className="btn btn-primary"
           onClick={() => setModal({ type: 'create' })}
           disabled={modal !== null}
-          style={{
-            padding: '0.5rem 1rem',
-            background: '#0d6efd',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: modal !== null ? 'not-allowed' : 'pointer',
-            fontSize: 14,
-            fontWeight: 500,
-          }}
         >
           + New Association
         </button>
@@ -94,23 +85,22 @@ export function AssociationsPage() {
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1000,
+            backdropFilter: 'blur(2px)',
           }}
         >
           {/* Modal Content */}
           <div
+            className="card"
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: '#fff',
-              borderRadius: 8,
-              padding: '2rem',
-              maxWidth: '500px',
+              maxWidth: '600px',
               width: '90%',
               maxHeight: '90vh',
               overflowY: 'auto',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              padding: 'var(--spacing-xl)',
             }}
           >
-            <h2 style={{ margin: '0 0 1.5rem 0' }}>
+            <h2 style={{ margin: '0 0 var(--spacing-lg) 0', fontSize: 'var(--font-size-xl)' }}>
               {modal.type === 'create' ? 'Create Association & Contact' : 'Edit Association'}
             </h2>
             {modal.type === 'create' ? (
