@@ -16,19 +16,20 @@ import { trpc } from './lib/trpc';
 
 function DbDownScreen() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', textAlign: 'center', padding: '2rem' }}>
-      <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔌</div>
-      <h1 style={{ color: '#dc3545' }}>Database connection lost</h1>
-      <p style={{ maxWidth: '500px', fontSize: '1.2rem', color: '#666' }}>
+    <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', textAlign: 'center' }}>
+      <div style={{ fontSize: '4rem', marginBottom: 'var(--spacing-lg)' }}>🔌</div>
+      <h1 style={{ color: 'var(--danger-color)', marginBottom: 'var(--spacing-md)' }}>Database connection lost</h1>
+      <p style={{ maxWidth: '500px', fontSize: 'var(--font-size-xl)', color: 'var(--text-muted)' }}>
         The application is currently unable to connect to its primary database. 
         We are already trying to reconnect in the background.
       </p>
-      <div style={{ marginTop: '2rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #dee2e6' }}>
-        <p style={{ margin: 0, fontWeight: 'bold', color: '#0d6efd' }}>Trying to reconnect...</p>
+      <div className="card" style={{ marginTop: 'var(--spacing-xl)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+        <p style={{ margin: 0, fontWeight: 'var(--font-weight-semibold)', color: 'var(--primary-color)' }}>Trying to reconnect...</p>
       </div>
       <button 
+        className="btn btn-primary"
         onClick={() => window.location.reload()} 
-        style={{ marginTop: '2rem', padding: '10px 20px', background: '#0d6efd', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '1rem' }}
+        style={{ marginTop: 'var(--spacing-xl)' }}
       >
         Refresh Page
       </button>
@@ -53,21 +54,21 @@ export function App() {
           ) : (
             <>
               <Navigation />
-              <div style={{ flex: 1 }} className="main-content">
+              <div style={{ flex: 1, position: 'relative' }} className="main-content">
                 <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/login/callback" element={<AuthCallbackPage />} />
-              <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/config/new" element={<ConfigNewPage />} />
-                <Route path="/config/:id" element={<ConfigDetailPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/offers/new" element={<OfferNewPage />} />
-                <Route path="/offers/:id" element={<OfferDetailPage />} />
-                <Route path="/offers" element={<OffersPage />} />
-                <Route path="/associations" element={<AssociationsPage />} />
-              </Route>
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/login/callback" element={<AuthCallbackPage />} />
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/config/new" element={<ConfigNewPage />} />
+                    <Route path="/config/:id" element={<ConfigDetailPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/offers/new" element={<OfferNewPage />} />
+                    <Route path="/offers/:id" element={<OfferDetailPage />} />
+                    <Route path="/offers" element={<OffersPage />} />
+                    <Route path="/associations" element={<AssociationsPage />} />
+                  </Route>
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </div>
             </>

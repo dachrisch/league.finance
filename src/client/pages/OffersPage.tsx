@@ -49,22 +49,13 @@ export function OffersPage() {
   }
 
   return (
-    <div className="container" style={{ paddingBottom: '2rem' }}>
+    <div className="container" style={{ paddingBottom: 'var(--spacing-xl)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ margin: 0 }}>Pricing Offers</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-xl)' }}>
+        <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary-color)' }}>Pricing Offers</h1>
         <button
+          className="btn btn-primary"
           onClick={handleCreateOffer}
-          style={{
-            padding: '0.5rem 1rem',
-            background: '#0d6efd',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: 'pointer',
-            fontSize: 14,
-            fontWeight: 500,
-          }}
         >
           + Create New Offer
         </button>

@@ -12,21 +12,23 @@ interface OfferTableProps {
 
 const statusBadgeStyle = (status: string): React.CSSProperties => {
   const colors: Record<string, { bg: string; color: string }> = {
-    draft: { bg: '#e9ecef', color: '#495057' },
-    sent: { bg: '#cfe2ff', color: '#084298' },
-    accepted: { bg: '#d1e7dd', color: '#0f5132' },
+    draft: { bg: 'var(--bg-secondary)', color: 'var(--text-muted)' },
+    sent: { bg: '#eff6ff', color: '#0369a1' },
+    accepted: { bg: '#ecfdf5', color: 'var(--success-color)' },
   };
 
   const colorSet = colors[status] || colors.draft;
 
   return {
     display: 'inline-block',
-    padding: '0.35rem 0.65rem',
+    padding: '0.25rem 0.5rem',
     background: colorSet.bg,
     color: colorSet.color,
-    borderRadius: 4,
-    fontSize: 12,
-    fontWeight: 500,
+    borderRadius: 'var(--border-radius-sm)',
+    fontSize: 'var(--font-size-xs)',
+    fontWeight: 'var(--font-weight-medium)',
+    border: '1px solid currentColor',
+    opacity: 0.8,
   };
 };
 
@@ -66,21 +68,13 @@ export function OfferTable({
     return 0;
   });
 
-  // Calculate totals for filtered offers
-  const totalPrice = filteredOffers.reduce((sum, offer) => {
-    // This is just an estimate since we don't have line items here
-    // In a real app, you'd pass line items or get totals from server
-    return sum;
-  }, 0);
-
   if (filteredOffers.length === 0) {
     return (
-      <div style={{
-        padding: '2rem',
+      <div className="card" style={{
+        padding: 'var(--spacing-xl)',
         textAlign: 'center',
-        background: '#f8f9fa',
-        borderRadius: 8,
-        color: '#666',
+        background: 'var(--bg-secondary)',
+        color: 'var(--text-muted)',
       }}>
         <p>{filterStatus ? `No ${filterStatus} offers found.` : 'No offers found. Create one to get started.'}</p>
       </div>
@@ -90,7 +84,7 @@ export function OfferTable({
   return (
     <div>
       {/* Filter Buttons */}
-      <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <div style={{ marginBottom: 'var(--spacing-lg)', display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
         {[
           { label: 'All', value: null },
           { label: 'Draft', value: 'draft' },
@@ -101,15 +95,11 @@ export function OfferTable({
             key={label}
             onClick={() => setFilterStatus(value)}
             disabled={isLoading}
+            className={`btn ${filterStatus === value ? 'btn-primary' : 'btn-outline'}`}
             style={{
-              padding: '0.4rem 0.8rem',
-              background: filterStatus === value ? '#0d6efd' : '#fff',
-              color: filterStatus === value ? '#fff' : '#0d6efd',
-              border: '1px solid #0d6efd',
-              borderRadius: 4,
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              fontSize: 12,
-              fontWeight: 500,
+              padding: '4px 12px',
+              fontSize: 'var(--font-size-xs)',
+              minHeight: '32px',
             }}
           >
             {label}
@@ -118,124 +108,109 @@ export function OfferTable({
       </div>
 
       {/* Table */}
-      <div style={{ overflowX: 'auto', opacity: isLoading ? 0.6 : 1, pointerEvents: isLoading ? 'none' : 'auto' }}>
-        <table style={{
+      <div style={{ opacity: isLoading ? 0.6 : 1, pointerEvents: isLoading ? 'none' : 'auto' }}>
+        <table className="mobile-cards-table" style={{
           width: '100%',
           borderCollapse: 'collapse',
-          background: '#fff',
+          background: 'var(--bg-primary)',
+          borderRadius: 'var(--border-radius-lg)',
+          overflow: 'hidden',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
         }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #dee2e6', background: '#f8f9fa' }}>
+          <thead style={{ background: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)' }}>
+            <tr>
               <th
                 onClick={() => setSortBy('createdAt')}
                 style={{
-                  padding: '1rem',
+                  padding: 'var(--spacing-lg)',
                   textAlign: 'left',
-                  fontSize: 14,
-                  fontWeight: 600,
+                  fontSize: 'var(--font-size-sm)',
+                  fontWeight: 'var(--font-weight-semibold)',
                   cursor: 'pointer',
                   userSelect: 'none',
+                  color: 'var(--text-main)',
                 }}
               >
                 Created {sortBy === 'createdAt' ? '↓' : ''}
               </th>
-              <th style={{ padding: '1rem', textAlign: 'left', fontSize: 14, fontWeight: 600 }}>Association</th>
+              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Association</th>
               <th
                 onClick={() => setSortBy('seasonId')}
                 style={{
-                  padding: '1rem',
+                  padding: 'var(--spacing-lg)',
                   textAlign: 'left',
-                  fontSize: 14,
-                  fontWeight: 600,
+                  fontSize: 'var(--font-size-sm)',
+                  fontWeight: 'var(--font-weight-semibold)',
                   cursor: 'pointer',
                   userSelect: 'none',
+                  color: 'var(--text-main)',
                 }}
               >
                 Season {sortBy === 'seasonId' ? '↓' : ''}
               </th>
-              <th style={{ padding: '1rem', textAlign: 'center', fontSize: 14, fontWeight: 600 }}>Leagues</th>
+              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Leagues</th>
               <th
                 onClick={() => setSortBy('status')}
                 style={{
-                  padding: '1rem',
+                  padding: 'var(--spacing-lg)',
                   textAlign: 'left',
-                  fontSize: 14,
-                  fontWeight: 600,
+                  fontSize: 'var(--font-size-sm)',
+                  fontWeight: 'var(--font-weight-semibold)',
                   cursor: 'pointer',
                   userSelect: 'none',
+                  color: 'var(--text-main)',
                 }}
               >
                 Status {sortBy === 'status' ? '↓' : ''}
               </th>
-              <th style={{ padding: '1rem', textAlign: 'center', fontSize: 14, fontWeight: 600 }}>Actions</th>
+              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {sortedOffers.map((offer) => (
-              <tr key={offer._id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                <td style={{ padding: '1rem', fontSize: 14 }}>{formatDate(offer.createdAt)}</td>
-                <td style={{ padding: '1rem', fontSize: 14 }}>
-                  <strong>{associationNames[offer.associationId] || 'Unknown'}</strong>
+              <tr key={offer._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <td data-label="Created" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', color: 'var(--text-main)' }}>{formatDate(offer.createdAt)}</td>
+                <td data-label="Association" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>
+                  <strong style={{ color: 'var(--primary-color)' }}>{associationNames[offer.associationId] || 'Unknown'}</strong>
                 </td>
-                <td style={{ padding: '1rem', fontSize: 14 }}>Season {offer.seasonId}</td>
-                <td style={{ padding: '1rem', fontSize: 14, textAlign: 'center' }}>
+                <td data-label="Season" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', color: 'var(--text-main)' }}>Season {offer.seasonId}</td>
+                <td data-label="Leagues" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', textAlign: 'center', color: 'var(--text-main)' }}>
                   {offer.leagueIds.length}
                 </td>
-                <td style={{ padding: '1rem', fontSize: 14 }}>
+                <td data-label="Status" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>
                   <div style={statusBadgeStyle(offer.status)}>{offer.status}</div>
                 </td>
-                <td style={{ padding: '1rem', textAlign: 'center' }}>
-                  <button
-                    onClick={() => onView(offer._id)}
-                    disabled={isLoading}
-                    style={{
-                      padding: '0.4rem 0.8rem',
-                      background: '#0d6efd',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 4,
-                      cursor: isLoading ? 'not-allowed' : 'pointer',
-                      fontSize: 12,
-                      marginRight: '0.5rem',
-                    }}
-                  >
-                    View
-                  </button>
-                  {offer.status === 'draft' && onSend && (
+                <td data-label="Actions" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
+                  <div style={{ display: 'flex', gap: 'var(--spacing-sm)', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <button
-                      onClick={() => onSend(offer._id)}
+                      className="btn btn-outline"
+                      style={{ minHeight: '32px', padding: '4px 12px', fontSize: 'var(--font-size-xs)' }}
+                      onClick={() => onView(offer._id)}
                       disabled={isLoading}
-                      style={{
-                        padding: '0.4rem 0.8rem',
-                        background: '#198754',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 4,
-                        cursor: isLoading ? 'not-allowed' : 'pointer',
-                        fontSize: 12,
-                        marginRight: '0.5rem',
-                      }}
                     >
-                      Send
+                      View
                     </button>
-                  )}
-                  {offer.status === 'draft' && onEdit && (
-                    <button
-                      onClick={() => onEdit(offer._id)}
-                      disabled={isLoading}
-                      style={{
-                        padding: '0.4rem 0.8rem',
-                        background: '#ffc107',
-                        color: '#000',
-                        border: 'none',
-                        borderRadius: 4,
-                        cursor: isLoading ? 'not-allowed' : 'pointer',
-                        fontSize: 12,
-                      }}
-                    >
-                      Edit
-                    </button>
-                  )}
+                    {offer.status === 'draft' && onSend && (
+                      <button
+                        className="btn btn-primary"
+                        style={{ minHeight: '32px', padding: '4px 12px', fontSize: 'var(--font-size-xs)', background: 'var(--success-color)' }}
+                        onClick={() => onSend(offer._id)}
+                        disabled={isLoading}
+                      >
+                        Send
+                      </button>
+                    )}
+                    {offer.status === 'draft' && onEdit && (
+                      <button
+                        className="btn btn-secondary"
+                        style={{ minHeight: '32px', padding: '4px 12px', fontSize: 'var(--font-size-xs)', background: 'var(--warning-color)', color: '#000' }}
+                        onClick={() => onEdit(offer._id)}
+                        disabled={isLoading}
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
