@@ -146,9 +146,28 @@ export function OfferCreateWizard() {
         onUpdatePasteInput={wizard.updatePasteInput}
         onSelectPath={wizard.selectPath}
         onExtract={handleExtract}
-        onSelectAssociation={wizard.selectAssociation}
-        onSelectContact={wizard.selectContact}
-        onSelectSeason={wizard.selectSeason}
+        onSelectAssociation={(id) => {
+          wizard.selectAssociation(id);
+          // Auto-set path to 'existing' when user makes a selection
+          if (wizard.step1.pathChoice !== 'existing') {
+            wizard.selectPath('existing');
+          }
+        }}
+        onSelectContact={(id) => {
+          wizard.selectContact(id);
+          // Auto-set path to 'existing' when user makes a selection
+          if (wizard.step1.pathChoice !== 'existing') {
+            wizard.selectPath('existing');
+          }
+        }}
+        onSelectSeason={(id) => {
+          wizard.selectSeason(id);
+          // Auto-set path to 'existing' when user makes a selection in the existing block
+          // (Only if we're in the existing context - this is a bit of a heuristic)
+          if (wizard.step1.pathChoice !== 'existing' && wizard.step1.pathChoice !== 'paste') {
+            wizard.selectPath('existing');
+          }
+        }}
         onUpdateExtractedData={wizard.updateExtractedData}
         onNext={wizard.nextStep}
         onCancel={() => navigate('/offers')}

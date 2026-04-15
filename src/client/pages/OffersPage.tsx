@@ -8,13 +8,20 @@ export function OffersPage() {
   const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
 
-  // Fetch offers and associations
+  // Fetch offers, associations, and seasons
   const { data: offers = [], isLoading: offersLoading, refetch: refetchOffers } = trpc.finance.offers.list.useQuery({});
   const { data: associations = [] } = trpc.finance.associations.list.useQuery();
+  const { data: seasons = [] } = trpc.finance.seasons.list.useQuery();
 
   // Create association name map
   const associationNames: Record<string, string> = associations.reduce((acc: Record<string, string>, a: any) => {
     acc[a._id] = a.name;
+    return acc;
+  }, {});
+
+  // Create season year map
+  const seasonYears: Record<string | number, number> = seasons.reduce((acc: Record<string | number, number>, s: any) => {
+    acc[s._id] = s.year;
     return acc;
   }, {});
 
@@ -75,6 +82,7 @@ export function OffersPage() {
       <OfferTable
         offers={offers}
         associationNames={associationNames}
+        seasonYears={seasonYears}
         onView={handleViewOffer}
         onSend={handleSendOffer}
         onEdit={handleEditOffer}

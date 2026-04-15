@@ -66,9 +66,12 @@ export function Step1({
   onNext,
   onCancel,
 }: Step1Props) {
-  const canProceed = extractedData && selectedSeasonId;
-  const isExistingPath = pathChoice === 'existing' && selectedAssociationId && selectedContactId && selectedSeasonId;
-  const isPastePath = pathChoice === 'paste' && canProceed;
+  // Check if user has filled in all required fields for either path
+  const hasExtractedData = extractedData && selectedSeasonId;
+  const hasExistingData = selectedAssociationId && selectedContactId && selectedSeasonId;
+
+  // Allow proceeding if either path has complete data
+  const canProceed = hasExtractedData || hasExistingData;
 
   // Map seasons for UseExistingBlock (which expects { _id, name, year: string })
   const existingSeasons = seasons.map(s => ({
@@ -122,7 +125,7 @@ export function Step1({
           onContactChange={onSelectContact}
           onSeasonChange={onSelectSeason}
           isActive={pathChoice === 'existing'}
-          onToggle={() => onSelectPath('existing')}
+          onToggle={() => onSelectPath(pathChoice === 'existing' ? undefined : 'existing')}
         />
 
         {pathChoice === 'paste' && (
@@ -144,7 +147,7 @@ export function Step1({
           <button
             className={`${styles.button} ${styles.buttonPrimary}`}
             onClick={onNext}
-            disabled={!isPastePath && !isExistingPath}
+            disabled={!canProceed}
           >
             Next: Pricing & Leagues →
           </button>

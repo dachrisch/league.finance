@@ -46,6 +46,7 @@ export function OfferDetailPage() {
     data?.offer?.associationId ? { id: data.offer.associationId.toString() } : { id: '' },
     { enabled: !!data?.offer?.associationId }
   );
+  const { data: seasons = [] } = trpc.finance.seasons.list.useQuery();
 
   const markSent = trpc.finance.offers.markSent.useMutation({
     onSuccess: () => refetch(),
@@ -84,6 +85,8 @@ export function OfferDetailPage() {
   const offer = data.offer;
   const configs = data.configs || [];
   const totalPrice = configs.reduce((sum, config) => sum + config.finalPrice, 0);
+  const season = seasons.find(s => s._id === offer.seasonId);
+  const seasonYear = season?.year || offer.seasonId;
 
   return (
     <div className="container" style={{ paddingBottom: 'var(--spacing-xl)' }}>
@@ -92,7 +95,7 @@ export function OfferDetailPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 'var(--spacing-lg)' }}>
           <div>
             <h1 style={{ margin: 0, marginBottom: 'var(--spacing-sm)', fontSize: '1.5rem', color: 'var(--primary-color)' }}>
-              {association?.name || 'Unknown Association'} - Season {offer.seasonId}
+              {association?.name || 'Unknown Association'} - Season {seasonYear}
             </h1>
             <div style={statusBadgeStyle(offer.status)}>{offer.status}</div>
           </div>

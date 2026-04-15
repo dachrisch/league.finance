@@ -4,6 +4,7 @@ import { Offer } from '../lib/schemas';
 interface OfferTableProps {
   offers: Offer[];
   associationNames: Record<string, string>;
+  seasonYears?: Record<string | number, number>;
   onView: (id: string) => void;
   onSend?: (id: string) => void;
   onEdit?: (id: string) => void;
@@ -43,6 +44,7 @@ const formatPrice = (price: number): string => `$${price.toFixed(2)}`;
 export function OfferTable({
   offers,
   associationNames,
+  seasonYears = {},
   onView,
   onSend,
   onEdit,
@@ -173,7 +175,7 @@ export function OfferTable({
                 <td data-label="Association" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>
                   <strong style={{ color: 'var(--primary-color)' }}>{associationNames[offer.associationId] || 'Unknown'}</strong>
                 </td>
-                <td data-label="Season" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', color: 'var(--text-main)' }}>Season {offer.seasonId}</td>
+                <td data-label="Season" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', color: 'var(--text-main)' }}>Season {seasonYears[offer.seasonId] || offer.seasonId}</td>
                 <td data-label="Leagues" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', textAlign: 'center', color: 'var(--text-main)' }}>
                   {offer.leagueIds.length}
                 </td>
