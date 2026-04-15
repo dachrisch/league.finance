@@ -41,40 +41,40 @@ export function ConfigNewPage() {
     <div className="container" style={{ maxWidth: 600 }}>
       <button
         onClick={() => navigate('/dashboard')}
-        className="btn-danger-text"
-        style={{ marginBottom: '1rem', color: '#0d6efd', padding: 0, display: 'block' }}
+        className="btn btn-outline"
+        style={{ marginBottom: 'var(--spacing-lg)', display: 'inline-flex' }}
       >
         ← Back to Dashboard
       </button>
-      <h1 style={{ marginBottom: '2rem' }}>New Finance Config</h1>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', background: '#fff', padding: '1.5rem', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
+      <h1 style={{ marginBottom: 'var(--spacing-xl)', fontSize: '1.5rem', color: 'var(--primary-color)' }}>New Finance Config</h1>
+      <form onSubmit={handleSubmit} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
         <div className="responsive-grid-2">
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <span style={{ fontSize: 14, fontWeight: 'bold' }}>League</span>
-            <select value={leagueId} onChange={(e) => setLeagueId(e.target.value)} required style={{ padding: '8px' }}>
+          <label className="form-group">
+            <span className="form-label">League</span>
+            <select value={leagueId} onChange={(e) => setLeagueId(e.target.value)} required className="form-control">
               <option value="">— select —</option>
               {leagues?.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
           </label>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <span style={{ fontSize: 14, fontWeight: 'bold' }}>Season</span>
-            <select value={seasonId} onChange={(e) => setSeasonId(e.target.value)} required style={{ padding: '8px' }}>
+          <label className="form-group">
+            <span className="form-label">Season</span>
+            <select value={seasonId} onChange={(e) => setSeasonId(e.target.value)} required className="form-control">
               <option value="">— select —</option>
               {seasons?.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </label>
         </div>
 
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <span style={{ fontSize: 14, fontWeight: 'bold' }}>Cost Model</span>
-          <select value={costModel} onChange={(e) => setCostModel(e.target.value as 'SEASON' | 'GAMEDAY')} style={{ padding: '8px' }}>
+        <label className="form-group">
+          <span className="form-label">Cost Model</span>
+          <select value={costModel} onChange={(e) => setCostModel(e.target.value as 'SEASON' | 'GAMEDAY')} className="form-control">
             <option value="SEASON">Cost per team in season (Flat Fee)</option>
             <option value="GAMEDAY">Cost per team per gameday (Usage-based)</option>
           </select>
         </label>
 
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <span style={{ fontSize: 14, fontWeight: 'bold' }}>Base Rate Override (€)</span>
+        <label className="form-group">
+          <span className="form-label">Base Rate Override (€)</span>
           <input
             type="number"
             min="0"
@@ -82,29 +82,29 @@ export function ConfigNewPage() {
             placeholder={`System default: ${defaultRate ?? '—'} €`}
             value={baseRateOverride}
             onChange={(e) => setBaseRateOverride(e.target.value)}
-            style={{ padding: '8px' }}
+            className="form-control"
           />
         </label>
 
-        <hr style={{ border: 'none', borderTop: '1px solid #ddd', margin: '0.5rem 0' }} />
+        <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: 'var(--spacing-xs) 0' }} />
 
         {costModel === 'SEASON' && (
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <span style={{ fontSize: 14, fontWeight: 'bold' }}>Expected Teams Count</span>
-            <input type="number" min="0" value={expectedTeamsCount} onChange={(e) => setExpectedTeamsCount(e.target.value)} style={{ padding: '8px' }} />
-            <small style={{ color: '#666' }}>Used to project total potential revenue.</small>
+          <label className="form-group">
+            <span className="form-label">Expected Teams Count</span>
+            <input type="number" min="0" value={expectedTeamsCount} onChange={(e) => setExpectedTeamsCount(e.target.value)} className="form-control" />
+            <small style={{ color: 'var(--text-muted)' }}>Used to project total potential revenue.</small>
           </label>
         )}
 
         {costModel === 'GAMEDAY' && (
           <div className="responsive-grid-2">
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <span style={{ fontSize: 14, fontWeight: 'bold' }}>Expected Gamedays</span>
-              <input type="number" min="0" value={expectedGamedaysCount} onChange={(e) => setExpectedGamedaysCount(e.target.value)} style={{ padding: '8px' }} />
+            <label className="form-group">
+              <span className="form-label">Expected Gamedays</span>
+              <input type="number" min="0" value={expectedGamedaysCount} onChange={(e) => setExpectedGamedaysCount(e.target.value)} className="form-control" />
             </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <span style={{ fontSize: 14, fontWeight: 'bold' }}>Teams per Gameday</span>
-              <input type="number" min="0" value={expectedTeamsPerGameday} onChange={(e) => setExpectedTeamsPerGameday(e.target.value)} style={{ padding: '8px' }} />
+            <label className="form-group">
+              <span className="form-label">Teams per Gameday</span>
+              <input type="number" min="0" value={expectedTeamsPerGameday} onChange={(e) => setExpectedTeamsPerGameday(e.target.value)} className="form-control" />
             </label>
           </div>
         )}
@@ -112,21 +112,11 @@ export function ConfigNewPage() {
         <button
           type="submit"
           disabled={createConfig.isPending}
-          style={{
-            marginTop: '1rem',
-            padding: '12px',
-            background: '#0d6efd',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-            fontSize: 16,
-            fontWeight: 'bold'
-          }}
+          className="btn btn-primary"
         >
           {createConfig.isPending ? 'Creating…' : 'Create Configuration'}
         </button>
-        {createConfig.isError && <p style={{ color: 'red', margin: 0 }}>{createConfig.error.message}</p>}
+        {createConfig.isError && <p style={{ color: 'var(--danger-color)', margin: 0 }}>{createConfig.error.message}</p>}
       </form>
     </div>
   );

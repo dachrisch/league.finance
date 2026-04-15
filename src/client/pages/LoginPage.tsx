@@ -16,22 +16,15 @@ export function LoginPage() {
   const error = params.get('error');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-      <h1>Leagues Finance</h1>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+      <h1 style={{ marginBottom: 'var(--spacing-xl)', color: 'var(--primary-color)', fontSize: '2rem' }}>Leagues Finance</h1>
       {error === 'domain' && (
-        <p style={{ color: 'red' }}>Only @bumbleflies.de accounts are allowed.</p>
+        <p style={{ color: 'var(--danger-color)', marginBottom: 'var(--spacing-md)' }}>Only @bumbleflies.de accounts are allowed.</p>
       )}
       <a
         href="/auth/google"
-        style={{
-          display: 'inline-block',
-          padding: '12px 24px',
-          background: '#4285f4',
-          color: '#fff',
-          borderRadius: 4,
-          textDecoration: 'none',
-          fontWeight: 'bold',
-        }}
+        className="btn btn-primary"
+        style={{ background: '#4285f4' }}
       >
         Sign in with Google
       </a>

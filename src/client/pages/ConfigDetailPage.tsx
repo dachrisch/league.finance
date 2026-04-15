@@ -12,8 +12,8 @@ export function ConfigDetailPage() {
   const { data: leagues } = trpc.teams.leagues.useQuery();
   const { data: seasons } = trpc.teams.seasons.useQuery();
 
-  if (isLoading) return <p style={{ padding: '2rem' }}>Loading config…</p>;
-  if (!data) return <p style={{ padding: '2rem', color: 'red' }}>Config not found.</p>;
+  if (isLoading) return <div className="container"><p>Loading config…</p></div>;
+  if (!data) return <div className="container"><p style={{ color: 'var(--danger-color)' }}>Config not found.</p></div>;
 
   const { config, discounts } = data as any;
   const isAdmin = me?.role === 'admin';
@@ -25,48 +25,48 @@ export function ConfigDetailPage() {
     <div className="container">
       <button
         onClick={() => navigate('/dashboard')}
-        className="btn-danger-text"
-        style={{ marginBottom: '1.5rem', color: '#0d6efd', padding: 0, fontSize: 16, display: 'block' }}
+        className="btn btn-outline"
+        style={{ marginBottom: 'var(--spacing-lg)', display: 'inline-flex' }}
       >
         ← Back to Dashboard
       </button>
 
-      <header style={{ marginBottom: '2rem' }}>
-        <h1 style={{ margin: '0 0 0.5rem 0' }}>
+      <header style={{ marginBottom: 'var(--spacing-xl)' }}>
+        <h1 style={{ margin: '0 0 var(--spacing-sm) 0', fontSize: '1.5rem', color: 'var(--primary-color)' }}>
           {league?.name ?? `League ${config.leagueId}`} / {season?.name ?? `Season ${config.seasonId}`}
         </h1>
-        <div style={{ display: 'flex', gap: '1rem', color: '#666', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 'var(--spacing-md)', color: 'var(--text-muted)', flexWrap: 'wrap', fontSize: 'var(--font-size-sm)' }}>
           <span>Model: <strong>{config.costModel}</strong></span>
           <span>Base Rate: <strong>{config.baseRateOverride != null ? `${config.baseRateOverride.toFixed(2)} €` : 'Default'}</strong></span>
         </div>
       </header>
 
       {stats && (
-        <section className="responsive-flex" style={{ marginBottom: '2.5rem' }}>
-          <div style={{ flex: 1, padding: '1.25rem', background: '#fff', borderRadius: 8, borderTop: '4px solid #0d6efd', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <p style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Live Gross</p>
-            <h2 style={{ margin: 0, color: '#0d6efd' }}>{stats.gross.toFixed(2)} €</h2>
-            <p style={{ margin: '0.5rem 0 0 0', fontSize: 13, color: '#888' }}>
+        <section className="responsive-flex" style={{ marginBottom: 'var(--spacing-xl)' }}>
+          <div className="card" style={{ flex: 1, borderTop: '4px solid var(--primary-color)', padding: 'var(--spacing-lg)' }}>
+            <p style={{ margin: '0 0 var(--spacing-xs) 0', color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Live Gross</p>
+            <h2 style={{ margin: 0, color: 'var(--primary-color)', fontSize: 'var(--font-size-xl)' }}>{stats.gross.toFixed(2)} €</h2>
+            <p style={{ margin: 'var(--spacing-xs) 0 0 0', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>
               {stats.liveParticipationCount} {config.costModel === 'SEASON' ? 'teams' : 'participations'}
             </p>
           </div>
-          <div style={{ flex: 1, padding: '1.25rem', background: '#fff', borderRadius: 8, borderTop: '4px solid #dc3545', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <p style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Discount</p>
-            <h2 style={{ margin: 0, color: '#dc3545' }}>-{stats.discount.toFixed(2)} €</h2>
+          <div className="card" style={{ flex: 1, borderTop: '4px solid var(--danger-color)', padding: 'var(--spacing-lg)' }}>
+            <p style={{ margin: '0 0 var(--spacing-xs) 0', color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Discount</p>
+            <h2 style={{ margin: 0, color: 'var(--danger-color)', fontSize: 'var(--font-size-xl)' }}>-{stats.discount.toFixed(2)} €</h2>
           </div>
-          <div style={{ flex: 1, padding: '1.25rem', background: '#fff', borderRadius: 8, borderTop: '4px solid #198754', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <p style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Live Net</p>
-            <h2 style={{ margin: 0, color: '#198754' }}>{stats.net.toFixed(2)} €</h2>
+          <div className="card" style={{ flex: 1, borderTop: '4px solid var(--success-color)', padding: 'var(--spacing-lg)' }}>
+            <p style={{ margin: '0 0 var(--spacing-xs) 0', color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Live Net</p>
+            <h2 style={{ margin: 0, color: 'var(--success-color)', fontSize: 'var(--font-size-xl)' }}>{stats.net.toFixed(2)} €</h2>
           </div>
         </section>
       )}
 
-      <section style={{ marginBottom: '3rem' }}>
-        <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '0.5rem', marginBottom: '1rem' }}>Discounts</h3>
+      <section style={{ marginBottom: 'var(--spacing-xl)' }}>
+        <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: 'var(--spacing-sm)', marginBottom: 'var(--spacing-lg)' }}>Discounts</h3>
         <DiscountList discounts={discounts} isAdmin={isAdmin} onRemoved={refetch} />
         {isAdmin && (
-          <div style={{ marginTop: '1.5rem', padding: '1.5rem', background: '#fcfcfc', border: '1px dashed #ddd', borderRadius: 8 }}>
-            <h4 style={{ margin: '0 0 1rem 0', fontSize: 14, color: '#555' }}>Add new discount</h4>
+          <div style={{ marginTop: 'var(--spacing-lg)', padding: 'var(--spacing-lg)', background: 'var(--bg-secondary)', border: '1px dashed var(--border-color)', borderRadius: 'var(--border-radius-md)' }}>
+            <h4 style={{ margin: '0 0 var(--spacing-md) 0', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Add new discount</h4>
             <DiscountForm configId={id!} onAdded={refetch} />
           </div>
         )}
@@ -74,21 +74,21 @@ export function ConfigDetailPage() {
 
       {stats?.details && (
         <section>
-          <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '0.5rem', marginBottom: '1rem' }}>Per-Team Breakdown</h3>
-          <table className="mobile-cards-table">
+          <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: 'var(--spacing-sm)', marginBottom: 'var(--spacing-lg)' }}>Per-Team Breakdown</h3>
+          <table className="mobile-cards-table" style={{ background: 'var(--bg-primary)', borderRadius: 'var(--border-radius-lg)', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
             <thead>
-              <tr style={{ background: '#f8f9fa', color: '#495057' }}>
-                <th style={{ padding: '12px 15px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Team Name</th>
-                <th style={{ padding: '12px 15px', textAlign: 'right', borderBottom: '2px solid #dee2e6' }}>Gross Fee</th>
-                <th style={{ padding: '12px 15px', textAlign: 'right', borderBottom: '2px solid #dee2e6' }}>Net Fee</th>
+              <tr style={{ background: 'var(--bg-secondary)', color: 'var(--text-main)' }}>
+                <th style={{ padding: 'var(--spacing-md)', textAlign: 'left', borderBottom: '2px solid var(--border-color)', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)' }}>Team Name</th>
+                <th style={{ padding: 'var(--spacing-md)', textAlign: 'right', borderBottom: '2px solid var(--border-color)', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)' }}>Gross Fee</th>
+                <th style={{ padding: 'var(--spacing-md)', textAlign: 'right', borderBottom: '2px solid var(--border-color)', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)' }}>Net Fee</th>
               </tr>
             </thead>
             <tbody>
               {stats.details.map((d: any) => (
-                <tr key={d.teamId} style={{ borderBottom: '1px solid #eee' }}>
-                  <td data-label="Team Name" style={{ padding: '12px 15px' }}>{d.teamName}</td>
-                  <td data-label="Gross Fee" style={{ padding: '12px 15px', textAlign: 'right' }}>{d.gross.toFixed(2)} €</td>
-                  <td data-label="Net Fee" style={{ padding: '12px 15px', textAlign: 'right', fontWeight: 'bold', color: '#198754' }}>{d.net.toFixed(2)} €</td>
+                <tr key={d.teamId} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <td data-label="Team Name" style={{ padding: 'var(--spacing-md)', fontSize: 'var(--font-size-md)' }}>{d.teamName}</td>
+                  <td data-label="Gross Fee" style={{ padding: 'var(--spacing-md)', textAlign: 'right', fontSize: 'var(--font-size-md)' }}>{d.gross.toFixed(2)} €</td>
+                  <td data-label="Net Fee" style={{ padding: 'var(--spacing-md)', textAlign: 'right', fontWeight: 'var(--font-weight-semibold)', color: 'var(--success-color)', fontSize: 'var(--font-size-md)' }}>{d.net.toFixed(2)} €</td>
                 </tr>
               ))}
             </tbody>

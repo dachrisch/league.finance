@@ -20,10 +20,10 @@ export function SettingsPage() {
 
   if (me?.role !== 'admin') {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <h2 style={{ color: 'red' }}>Access Denied</h2>
+      <div className="container" style={{ textAlign: 'center', padding: 'var(--spacing-xl)' }}>
+        <h2 style={{ color: 'var(--danger-color)' }}>Access Denied</h2>
         <p>You must be an administrator to view this page.</p>
-        <button onClick={() => navigate('/dashboard')} style={{ padding: '8px 16px', background: '#0d6efd', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+        <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
           Back to Dashboard
         </button>
       </div>
@@ -39,63 +39,55 @@ export function SettingsPage() {
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: '2rem', fontFamily: 'sans-serif' }}>
+    <div className="container" style={{ maxWidth: 600, margin: '0 auto' }}>
       <button
         onClick={() => navigate('/dashboard')}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', marginBottom: '1rem', color: '#0d6efd', padding: 0 }}
+        className="btn btn-outline"
+        style={{ marginBottom: 'var(--spacing-lg)', display: 'inline-flex' }}
       >
         ← Back to Dashboard
       </button>
-      <h1 style={{ marginBottom: '2rem' }}>Global Settings</h1>
+      <h1 style={{ marginBottom: 'var(--spacing-xl)', fontSize: '1.5rem', color: 'var(--primary-color)' }}>Global Settings</h1>
 
-      <section style={{ background: '#f8f9fa', padding: '2rem', borderRadius: 12 }}>
-        <h2 style={{ margin: '0 0 1.5rem 0', fontSize: 20 }}>Default Rates</h2>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <span style={{ fontSize: 14, fontWeight: 'bold' }}>Default Rate per Team per Season (€)</span>
+      <section className="card" style={{ background: 'var(--bg-secondary)' }}>
+        <h2 style={{ margin: '0 0 var(--spacing-lg) 0', fontSize: 'var(--font-size-lg)' }}>Default Rates</h2>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
+          <label className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xs)' }}>
+            <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)' }}>Default Rate per Team per Season (€)</span>
             <input
               type="number"
               min="0"
               step="0.01"
               value={ratePerSeason}
               onChange={(e) => setRatePerSeason(e.target.value)}
-              style={{ padding: '10px', fontSize: 16 }}
+              className="form-control"
             />
-            <small style={{ color: '#666' }}>Used for FLAT fee calculations when no override is present.</small>
+            <small style={{ color: 'var(--text-muted)' }}>Used for FLAT fee calculations when no override is present.</small>
           </label>
 
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <span style={{ fontSize: 14, fontWeight: 'bold' }}>Default Rate per Team per Gameday (€)</span>
+          <label className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xs)' }}>
+            <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)' }}>Default Rate per Team per Gameday (€)</span>
             <input
               type="number"
               min="0"
               step="0.01"
               value={ratePerGameday}
               onChange={(e) => setRatePerGameday(e.target.value)}
-              style={{ padding: '10px', fontSize: 16 }}
+              className="form-control"
             />
-            <small style={{ color: '#666' }}>Used for usage-based calculations when no override is present.</small>
+            <small style={{ color: 'var(--text-muted)' }}>Used for usage-based calculations when no override is present.</small>
           </label>
 
           <button
             type="submit"
             disabled={updateSettings.isPending}
-            style={{
-              marginTop: '1rem',
-              padding: '12px',
-              background: '#198754',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-              fontSize: 16,
-              fontWeight: 'bold'
-            }}
+            className="btn btn-primary"
+            style={{ background: 'var(--success-color)', marginTop: 'var(--spacing-sm)' }}
           >
             {updateSettings.isPending ? 'Saving…' : 'Save Changes'}
           </button>
-          {updateSettings.isSuccess && <p style={{ color: '#198754', margin: 0, fontWeight: 'bold' }}>✓ Settings updated successfully.</p>}
-          {updateSettings.isError && <p style={{ color: '#dc3545', margin: 0 }}>Error: {updateSettings.error.message}</p>}
+          {updateSettings.isSuccess && <p style={{ color: 'var(--success-color)', margin: 0, fontWeight: 'var(--font-weight-medium)' }}>✓ Settings updated successfully.</p>}
+          {updateSettings.isError && <p style={{ color: 'var(--danger-color)', margin: 0 }}>Error: {updateSettings.error.message}</p>}
         </form>
       </section>
     </div>

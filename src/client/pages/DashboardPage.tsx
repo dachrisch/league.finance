@@ -80,17 +80,17 @@ export function DashboardPage() {
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className="container" style={{ paddingBottom: 'var(--spacing-xl)' }}>
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '2rem',
+          marginBottom: 'var(--spacing-xl)',
         }}
       >
-        <h1 style={{ margin: 0 }}>Offers</h1>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary-color)' }}>Offers</h1>
+        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
           <button
             onClick={() => navigate('/offers/new')}
             className="btn btn-primary"
@@ -109,21 +109,22 @@ export function DashboardPage() {
       {/* Filter Bar */}
       <div
         style={{
-          marginBottom: '2rem',
+          marginBottom: 'var(--spacing-xl)',
           display: 'flex',
-          gap: '0.5rem',
+          gap: 'var(--spacing-sm)',
           flexWrap: 'wrap',
           alignItems: 'center',
         }}
       >
-        <label style={{ fontWeight: '500', marginRight: '0.5rem' }}>Filter by Status:</label>
+        <label style={{ fontWeight: 'var(--font-weight-medium)', marginRight: 'var(--spacing-sm)' }}>Filter by Status:</label>
         {(['all', 'draft', 'sent', 'accepted'] as const).map((status) => (
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
-            className={`btn btn-sm ${
+            className={`btn ${
               statusFilter === status ? 'btn-primary' : 'btn-outline'
             }`}
+            style={{ padding: '4px 12px', fontSize: 'var(--font-size-xs)', minHeight: '32px' }}
           >
             {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
           </button>
@@ -135,16 +136,15 @@ export function DashboardPage() {
         <p>Loading offers...</p>
       ) : filteredOffers.length === 0 ? (
         <div
+          className="card"
           style={{
             textAlign: 'center',
-            padding: '3rem 2rem',
-            color: '#999',
-            backgroundColor: '#f8f9fa',
-            borderRadius: '8px',
+            padding: 'var(--spacing-xl)',
+            color: 'var(--text-muted)',
           }}
         >
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
-          <h3>No offers yet</h3>
+          <div style={{ fontSize: '3rem', marginBottom: 'var(--spacing-lg)' }}>📋</div>
+          <h3 style={{ color: 'var(--text-main)' }}>No offers yet</h3>
           <p>Create your first offer to get started</p>
           <button
             onClick={() => navigate('/offers/new')}
@@ -158,7 +158,7 @@ export function DashboardPage() {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-            gap: '1rem',
+            gap: 'var(--spacing-lg)',
           }}
         >
           {filteredOffers.map((offer: any) => (
