@@ -85,12 +85,12 @@ Country`,
     const textarea = screen.getByPlaceholderText(/paste text/i);
     fireEvent.change(textarea, {
       target: {
-        value: `Organization
+        value: `Test e.V.
 John Smith
 john@example.com
-Street 1
-12345 City
-Country`,
+Hauptstraße 1
+12345 Berlin
+Germany`,
       },
     });
 
@@ -104,12 +104,12 @@ Country`,
       expect(mockOnSubmit).toHaveBeenCalledWith(
         expect.objectContaining({
           association: expect.objectContaining({
-            name: 'Organization',
+            name: 'Test e.V.',
             address: expect.objectContaining({
-              street: 'Street 1',
-              city: 'City',
+              street: 'Hauptstraße 1',
+              city: 'Berlin',
               postalCode: '12345',
-              country: 'Country',
+              country: 'Germany',
             }),
           }),
           contact: expect.objectContaining({
@@ -133,19 +133,19 @@ Country`,
     const textarea = screen.getByPlaceholderText(/paste text/i);
     fireEvent.change(textarea, {
       target: {
-        value: `Organization
+        value: `Test e.V.
 John Smith
 john@realcompany.com
-Street 1
-12345 City
-Country`,
+Hauptstraße 1
+12345 Berlin
+Germany`,
       },
     });
 
     const autoFillButton = screen.getByRole('button', { name: /auto-fill/i });
     fireEvent.click(autoFillButton);
 
-    const orgInput = screen.getByDisplayValue('Organization') as HTMLInputElement;
+    const orgInput = screen.getByDisplayValue('Test e.V.') as HTMLInputElement;
     expect(orgInput.disabled).toBe(true);
   });
 

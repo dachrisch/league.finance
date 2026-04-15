@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { parseContactAssociationText } from '../lib/extractionUtils';
-import type { ExtractionResult } from '../lib/extractionUtils';
+import { extractContactInfo } from '../hooks/useExtraction';
 
 export interface AssociationContactFormProps {
   onSubmit: (data: {
@@ -25,7 +24,7 @@ interface FormData {
 
 export function AssociationContactForm({ onSubmit, onCancel, isLoading = false }: AssociationContactFormProps) {
   const [pastedText, setPastedText] = useState('');
-  const [extractedData, setExtractedData] = useState<ExtractionResult | null>(null);
+  const [extractedData, setExtractedData] = useState<{ confidence: 'high' | 'medium' | 'low' } | null>(null);
   const [formData, setFormData] = useState<FormData>({
     associationName: '',
     contactName: '',
@@ -46,19 +45,33 @@ export function AssociationContactForm({ onSubmit, onCancel, isLoading = false }
       return;
     }
 
-    const extraction = parseContactAssociationText(pastedText);
-    setExtractedData(extraction);
+    const extracted = extractContactInfo(pastedText);
+
+    // Determine confidence level based on available data
+    const requiredFields = ['organizationName', 'contactName', 'email', 'city', 'postalCode'];
+    const missing = requiredFields.filter((field) => !extracted[field as keyof typeof extracted]);
+
+    let confidence: 'high' | 'medium' | 'low' = 'high';
+    if (missing.length === 0) {
+      confidence = 'high';
+    } else if (missing.length <= 2) {
+      confidence = 'medium';
+    } else {
+      confidence = 'low';
+    }
+
+    setExtractedData({ confidence });
 
     // Populate form data from extraction
     setFormData({
-      associationName: extraction.association.name,
-      contactName: extraction.contact.name,
-      email: extraction.contact.email || '',
-      phone: extraction.contact.phone || '',
-      street: extraction.contact.address.street,
-      city: extraction.contact.address.city,
-      postalCode: extraction.contact.address.postalCode,
-      country: extraction.contact.address.country,
+      associationName: extracted.organizationName || '',
+      contactName: extracted.contactName || '',
+      email: extracted.email || '',
+      phone: extracted.phone || '',
+      street: extracted.street || '',
+      city: extracted.city || '',
+      postalCode: extracted.postalCode || '',
+      country: extracted.country || 'Germany',
     });
   };
 
