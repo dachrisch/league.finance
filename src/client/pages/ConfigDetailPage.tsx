@@ -24,11 +24,11 @@ export function ConfigDetailPage() {
   return (
     <div className="container">
       <button
-        onClick={() => navigate('/dashboard')}
+        onClick={() => navigate('/offers')}
         className="btn btn-outline"
         style={{ marginBottom: 'var(--spacing-lg)', display: 'inline-flex' }}
       >
-        ← Back to Dashboard
+        ← Back to Offers
       </button>
 
       <header style={{ marginBottom: 'var(--spacing-xl)' }}>

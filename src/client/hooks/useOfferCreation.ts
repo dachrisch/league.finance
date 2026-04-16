@@ -198,6 +198,33 @@ export function useOfferCreation() {
     setState(initialState);
   }, []);
 
+  const resetWithData = useCallback((offer: any) => {
+    // Map existing offer to wizard state
+    const firstConfig = offer.financialConfigs?.[0];
+    
+    setState({
+      currentStep: 'step1',
+      step1: {
+        pathChoice: 'existing',
+        selectedAssociationId: offer.associationId,
+        selectedContactId: offer.contact?._id,
+        selectedSeasonId: String(offer.seasonId),
+        pasteInput: '',
+        isExtracting: false,
+      },
+      step2: {
+        pricing: {
+          costModel: firstConfig?.costModel === 'GAMEDAY' ? 'perGameDay' : 'flatFee',
+          baseRateOverride: firstConfig?.baseRateOverride || undefined,
+          expectedTeamsCount: firstConfig?.expectedTeamsCount || 0,
+        },
+        selectedLeagueIds: offer.leagueIds.map(String),
+        leagueSearchTerm: '',
+        leagueFilterType: 'All',
+      },
+    });
+  }, []);
+
   return {
     // State
     ...state,
@@ -228,5 +255,6 @@ export function useOfferCreation() {
 
     // Utilities
     reset,
+    resetWithData,
   };
 }

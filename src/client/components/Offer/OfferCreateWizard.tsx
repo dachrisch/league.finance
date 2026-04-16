@@ -1,23 +1,54 @@
 // src/client/components/Offer/OfferCreateWizard.tsx
 
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Step1 } from './Step1/Step1';
 import { Step2 } from './Step2/Step2';
 import { useOfferCreation } from '../../hooks/useOfferCreation';
-import { extractContactInfo } from '../../hooks/useExtraction';
 import { trpc } from '../../lib/trpc';
 
-export function OfferCreateWizard() {
+interface Props {
+  editId?: string;
+}
+
+export function OfferCreateWizard({ editId }: Props) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const wizard = useOfferCreation();
-  const [isCreating, setIsCreating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   // Queries
   const { data: associations = [] } = trpc.finance.associations.list.useQuery();
   const { data: contacts = [] } = trpc.finance.contacts.list.useQuery();
   const { data: seasons = [] } = trpc.finance.seasons.list.useQuery();
   
+  const { data: existingOffer, isLoading: isLoadingOffer } = trpc.finance.offers.get.useQuery(
+    { id: editId! },
+    { enabled: !!editId }
+  );
+
+  // Initialize with existing data or URL params
+  useEffect(() => {
+    if (hasInitialized) return;
+
+    if (editId && existingOffer) {
+      wizard.resetWithData(existingOffer.offer);
+      setHasInitialized(true);
+    } else if (!editId && seasons.length > 0) {
+      // Handle "Quick Add" from dashboard
+      const leagueId = searchParams.get('league');
+      const seasonId = searchParams.get('season');
+      
+      if (leagueId && seasonId) {
+        wizard.selectSeason(seasonId);
+        wizard.setSelectedLeagues([leagueId]);
+        wizard.selectPath('existing');
+        setHasInitialized(true);
+      }
+    }
+  }, [editId, existingOffer, hasInitialized, wizard, seasons, searchParams]);
+
   // Get leagues for selected season
   const { data: leagues = [] } = trpc.finance.leagues.listBySeason.useQuery(
     { seasonId: wizard.step1.selectedSeasonId || '' },
@@ -27,6 +58,7 @@ export function OfferCreateWizard() {
   // Mutations
   const extractMutation = trpc.finance.offers.extractContact.useMutation();
   const createMutation = trpc.finance.offers.create.useMutation();
+  const updateMutation = trpc.finance.offers.update.useMutation();
   const createAssociationMutation = trpc.finance.associations.create.useMutation();
   const createContactMutation = trpc.finance.contacts.create.useMutation();
 
@@ -34,14 +66,12 @@ export function OfferCreateWizard() {
   const handleExtract = async (text: string) => {
     wizard.setExtracting(true);
     try {
-      // Server-side enhancement & duplicate detection
       const serverResult = await extractMutation.mutateAsync({ text });
       
       wizard.setExtractedData(serverResult.data);
       wizard.setDuplicateCheck(serverResult.duplicates);
       wizard.selectPath('paste');
 
-      // Auto-select if exact match found
       if (serverResult.duplicates.associationMatches?.length === 1 && serverResult.duplicates.associationMatches[0].type === 'exact') {
         wizard.selectAssociation(serverResult.duplicates.associationMatches[0]._id);
       }
@@ -55,8 +85,8 @@ export function OfferCreateWizard() {
     }
   };
 
-  const handleCreateOffer = async () => {
-    setIsCreating(true);
+  const handleSaveOffer = async () => {
+    setIsSubmitting(true);
     try {
       let associationId = wizard.step1.selectedAssociationId;
       let contactId = wizard.step1.selectedContactId;
@@ -104,13 +134,17 @@ export function OfferCreateWizard() {
         leagueIds: wizard.step2.selectedLeagueIds.map(id => parseInt(id)),
       };
 
-      const result = await createMutation.mutateAsync(payload);
-      navigate(`/offers/${result._id}`);
+      if (editId) {
+        await updateMutation.mutateAsync({ id: editId, data: payload as any });
+        navigate(`/offers/${editId}`);
+      } else {
+        const result = await createMutation.mutateAsync(payload);
+        navigate(`/offers/${result._id}`);
+      }
     } catch (err) {
-      console.error('Failed to create offer:', err);
-      // Show toast error if available
+      console.error('Failed to save offer:', err);
     } finally {
-      setIsCreating(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -136,6 +170,10 @@ export function OfferCreateWizard() {
     return { associationName, contactName, seasonYear };
   }, [wizard.step1, associations, contacts, seasons]);
 
+  if (editId && isLoadingOffer) {
+    return <div className="container">Loading offer data...</div>;
+  }
+
   if (wizard.currentStep === 'step1') {
     return (
       <Step1
@@ -148,22 +186,14 @@ export function OfferCreateWizard() {
         onExtract={handleExtract}
         onSelectAssociation={(id) => {
           wizard.selectAssociation(id);
-          // Auto-set path to 'existing' when user makes a selection
-          if (wizard.step1.pathChoice !== 'existing') {
-            wizard.selectPath('existing');
-          }
+          if (wizard.step1.pathChoice !== 'existing') wizard.selectPath('existing');
         }}
         onSelectContact={(id) => {
           wizard.selectContact(id);
-          // Auto-set path to 'existing' when user makes a selection
-          if (wizard.step1.pathChoice !== 'existing') {
-            wizard.selectPath('existing');
-          }
+          if (wizard.step1.pathChoice !== 'existing') wizard.selectPath('existing');
         }}
         onSelectSeason={(id) => {
           wizard.selectSeason(id);
-          // Auto-set path to 'existing' when user makes a selection in the existing block
-          // (Only if we're in the existing context - this is a bit of a heuristic)
           if (wizard.step1.pathChoice !== 'existing' && wizard.step1.pathChoice !== 'paste') {
             wizard.selectPath('existing');
           }
@@ -171,6 +201,7 @@ export function OfferCreateWizard() {
         onUpdateExtractedData={wizard.updateExtractedData}
         onNext={wizard.nextStep}
         onCancel={() => navigate('/offers')}
+        isEdit={!!editId}
       />
     );
   }
@@ -185,7 +216,7 @@ export function OfferCreateWizard() {
       leagueFilterType={wizard.step2.leagueFilterType || 'All'}
       onBack={wizard.previousStep}
       onCancel={() => navigate('/offers')}
-      onCreate={handleCreateOffer}
+      onCreate={handleSaveOffer}
       onPricingChange={wizard.updatePricing}
       onToggleLeague={wizard.toggleLeague}
       onSearchChange={wizard.updateLeagueSearch}
@@ -193,7 +224,8 @@ export function OfferCreateWizard() {
       onSelectAll={() => wizard.setSelectedLeagues(leagues.map(l => l._id.toString()))}
       onClearAll={() => wizard.setSelectedLeagues([])}
       onEditStep1={wizard.previousStep}
-      isSubmitting={isCreating}
+      isSubmitting={isSubmitting}
+      isEdit={!!editId}
     />
   );
 }

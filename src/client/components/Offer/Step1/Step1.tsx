@@ -42,6 +42,7 @@ interface Step1Props {
   onUpdateExtractedData: (data: Partial<ExtractedData>) => void;
   onNext: () => void;
   onCancel: () => void;
+  isEdit?: boolean;
 }
 
 export function Step1({
@@ -65,6 +66,7 @@ export function Step1({
   onUpdateExtractedData,
   onNext,
   onCancel,
+  isEdit = false,
 }: Step1Props) {
   // Check if user has filled in all required fields for either path
   const hasExtractedData = extractedData && selectedSeasonId;
@@ -83,7 +85,7 @@ export function Step1({
   return (
     <div className={styles.wizard}>
       <div className={styles.wizardHeader}>
-        <h1 className={styles.wizardTitle}>Create New Offer</h1>
+        <h1 className={styles.wizardTitle}>{isEdit ? 'Edit Offer' : 'Create New Offer'}</h1>
         <div className={styles.progressIndicator} role="progressbar" aria-valuenow={1} aria-valuemin={1} aria-valuemax={2}>
           <div className={styles.progressStep}>
             <div className={`${styles.progressDot} ${styles.active}`} aria-current="step" aria-label="Step 1: Association, Contact & Season">1</div>

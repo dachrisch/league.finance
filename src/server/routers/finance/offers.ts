@@ -196,54 +196,55 @@ export const offersRouter = router({
     .input(z.object({
       id: z.string(),
       data: UpdateOfferSchema.extend({
-        costModel: z.enum(['SEASON', 'GAMEDAY']).optional(),
+        associationId: z.string().optional(),
+        seasonId: z.number().int().positive().optional(),
+        costModel: z.enum(['flatFee', 'perGameDay']).optional(),
         baseRateOverride: z.number().positive().nullable().optional(),
-        expectedTeamsCount: z.number().int().min(1).optional(),
+        expectedTeamsCount: z.number().int().min(0).optional(),
       })
     }))
     .mutation(async ({ input }) => {
       const offer = await Offer.findById(input.id);
       if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
 
-      // Update allowed fields
+      if (offer.status !== 'draft') {
+        // Only allow status updates if not draft
+        if (input.data.status) offer.status = input.data.status;
+        if (input.data.sentAt) offer.sentAt = input.data.sentAt;
+        if (input.data.acceptedAt) offer.acceptedAt = input.data.acceptedAt;
+        await offer.save();
+        return normalizeOffer(offer);
+      }
+
+      // FULL EDIT FOR DRAFTS
       if (input.data.status) offer.status = input.data.status;
-      if (input.data.sentAt) offer.sentAt = input.data.sentAt;
-      if (input.data.acceptedAt) offer.acceptedAt = input.data.acceptedAt;
       if (input.data.contactId) offer.contactId = input.data.contactId as any;
+      if (input.data.associationId) offer.associationId = input.data.associationId;
+      if (input.data.seasonId) offer.seasonId = input.data.seasonId;
+      
+      const newLeagueIds = input.data.leagueIds || offer.leagueIds;
+      const seasonId = input.data.seasonId || offer.seasonId;
+      const costModel = input.data.costModel === 'perGameDay' ? 'GAMEDAY' : 'SEASON';
 
-      // If leagues changed, update configs
-      if (input.data.leagueIds) {
-        const oldLeagueIds = offer.leagueIds;
-        const removedLeagueIds = oldLeagueIds.filter(
-          (id) => !input.data.leagueIds!.includes(id)
-        );
-        const newLeagueIds = input.data.leagueIds.filter(
-          (id) => !oldLeagueIds.includes(id)
-        );
-
-        if (removedLeagueIds.length > 0) {
-          await FinancialConfig.deleteMany({
+      // Always refresh configs for draft to ensure they match current pricing settings
+      // Simple strategy: delete and recreate if leagues or pricing settings changed
+      if (input.data.leagueIds || input.data.costModel || input.data.baseRateOverride !== undefined || input.data.expectedTeamsCount !== undefined || input.data.seasonId) {
+        await FinancialConfig.deleteMany({ offerId: offer._id });
+        
+        await FinancialConfig.insertMany(
+          newLeagueIds.map((leagueId) => ({
+            leagueId,
+            seasonId,
+            costModel,
+            baseRateOverride: input.data.baseRateOverride !== undefined ? input.data.baseRateOverride : null,
+            expectedTeamsCount: input.data.expectedTeamsCount ?? 0,
+            expectedGamedaysCount: 0,
+            expectedTeamsPerGameday: 0,
             offerId: offer._id,
-            leagueId: { $in: removedLeagueIds },
-          });
-        }
-
-        if (newLeagueIds.length > 0) {
-          await Promise.all(
-            newLeagueIds.map((leagueId) =>
-              FinancialConfig.create({
-                leagueId,
-                seasonId: offer.seasonId,
-                costModel: 'SEASON',
-                baseRateOverride: null,
-                expectedTeamsCount: 15,
-                offerId: offer._id,
-              })
-            )
-          );
-        }
-
-        offer.leagueIds = input.data.leagueIds;
+          }))
+        );
+        
+        offer.leagueIds = newLeagueIds;
       }
 
       await offer.save();

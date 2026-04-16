@@ -28,6 +28,7 @@ interface Step2Props {
   onClearAll: () => void;
   onEditStep1: () => void;
   isSubmitting: boolean;
+  isEdit?: boolean;
 }
 
 export function Step2({
@@ -48,13 +49,14 @@ export function Step2({
   onClearAll,
   onEditStep1,
   isSubmitting,
+  isEdit = false,
 }: Step2Props) {
   const canCreate = selectedLeagueIds.length > 0 && pricing.expectedTeamsCount >= 0;
 
   return (
     <div className={styles.wizard} style={{ maxWidth: '650px' }}>
       <div className={styles.wizardHeader}>
-        <h1 className={styles.wizardTitle}>Create New Offer</h1>
+        <h1 className={styles.wizardTitle}>{isEdit ? 'Edit Offer' : 'Create New Offer'}</h1>
         <div className={styles.progressIndicator} role="progressbar" aria-valuenow={2} aria-valuemin={1} aria-valuemax={2}>
           <div className={styles.progressStep}>
             <div className={`${styles.progressDot} ${styles.active}`} style={{ background: '#ecfdf5', color: '#10b981', borderColor: '#10b981' }} aria-label="Step 1 complete">✓</div>
@@ -109,7 +111,7 @@ export function Step2({
             onClick={onCreate}
             disabled={!canCreate || isSubmitting}
           >
-            {isSubmitting ? 'Creating...' : 'Create Offer & Finish'}
+            {isSubmitting ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Offer & Finish')}
           </button>
         </div>
       </div>

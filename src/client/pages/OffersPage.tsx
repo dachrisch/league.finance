@@ -6,12 +6,16 @@ import { OfferTable } from '../components/OfferTable';
 
 export function OffersPage() {
   const navigate = useNavigate();
-  const [filterStatus, setFilterStatus] = useState<string | null>(null);
-
+  
   // Fetch offers, associations, and seasons
-  const { data: offers = [], isLoading: offersLoading } = trpc.finance.offers.list.useQuery({});
+  const { data: offers = [], isLoading: offersLoading, refetch } = trpc.finance.offers.list.useQuery({});
   const { data: associations = [] } = trpc.finance.associations.list.useQuery();
   const { data: seasons = [] } = trpc.finance.seasons.list.useQuery();
+
+  // Mutations
+  const deleteOffer = trpc.finance.offers.delete.useMutation({
+    onSuccess: () => refetch(),
+  });
 
   // Create association name map
   const associationNames: Record<string, string> = associations.reduce((acc: Record<string, string>, a: any) => {
@@ -43,12 +47,17 @@ export function OffersPage() {
   };
 
   const handleSendOffer = (id: string) => {
-    // TODO: Implement send offer modal
     navigate(`/offers/${id}`);
   };
 
   const handleEditOffer = (id: string) => {
-    navigate(`/offers/${id}`);
+    navigate(`/offers/${id}/edit`);
+  };
+
+  const handleDeleteOffer = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this offer?')) {
+      await deleteOffer.mutateAsync({ id });
+    }
   };
 
   if (offersLoading) {
@@ -60,7 +69,7 @@ export function OffersPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-xl)' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary-color)', fontWeight: 'var(--font-weight-semibold)' }}>Pricing Offers</h1>
+          <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary-color)', fontWeight: 'var(--font-weight-semibold)' }}>Offers</h1>
           <p style={{ margin: '4px 0 0 0', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Manage and track your association pricing offers</p>
         </div>
         <button
@@ -94,7 +103,8 @@ export function OffersPage() {
             onView={handleViewOffer}
             onSend={handleSendOffer}
             onEdit={handleEditOffer}
-            isLoading={offersLoading}
+            onDelete={handleDeleteOffer}
+            isLoading={offersLoading || deleteOffer.isPending}
           />
         </div>
       </div>

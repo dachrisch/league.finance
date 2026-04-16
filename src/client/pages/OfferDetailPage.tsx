@@ -105,12 +105,23 @@ export function OfferDetailPage() {
               <div style={statusBadgeStyle(offer.status)}>{offer.status}</div>
             </div>
           </div>
-          <button
-            className="btn btn-outline btn-sm"
-            onClick={() => navigate('/offers')}
-          >
-            ← Back to List
-          </button>
+          <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
+            {offer.status === 'draft' && (
+              <button
+                className="btn btn-ghost btn-sm"
+                style={{ background: 'var(--warning-color)', color: '#000' }}
+                onClick={() => navigate(`/offers/${id}/edit`)}
+              >
+                ✎ Full Edit
+              </button>
+            )}
+            <button
+              className="btn btn-outline btn-sm"
+              onClick={() => navigate('/offers')}
+            >
+              ← Back to List
+            </button>
+          </div>
         </div>
       </div>
 
@@ -234,6 +245,16 @@ export function OfferDetailPage() {
             disabled={markSent.isPending}
           >
             {markSent.isPending ? 'Sending…' : '🚀 Mark as Sent'}
+          </button>
+        )}
+        {offer.status === 'sent' && (
+           <button
+            className="btn btn-primary"
+            style={{ background: 'var(--success-color)', paddingLeft: '2rem', paddingRight: '2rem' }}
+            onClick={() => markAccepted.mutate({ id: id! })}
+            disabled={markAccepted.isPending}
+          >
+            {markAccepted.isPending ? '…' : '✓ Mark as Accepted'}
           </button>
         )}
         {offer.status === 'sent' && offer.driveFileId && (

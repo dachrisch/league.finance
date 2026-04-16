@@ -8,6 +8,7 @@ interface OfferTableProps {
   onView: (id: string) => void;
   onSend?: (id: string) => void;
   onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
   isLoading?: boolean;
 }
 
@@ -41,8 +42,6 @@ const formatDate = (date: string | Date | undefined | null): string => {
   return d.toLocaleDateString();
 };
 
-const formatPrice = (price: number): string => `$${price.toFixed(2)}`;
-
 export function OfferTable({
   offers,
   associationNames,
@@ -50,6 +49,7 @@ export function OfferTable({
   onView,
   onSend,
   onEdit,
+  onDelete,
   isLoading = false,
 }: OfferTableProps) {
   const [sortBy, setSortBy] = useState<'createdAt' | 'seasonId' | 'status'>('createdAt');
@@ -195,6 +195,16 @@ export function OfferTable({
                     >
                       View
                     </button>
+                    {offer.status === 'draft' && onEdit && (
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        style={{ background: 'var(--warning-color)', color: '#000' }}
+                        onClick={() => onEdit(offer._id)}
+                        disabled={isLoading}
+                      >
+                        Edit
+                      </button>
+                    )}
                     {offer.status === 'draft' && onSend && (
                       <button
                         className="btn btn-primary btn-sm"
@@ -205,14 +215,14 @@ export function OfferTable({
                         Send
                       </button>
                     )}
-                    {offer.status === 'draft' && onEdit && (
+                    {offer.status === 'draft' && onDelete && (
                       <button
-                        className="btn btn-ghost btn-sm"
-                        style={{ background: 'var(--warning-color)', borderColor: 'var(--warning-color)', color: '#000' }}
-                        onClick={() => onEdit(offer._id)}
+                        className="btn btn-outline btn-sm"
+                        style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
+                        onClick={() => onDelete(offer._id)}
                         disabled={isLoading}
                       >
-                        Edit
+                        Delete
                       </button>
                     )}
                   </div>

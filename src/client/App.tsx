@@ -7,6 +7,7 @@ import { ConfigNewPage } from './pages/ConfigNewPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { AssociationsPage } from './pages/AssociationsPage';
+import { ContactsPage } from './pages/ContactsPage';
 import { OffersPage } from './pages/OffersPage';
 import { OfferDetailPage } from './pages/OfferDetailPage';
 import OfferNewPage from './pages/OfferNewPage';
@@ -60,14 +61,15 @@ export function App() {
                   <Route path="/login/callback" element={<AuthCallbackPage />} />
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard" element={<DashboardPage />} />
-                    <Route path="/config/new" element={<ConfigNewPage />} />
-                    <Route path="/config/:id" element={<ConfigDetailPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/offers/new" element={<OfferNewPage />} />
+                    <Route path="/offers/:id/edit" element={<OfferNewPage />} />
                     <Route path="/offers/:id" element={<OfferDetailPage />} />
                     <Route path="/offers" element={<OffersPage />} />
                     <Route path="/associations" element={<AssociationsPage />} />
+                    <Route path="/contacts" element={<ContactsPage />} />
                   </Route>
+                  <Route path="/config*" element={<Navigate to="/dashboard" replace />} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </div>
