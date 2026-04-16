@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Offer } from '../lib/schemas';
-import wizardStyles from '../styles/OfferWizard.module.css';
 
 interface OfferTableProps {
   offers: Offer[];
@@ -100,7 +99,7 @@ export function OfferTable({
             key={label}
             onClick={() => setFilterStatus(value)}
             disabled={isLoading}
-            className={`${wizardStyles.leagueFilter} ${filterStatus === value ? wizardStyles.active : ''}`}
+            className={`chip ${filterStatus === value ? 'active' : ''}`}
           >
             {label}
           </button>
@@ -190,7 +189,7 @@ export function OfferTable({
                 <td data-label="Actions" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
                   <div style={{ display: 'flex', gap: 'var(--spacing-sm)', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <button
-                      className={`${wizardStyles.button} ${wizardStyles.buttonGhost} ${wizardStyles.buttonSmall}`}
+                      className="btn btn-ghost btn-sm"
                       onClick={() => onView(offer._id)}
                       disabled={isLoading}
                     >
@@ -198,7 +197,7 @@ export function OfferTable({
                     </button>
                     {offer.status === 'draft' && onSend && (
                       <button
-                        className={`${wizardStyles.button} ${wizardStyles.buttonPrimary} ${wizardStyles.buttonSmall}`}
+                        className="btn btn-primary btn-sm"
                         style={{ background: 'var(--success-color)' }}
                         onClick={() => onSend(offer._id)}
                         disabled={isLoading}
@@ -208,7 +207,7 @@ export function OfferTable({
                     )}
                     {offer.status === 'draft' && onEdit && (
                       <button
-                        className={`${wizardStyles.button} ${wizardStyles.buttonGhost} ${wizardStyles.buttonSmall}`}
+                        className="btn btn-ghost btn-sm"
                         style={{ background: 'var(--warning-color)', borderColor: 'var(--warning-color)', color: '#000' }}
                         onClick={() => onEdit(offer._id)}
                         disabled={isLoading}

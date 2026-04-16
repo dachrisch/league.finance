@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 import { OfferSummaryCards } from '../components/OfferSummaryCards';
 import { OfferTable } from '../components/OfferTable';
-import wizardStyles from '../styles/OfferWizard.module.css';
 
 export function OffersPage() {
   const navigate = useNavigate();
@@ -65,7 +64,7 @@ export function OffersPage() {
           <p style={{ margin: '4px 0 0 0', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Manage and track your association pricing offers</p>
         </div>
         <button
-          className={`${wizardStyles.button} ${wizardStyles.buttonPrimary}`}
+          className="btn btn-primary"
           onClick={handleCreateOffer}
         >
           + Create New Offer

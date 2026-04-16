@@ -128,10 +128,7 @@ export function DashboardPage() {
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
-            className={`btn btn-sm ${
-              statusFilter === status ? 'btn-primary' : 'btn-ghost'
-            }`}
-            style={statusFilter !== status ? { border: '1px solid transparent' } : {}}
+            className={`chip ${statusFilter === status ? 'active' : ''}`}
           >
             {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
           </button>
