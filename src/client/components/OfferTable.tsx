@@ -15,6 +15,7 @@ interface OfferTableProps {
 const statusBadgeStyle = (status: string): React.CSSProperties => {
   const colors: Record<string, { bg: string; color: string; border: string }> = {
     draft: { bg: 'var(--bg-secondary)', color: 'var(--text-muted)', border: 'var(--border-color)' },
+    sending: { bg: '#fff7ed', color: '#c2410c', border: '#fed7aa' },
     sent: { bg: '#eff6ff', color: '#0369a1', border: '#bae6fd' },
     accepted: { bg: '#ecfdf5', color: 'var(--success-color)', border: 'var(--success-color)' },
   };
@@ -92,6 +93,7 @@ export function OfferTable({
         {[
           { label: 'All', value: null },
           { label: 'Draft', value: 'draft' },
+          { label: 'Sending', value: 'sending' },
           { label: 'Sent', value: 'sent' },
           { label: 'Accepted', value: 'accepted' },
         ].map(({ label, value }) => (
@@ -205,14 +207,14 @@ export function OfferTable({
                         Edit
                       </button>
                     )}
-                    {offer.status === 'draft' && onSend && (
+                    {(offer.status === 'draft' || offer.status === 'sending') && onSend && (
                       <button
                         className="btn btn-primary btn-sm"
                         style={{ background: 'var(--success-color)' }}
                         onClick={() => onSend(offer._id)}
-                        disabled={isLoading}
+                        disabled={isLoading || offer.status === 'sending'}
                       >
-                        Send
+                        {offer.status === 'sending' ? 'Sending...' : 'Send'}
                       </button>
                     )}
                     {offer.status === 'draft' && onDelete && (

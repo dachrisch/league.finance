@@ -5,6 +5,8 @@ export interface IUser extends Document {
   googleId: string;
   displayName: string;
   role: 'admin' | 'viewer';
+  googleAccessToken?: string;
+  googleRefreshToken?: string;
   createdAt: Date;
 }
 
@@ -14,6 +16,8 @@ const UserSchema = new Schema<IUser>(
     googleId: { type: String, required: true, unique: true },
     displayName: { type: String, required: true },
     role: { type: String, enum: ['admin', 'viewer'], default: 'viewer' },
+    googleAccessToken: { type: String },
+    googleRefreshToken: { type: String },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );

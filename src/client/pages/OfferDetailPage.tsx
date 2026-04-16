@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
+import { SendOfferDialog } from '../components/Offer/SendOfferDialog';
 
 const statusBadgeStyle = (status: string): React.CSSProperties => {
   const colors: Record<string, { bg: string; color: string; border: string }> = {
     draft: { bg: 'var(--bg-secondary)', color: 'var(--text-muted)', border: 'var(--border-color)' },
+    sending: { bg: '#fff7ed', color: '#c2410c', border: '#fed7aa' },
     sent: { bg: '#eff6ff', color: '#0369a1', border: '#bae6fd' },
     accepted: { bg: '#ecfdf5', color: 'var(--success-color)', border: 'var(--success-color)' },
   };
@@ -39,6 +41,7 @@ export function OfferDetailPage() {
   const navigate = useNavigate();
   const [editingPrice, setEditingPrice] = useState<number | null>(null);
   const [editingLeagueId, setEditingLeagueId] = useState<number | null>(null);
+  const [showSendDialog, setShowSendDialog] = useState(false);
 
   if (!id) {
     return <div className="container">Offer not found.</div>;
@@ -236,15 +239,15 @@ export function OfferDetailPage() {
       </div>
 
       {/* Actions Section */}
-      <div style={{ display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'flex-end' }}>
-        {offer.status === 'draft' && (
+      <div style={{ display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'flex-end', marginTop: 'var(--spacing-xl)' }}>
+        {(offer.status === 'draft' || offer.status === 'sending') && (
           <button
             className="btn btn-primary"
             style={{ background: 'var(--success-color)', paddingLeft: '2rem', paddingRight: '2rem' }}
-            onClick={() => markSent.mutate({ id: id! })}
-            disabled={markSent.isPending}
+            onClick={() => setShowSendDialog(true)}
+            disabled={offer.status === 'sending'}
           >
-            {markSent.isPending ? 'Sending…' : '🚀 Mark as Sent'}
+            {offer.status === 'sending' ? '🚀 Sending…' : '🚀 Send Offer'}
           </button>
         )}
         {offer.status === 'sent' && (
@@ -257,9 +260,9 @@ export function OfferDetailPage() {
             {markAccepted.isPending ? '…' : '✓ Mark as Accepted'}
           </button>
         )}
-        {offer.status === 'sent' && offer.driveFileId && (
+        {offer.status === 'sent' && offer.emailMetadata?.driveFileId && (
           <a
-            href={`https://drive.google.com/file/d/${offer.driveFileId}/view`}
+            href={`https://drive.google.com/file/d/${offer.emailMetadata.driveFileId}/view`}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-primary"
@@ -268,6 +271,19 @@ export function OfferDetailPage() {
           </a>
         )}
       </div>
+
+      {showSendDialog && (
+        <SendOfferDialog
+          offerId={id}
+          initialEmail={data.contact?.email || ''}
+          associationName={association?.name || 'Unknown Association'}
+          onClose={() => setShowSendDialog(false)}
+          onSuccess={() => {
+            setShowSendDialog(false);
+            refetch();
+          }}
+        />
+      )}
     </div>
   );
 }

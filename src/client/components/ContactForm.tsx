@@ -1,7 +1,7 @@
-// src/client/components/ContactForm.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface ContactFormProps {
+  initialData?: any;
   onSubmit: (data: {
     name: string;
     street: string;
@@ -13,7 +13,7 @@ export interface ContactFormProps {
   isLoading?: boolean;
 }
 
-export function ContactForm({ onSubmit, onCancel, isLoading = false }: ContactFormProps) {
+export function ContactForm({ initialData, onSubmit, onCancel, isLoading = false }: ContactFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     street: '',
@@ -22,6 +22,18 @@ export function ContactForm({ onSubmit, onCancel, isLoading = false }: ContactFo
     country: '',
   });
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || '',
+        street: initialData.address?.street || initialData.street || '',
+        city: initialData.address?.city || initialData.city || '',
+        postalCode: initialData.address?.postalCode || initialData.postalCode || '',
+        country: initialData.address?.country || initialData.country || '',
+      });
+    }
+  }, [initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -45,7 +57,7 @@ export function ContactForm({ onSubmit, onCancel, isLoading = false }: ContactFo
     try {
       await onSubmit(formData);
     } catch (err: any) {
-      setError(err?.message || 'Failed to create contact');
+      setError(err?.message || 'Failed to save contact');
     }
   };
 
@@ -181,7 +193,7 @@ export function ContactForm({ onSubmit, onCancel, isLoading = false }: ContactFo
           </button>
         )}
         <button type="submit" className="btn btn-primary btn-sm" disabled={isLoading}>
-          {isLoading ? 'Creating...' : 'Create Contact'}
+          {isLoading ? 'Saving...' : initialData ? 'Update Person' : 'Create Person'}
         </button>
       </div>
     </form>

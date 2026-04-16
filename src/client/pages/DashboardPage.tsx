@@ -23,10 +23,10 @@ export function DashboardPage() {
     return [...seasons].sort((a, b) => b.year - a.year)[0];
   }, [seasons]);
 
-  // Financial Stats Calculation (Current Season, Sent/Accepted)
+  // Financial Stats Calculation (Current Season, Sent/Accepted/Sending)
   const stats = useMemo(() => {
     const relevantOffers = offers.filter(o => 
-      o.seasonId === currentSeason?._id && (o.status === 'sent' || o.status === 'accepted')
+      o.seasonId === currentSeason?._id && (o.status === 'sent' || o.status === 'accepted' || o.status === 'sending')
     );
 
     let gross = 0;
@@ -45,7 +45,7 @@ export function DashboardPage() {
     };
   }, [offers, currentSeason]);
 
-  // Active Contracts: Leagues in current season that have a SENT or ACCEPTED offer
+  // Active Contracts: Leagues in current season that have a SENDING, SENT or ACCEPTED offer
   const activeContracts = useMemo(() => {
     if (!currentSeason) return [];
     
@@ -53,7 +53,7 @@ export function DashboardPage() {
     const processedLeagueIds = new Set<number>();
 
     offers
-      .filter(o => o.seasonId === currentSeason._id && (o.status === 'sent' || o.status === 'accepted'))
+      .filter(o => o.seasonId === currentSeason._id && (o.status === 'sending' || o.status === 'sent' || o.status === 'accepted'))
       .forEach(offer => {
         offer.leagueIds.forEach((lId: number) => {
           if (!processedLeagueIds.has(lId)) {
@@ -160,7 +160,18 @@ export function DashboardPage() {
                     <td data-label="Association" style={{ padding: 'var(--spacing-md) var(--spacing-lg)' }}>{c.assocName}</td>
                     <td data-label="Revenue" style={{ padding: 'var(--spacing-md) var(--spacing-lg)', textAlign: 'right', fontWeight: 'var(--font-weight-semibold)' }}>{c.revenue.toFixed(2)} €</td>
                     <td data-label="Status" style={{ padding: 'var(--spacing-md) var(--spacing-lg)', textAlign: 'center' }}>
-                      <span className={`chip ${c.status === 'accepted' ? 'active' : ''}`} style={{ fontSize: '10px', textTransform: 'uppercase' }}>{c.status}</span>
+                      <span 
+                        className={`chip ${c.status === 'accepted' ? 'active' : ''}`} 
+                        style={{ 
+                          fontSize: '10px', 
+                          textTransform: 'uppercase',
+                          background: c.status === 'sending' ? '#fff7ed' : c.status === 'sent' ? '#eff6ff' : undefined,
+                          color: c.status === 'sending' ? '#c2410c' : c.status === 'sent' ? '#0369a1' : undefined,
+                          borderColor: c.status === 'sending' ? '#fed7aa' : c.status === 'sent' ? '#bae6fd' : undefined,
+                        }}
+                      >
+                        {c.status}
+                      </span>
                     </td>
                   </tr>
                 ))
