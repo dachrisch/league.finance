@@ -28,7 +28,7 @@ export class PdfService {
       const page = await browser.newPage();
       const html = this.generateHtml(data);
       await page.setContent(html, { waitUntil: 'networkidle0' });
-      const pdfBuffer = await page.pdf({
+      const pdfData = await page.pdf({
         format: 'A4',
         margin: {
           top: '20mm',
@@ -37,7 +37,8 @@ export class PdfService {
           left: '15mm',
         },
       });
-      return pdfBuffer;
+      // Convert Uint8Array to Buffer
+      return Buffer.from(pdfData);
     } finally {
       await browser.close();
     }

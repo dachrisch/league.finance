@@ -2,15 +2,15 @@ import Bull from 'bull';
 import type { RedisOptions } from 'ioredis';
 
 // Redis configuration for Bull v4
-const redisConfig: RedisOptions = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-};
-
-// Validate port parsing
-if (isNaN(redisConfig.port)) {
+const port = parseInt(process.env.REDIS_PORT || '6379', 10);
+if (isNaN(port)) {
   throw new Error(`Invalid REDIS_PORT: ${process.env.REDIS_PORT}`);
 }
+
+const redisConfig: RedisOptions = {
+  host: process.env.REDIS_HOST || 'localhost',
+  port,
+};
 
 // Create queue - pass redis config via QueueOptions
 export const offerSendQueue = new Bull('offer-send', { redis: redisConfig });
