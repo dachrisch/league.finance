@@ -10,10 +10,15 @@ import { appRouter } from './routers/index';
 import { createContext } from './trpc';
 import path from 'path';
 import { healthHandler } from './health';
+import { offerSendQueue } from './jobs/queue';
+import { SendOfferJobHandler } from './jobs/SendOfferJob';
 
 export function createApp() {
   const app = express();
   const CLIENT_URL = process.env.CLIENT_URL ?? 'http://localhost:5173';
+
+  // Register job processor
+  offerSendQueue.process(SendOfferJobHandler.process.bind(SendOfferJobHandler));
 
   app.use(cors({ origin: CLIENT_URL, credentials: true }));
   app.use(express.json());
