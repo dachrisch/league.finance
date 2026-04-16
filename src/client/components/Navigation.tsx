@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const navItemStyle = (isActive: boolean): React.CSSProperties => ({
@@ -24,40 +23,44 @@ const sectionTitleStyle: React.CSSProperties = {
   fontWeight: 'var(--font-weight-semibold)',
 };
 
+const bottomNavItemStyle = (isActive: boolean): React.CSSProperties => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '0.5rem',
+  color: isActive ? 'var(--primary-color)' : 'var(--text-muted)',
+  textDecoration: 'none',
+  fontSize: 'var(--font-size-xs)',
+  transition: 'all var(--transition-normal)',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  minWidth: '60px',
+});
+
+const bottomNavIcons: Record<string, string> = {
+  '/dashboard': '📊',
+  '/config': '⚙️',
+  '/associations': '🤝',
+  '/offers': '💼',
+  '/settings': '⚡',
+};
+
+const bottomNavLabels: Record<string, string> = {
+  '/dashboard': 'Dashboard',
+  '/config': 'Config',
+  '/associations': 'Assoc.',
+  '/offers': 'Offers',
+  '/settings': 'Settings',
+};
+
 export function Navigation() {
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path: string): boolean => {
     return location.pathname.startsWith(path);
   };
-
-  // Close menu when route changes
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
-
-  // Handle body scroll locking on mobile
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.classList.add('mobile-menu-open');
-    } else {
-      document.body.classList.remove('mobile-menu-open');
-    }
-  }, [mobileMenuOpen]);
-
-  // Update sidebar and backdrop classes when menu state changes
-  useEffect(() => {
-    const sidebar = document.getElementById('nav-sidebar');
-    const backdrop = document.getElementById('mobile-menu-backdrop');
-    if (mobileMenuOpen) {
-      sidebar?.classList.add('mobile-menu-open');
-      backdrop?.classList.add('mobile-menu-open');
-    } else {
-      sidebar?.classList.remove('mobile-menu-open');
-      backdrop?.classList.remove('mobile-menu-open');
-    }
-  }, [mobileMenuOpen]);
 
   const navContent = (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -96,54 +99,11 @@ export function Navigation() {
     </div>
   );
 
+  const bottomNavPaths = ['/dashboard', '/config', '/associations', '/offers', '/settings'];
+
   return (
     <>
-      {/* Mobile menu button */}
-      <button
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        style={{
-          position: 'fixed',
-          top: '0.75rem',
-          left: '0.75rem',
-          zIndex: 1001,
-          background: 'var(--primary-color)',
-          color: '#fff',
-          border: 'none',
-          width: '40px',
-          height: '40px',
-          borderRadius: 'var(--border-radius-md)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-        }}
-        id="mobile-menu-button"
-        aria-label="Toggle navigation menu"
-      >
-        {mobileMenuOpen ? '✕' : '☰'}
-      </button>
-
-      {/* Backdrop for mobile menu */}
-      <div
-        className={mobileMenuOpen ? 'mobile-menu-open' : ''}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 998,
-          display: 'none',
-          backdropFilter: 'blur(2px)',
-          transition: 'opacity var(--transition-normal)',
-        }}
-        id="mobile-menu-backdrop"
-        onClick={() => setMobileMenuOpen(false)}
-      />
-
-      {/* Navigation sidebar */}
+      {/* Desktop sidebar */}
       <nav
         style={{
           background: 'var(--bg-secondary)',
@@ -155,11 +115,40 @@ export function Navigation() {
           top: 0,
           zIndex: 999,
           overflowY: 'auto',
-          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
         id="nav-sidebar"
       >
         {navContent}
+      </nav>
+
+      {/* Mobile bottom navigation bar */}
+      <nav
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '64px',
+          background: 'var(--bg-secondary)',
+          borderTop: '1px solid var(--border-color)',
+          display: 'flex',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          zIndex: 1000,
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
+        id="mobile-bottom-nav"
+      >
+        {bottomNavPaths.map((path) => (
+          <Link
+            key={path}
+            to={path}
+            style={bottomNavItemStyle(isActive(path))}
+          >
+            <span style={{ fontSize: '1.25rem', marginBottom: '2px' }}>{bottomNavIcons[path]}</span>
+            <span>{bottomNavLabels[path]}</span>
+          </Link>
+        ))}
       </nav>
     </>
   );

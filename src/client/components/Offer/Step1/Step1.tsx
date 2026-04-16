@@ -125,7 +125,7 @@ export function Step1({
           onContactChange={onSelectContact}
           onSeasonChange={onSelectSeason}
           isActive={pathChoice === 'existing'}
-          onToggle={() => onSelectPath(pathChoice === 'existing' ? undefined : 'existing')}
+          onToggle={() => onSelectPath(pathChoice === 'existing' ? 'paste' : 'existing')}
         />
 
         {pathChoice === 'paste' && (

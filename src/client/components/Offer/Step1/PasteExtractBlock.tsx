@@ -65,7 +65,7 @@ export function PasteExtractBlock({
               Paste organization & contact text
               <textarea
                 className={styles.fieldTextarea}
-                placeholder={`e.g. AFCV NRW e.V.\nFabian Pawlowski\nHalterner Straße 193, 45770 Marl\nf.pawlowski@afcvnrw.de`}
+                placeholder={`e.g. Example Association e.V.\nMax Mustermann\nExample Street 123, 12345 Berlin\ncontact@example.org`}
                 value={pasteInput}
                 onChange={(e) => onInputChange(e.target.value)}
                 disabled={isExtracting}
