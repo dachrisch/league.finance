@@ -1,11 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 import { SummaryCards } from '../components/SummaryCards';
-import wizardStyles from '../styles/OfferWizard.module.css';
 
 export function DashboardPage() {
   const navigate = useNavigate();
+  const [selectedMissingLeagues, setSelectedMissingLeagues] = useState<number[]>([]);
 
   // TRPC queries
   const { data: offers = [], isLoading: offersLoading } = trpc.finance.offers.list.useQuery();
@@ -33,7 +33,6 @@ export function DashboardPage() {
     let discount = 0;
 
     relevantOffers.forEach(offer => {
-      // Each offer has configurations for multiple leagues
       offer.financialConfigs?.forEach((config: any) => {
         gross += config.finalPrice || 0;
       });
@@ -41,7 +40,7 @@ export function DashboardPage() {
 
     return {
       gross,
-      discount, // We'll need a better way to track global discounts if they aren't part of offer.totalPrice
+      discount,
       net: gross - discount
     };
   }, [offers, currentSeason]);
@@ -95,6 +94,18 @@ export function DashboardPage() {
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [offers, currentSeason, leagues]);
+
+  const toggleLeagueSelection = (id: number) => {
+    setSelectedMissingLeagues(prev => 
+      prev.includes(id) ? prev.filter(lId => lId !== id) : [...prev, id]
+    );
+  };
+
+  const handleCreateOfferForSelected = () => {
+    if (selectedMissingLeagues.length === 0) return;
+    const leagueIdsStr = selectedMissingLeagues.join(',');
+    navigate(`/offers/new?leagues=${leagueIdsStr}&season=${currentSeason?._id}`);
+  };
 
   if (offersLoading) return <div className="container"><p>Loading dashboard...</p></div>;
 
@@ -164,28 +175,60 @@ export function DashboardPage() {
             <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)', fontWeight: 'var(--font-weight-semibold)', color: missingContracts.length > 0 ? '#856404' : 'inherit' }}>
               Missing Contracts
             </h2>
-            {missingContracts.length > 0 && <span className="chip" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>Action Required</span>}
+            <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center' }}>
+              {selectedMissingLeagues.length > 0 && (
+                <button 
+                  className="btn btn-primary btn-sm"
+                  onClick={handleCreateOfferForSelected}
+                >
+                  Create Offer for {selectedMissingLeagues.length} {selectedMissingLeagues.length === 1 ? 'League' : 'Leagues'}
+                </button>
+              )}
+              {missingContracts.length > 0 && <span className="chip" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>Action Required</span>}
+            </div>
           </div>
           
           <div style={{ padding: 'var(--spacing-lg)' }}>
             {missingContracts.length === 0 ? (
               <p style={{ margin: 0, textAlign: 'center', color: 'var(--success-color)', padding: '1rem' }}>✓ All active leagues have associated offers.</p>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 'var(--spacing-md)' }}>
-                {missingContracts.map(league => (
-                  <div key={league.id} className="summary-card" style={{ justifyContent: 'space-between', background: '#fffef0', borderColor: '#fde68a' }}>
-                    <div style={{ overflow: 'hidden' }}>
-                      <span className="summary-card-label">League</span>
-                      <strong className="summary-card-value" style={{ fontSize: 'var(--font-size-sm)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', display: 'block' }}>{league.name}</strong>
-                    </div>
-                    <button 
-                      className="btn btn-primary btn-sm"
-                      onClick={() => navigate(`/offers/new?league=${league.id}&season=${currentSeason?._id}`)}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--spacing-md)' }}>
+                {missingContracts.map(league => {
+                  const isSelected = selectedMissingLeagues.includes(league.id);
+                  return (
+                    <div 
+                      key={league.id} 
+                      className={`summary-card ${isSelected ? 'active' : ''}`} 
+                      style={{ 
+                        justifyContent: 'flex-start', 
+                        background: isSelected ? 'var(--primary-color)' : '#fffef0', 
+                        borderColor: isSelected ? 'var(--primary-color)' : '#fde68a',
+                        cursor: 'pointer',
+                        padding: 'var(--spacing-md)'
+                      }}
+                      onClick={() => toggleLeagueSelection(league.id)}
                     >
-                      + Offer
-                    </button>
-                  </div>
-                ))}
+                      <input 
+                        type="checkbox" 
+                        checked={isSelected}
+                        onChange={() => {}} // Handled by div onClick
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', marginRight: 'var(--spacing-sm)' }}
+                      />
+                      <div style={{ overflow: 'hidden' }}>
+                        <strong style={{ 
+                          fontSize: 'var(--font-size-sm)', 
+                          whiteSpace: 'nowrap', 
+                          textOverflow: 'ellipsis', 
+                          overflow: 'hidden', 
+                          display: 'block',
+                          color: isSelected ? 'white' : 'var(--text-main)'
+                        }}>
+                          {league.name}
+                        </strong>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

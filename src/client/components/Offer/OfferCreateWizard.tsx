@@ -1,5 +1,3 @@
-// src/client/components/Offer/OfferCreateWizard.tsx
-
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Step1 } from './Step1/Step1';
@@ -36,13 +34,14 @@ export function OfferCreateWizard({ editId }: Props) {
       wizard.resetWithData(existingOffer.offer);
       setHasInitialized(true);
     } else if (!editId && seasons.length > 0) {
-      // Handle "Quick Add" from dashboard
-      const leagueId = searchParams.get('league');
+      // Handle "Quick Add" from dashboard (single or multiple)
+      const leagueParam = searchParams.get('league') || searchParams.get('leagues');
       const seasonId = searchParams.get('season');
       
-      if (leagueId && seasonId) {
+      if (leagueParam && seasonId) {
+        const leagueIds = leagueParam.split(',');
         wizard.selectSeason(seasonId);
-        wizard.setSelectedLeagues([leagueId]);
+        wizard.setSelectedLeagues(leagueIds);
         wizard.selectPath('existing');
         setHasInitialized(true);
       }
