@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.10](https://github.com/dachrisch/league.finance/compare/v0.1.9...v0.1.10) (2026-04-16)
+
+
+### Bug Fixes
+
+* offer creation and display issues ([1ffcb4e](https://github.com/dachrisch/league.finance/commit/1ffcb4e56a2ec56c5af69938f44162d2ecc00734))
+* replace paste template placeholder with dummy data, add mobile bottom nav ([5b80d49](https://github.com/dachrisch/league.finance/commit/5b80d490abc2dc782f0bd395514733934bcc4627))
+
 ### 0.1.9 (2026-04-15)
 
 
