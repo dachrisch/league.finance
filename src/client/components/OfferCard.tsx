@@ -123,11 +123,10 @@ export function OfferCard({
 
       {/* Body Content */}
       <div style={{ 
-        opacity: isExpanded ? 1 : 1, // Keep opacity 1 for now to help tests
         overflow: 'hidden',
         transition: 'all var(--transition-normal)',
       }}>
-        {isExpanded ? (
+        {isExpanded && children ? (
           children
         ) : (
           <div style={{ padding: '0 var(--spacing-lg) var(--spacing-lg) calc(28px + var(--spacing-md) + var(--spacing-lg))' }}>

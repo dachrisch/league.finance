@@ -213,6 +213,7 @@ export function OfferTable({
                         style={{ background: 'var(--success-color)' }}
                         onClick={() => onSend(offer._id)}
                         disabled={isLoading || offer.status === 'sending'}
+                        data-testid={`send-button-${offer._id}`}
                       >
                         {offer.status === 'sending' ? 'Sending...' : 'Send'}
                       </button>

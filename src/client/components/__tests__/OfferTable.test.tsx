@@ -119,8 +119,8 @@ describe('OfferTable', () => {
       />
     );
 
-    const sendButtons = screen.getAllByRole('button', { name: /^Send$/i });
-    fireEvent.click(sendButtons[0]);
+    const sendButton = screen.getByTestId('send-button-1');
+    fireEvent.click(sendButton);
 
     expect(mockOnSend).toHaveBeenCalledWith('1');
   });
