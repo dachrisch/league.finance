@@ -8,7 +8,7 @@ export interface OfferDisplay {
   contactName: string;
   leagueCount: number;
   leagueNames: string[];
-  status: 'draft' | 'sent' | 'accepted';
+  status: 'draft' | 'sending' | 'sent' | 'accepted';
   createdAt: Date;
   sentAt?: Date;
   acceptedAt?: Date;
@@ -23,10 +23,12 @@ export function calculateTotalExpectedRevenue(
   }, 0);
 }
 
-export function getStatusColor(status: 'draft' | 'sent' | 'accepted'): string {
+export function getStatusColor(status: 'draft' | 'sending' | 'sent' | 'accepted'): string {
   switch (status) {
     case 'draft':
       return '#ffc107'; // yellow
+    case 'sending':
+      return '#fd7e14'; // orange
     case 'sent':
       return '#0d6efd'; // blue
     case 'accepted':
@@ -36,7 +38,7 @@ export function getStatusColor(status: 'draft' | 'sent' | 'accepted'): string {
   }
 }
 
-export function getStatusLabel(status: 'draft' | 'sent' | 'accepted'): string {
+export function getStatusLabel(status: 'draft' | 'sending' | 'sent' | 'accepted'): string {
   return status.toUpperCase();
 }
 
