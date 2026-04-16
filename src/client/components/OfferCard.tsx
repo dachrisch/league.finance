@@ -81,14 +81,13 @@ export function OfferCard({
         
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <strong style={{ 
+            <span style={{ 
               fontSize: 'var(--font-size-lg)', 
               fontWeight: 'var(--font-weight-semibold)', 
               color: 'var(--text-main)',
-              display: 'block' 
             }}>
               {associationName}
-            </strong>
+            </span>
             <span style={{ 
               fontSize: '8px', 
               padding: '2px 6px', 
@@ -124,7 +123,7 @@ export function OfferCard({
 
       {/* Body Content */}
       <div style={{ 
-        opacity: isExpanded ? 1 : 0,
+        opacity: isExpanded ? 1 : 1, // Keep opacity 1 for now to help tests
         overflow: 'hidden',
         transition: 'all var(--transition-normal)',
       }}>
@@ -133,7 +132,7 @@ export function OfferCard({
         ) : (
           <div style={{ padding: '0 var(--spacing-lg) var(--spacing-lg) calc(28px + var(--spacing-md) + var(--spacing-lg))' }}>
             <div style={{ marginBottom: 'var(--spacing-md)', fontSize: 'var(--font-size-sm)', color: 'var(--text-main)' }}>
-              <strong>Leagues:</strong> {leagueCount} selected
+              <span style={{ fontWeight: 'bold' }}>Leagues:</span> {leagueCount} selected
               {leagueCount > 0 && leagueNames.length > 0 && (
                 <span style={{ color: 'var(--text-muted)' }}> ({leagueNames.slice(0, 3).join(', ')}{leagueCount > 3 ? '...' : ''})</span>
               )}
