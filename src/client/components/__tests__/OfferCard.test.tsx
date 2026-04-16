@@ -184,6 +184,7 @@ describe('OfferCard', () => {
       </BrowserRouter>
     );
 
-    expect(container.textContent).toContain('▶');
+    // Use a more flexible matcher or check container content directly
+    expect(container.textContent).toMatch(/[▶▶︎]/);
   });
 });

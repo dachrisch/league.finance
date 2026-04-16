@@ -124,7 +124,6 @@ export function OfferCard({
 
       {/* Body Content */}
       <div style={{ 
-        maxHeight: isExpanded ? '1000px' : '0', 
         opacity: isExpanded ? 1 : 0,
         overflow: 'hidden',
         transition: 'all var(--transition-normal)',
