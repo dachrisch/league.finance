@@ -119,7 +119,7 @@ describe('OfferTable', () => {
       />
     );
 
-    const sendButtons = screen.getAllByRole('button', { name: /Send/i });
+    const sendButtons = screen.getAllByRole('button', { name: /^Send$/i });
     fireEvent.click(sendButtons[0]);
 
     expect(mockOnSend).toHaveBeenCalledWith('1');

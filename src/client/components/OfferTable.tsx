@@ -194,7 +194,6 @@ export function OfferTable({
                       className="btn btn-ghost btn-sm"
                       onClick={() => onView(offer._id)}
                       disabled={isLoading}
-                      aria-label="View"
                     >
                       View
                     </button>
@@ -204,7 +203,6 @@ export function OfferTable({
                         style={{ background: 'var(--warning-color)', color: '#000' }}
                         onClick={() => onEdit(offer._id)}
                         disabled={isLoading}
-                        aria-label="Edit"
                       >
                         Edit
                       </button>
@@ -215,7 +213,6 @@ export function OfferTable({
                         style={{ background: 'var(--success-color)' }}
                         onClick={() => onSend(offer._id)}
                         disabled={isLoading || offer.status === 'sending'}
-                        aria-label="Send"
                       >
                         {offer.status === 'sending' ? 'Sending...' : 'Send'}
                       </button>

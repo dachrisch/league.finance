@@ -58,7 +58,7 @@ describe('OfferCard', () => {
   it('shows View, Send, Delete buttons in draft status', () => {
     render(
       <BrowserRouter>
-        <OfferCard {...defaultProps} status="draft" />
+        <OfferCard {...defaultProps} status="draft" isExpanded={true} />
       </BrowserRouter>
     );
 
@@ -67,10 +67,22 @@ describe('OfferCard', () => {
     expect(screen.getByRole('button', { name: /Delete/i })).toBeInTheDocument();
   });
 
+  it('shows View, Sending... buttons in sending status', () => {
+    render(
+      <BrowserRouter>
+        <OfferCard {...defaultProps} status="sending" isExpanded={true} />
+      </BrowserRouter>
+    );
+
+    expect(screen.getByRole('button', { name: /View/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sending/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Delete/i })).not.toBeInTheDocument();
+  });
+
   it('shows only View button in sent status', () => {
     render(
       <BrowserRouter>
-        <OfferCard {...defaultProps} status="sent" />
+        <OfferCard {...defaultProps} status="sent" isExpanded={true} />
       </BrowserRouter>
     );
 
@@ -82,7 +94,7 @@ describe('OfferCard', () => {
   it('shows only View button in accepted status', () => {
     render(
       <BrowserRouter>
-        <OfferCard {...defaultProps} status="accepted" />
+        <OfferCard {...defaultProps} status="accepted" isExpanded={true} />
       </BrowserRouter>
     );
 
@@ -107,7 +119,7 @@ describe('OfferCard', () => {
     const onDelete = vi.fn();
     render(
       <BrowserRouter>
-        <OfferCard {...defaultProps} status="draft" onDelete={onDelete} />
+        <OfferCard {...defaultProps} status="draft" onDelete={onDelete} isExpanded={true} />
       </BrowserRouter>
     );
 
@@ -119,7 +131,7 @@ describe('OfferCard', () => {
     const onSend = vi.fn();
     render(
       <BrowserRouter>
-        <OfferCard {...defaultProps} status="draft" onSend={onSend} />
+        <OfferCard {...defaultProps} status="draft" onSend={onSend} isExpanded={true} />
       </BrowserRouter>
     );
 
