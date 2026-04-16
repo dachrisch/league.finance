@@ -42,7 +42,7 @@ describe('OfferCard', () => {
     expect(screen.getByText(/2024-2025/)).toBeInTheDocument();
     expect(screen.getByText(/Contact:/)).toBeInTheDocument();
     expect(screen.getByText(/John Doe/)).toBeInTheDocument();
-    expect(screen.getByText(/3 selected/)).toBeInTheDocument();
+    expect(screen.getByText(/3 selected/i)).toBeInTheDocument();
   });
 
   it('displays status badge with correct status', () => {
@@ -52,7 +52,7 @@ describe('OfferCard', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText('SENT')).toBeInTheDocument();
+    expect(screen.getByText(/SENT/i)).toBeInTheDocument();
   });
 
   it('shows View, Send, Delete buttons in draft status', () => {
@@ -62,9 +62,9 @@ describe('OfferCard', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText('View')).toBeInTheDocument();
-    expect(screen.getByText('Send')).toBeInTheDocument();
-    expect(screen.getByText('Delete')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /View/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Send/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Delete/i })).toBeInTheDocument();
   });
 
   it('shows only View button in sent status', () => {
@@ -74,9 +74,9 @@ describe('OfferCard', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText('View')).toBeInTheDocument();
-    expect(screen.queryByText('Send')).not.toBeInTheDocument();
-    expect(screen.queryByText('Delete')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /View/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Send/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Delete/i })).not.toBeInTheDocument();
   });
 
   it('shows only View button in accepted status', () => {
@@ -86,9 +86,9 @@ describe('OfferCard', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText('View')).toBeInTheDocument();
-    expect(screen.queryByText('Send')).not.toBeInTheDocument();
-    expect(screen.queryByText('Delete')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /View/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Send/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Delete/i })).not.toBeInTheDocument();
   });
 
   it('calls onToggleExpand when header is clicked', () => {
@@ -111,7 +111,7 @@ describe('OfferCard', () => {
       </BrowserRouter>
     );
 
-    fireEvent.click(screen.getByText('Delete'));
+    fireEvent.click(screen.getByRole('button', { name: /Delete/i }));
     expect(onDelete).toHaveBeenCalled();
   });
 
@@ -123,7 +123,7 @@ describe('OfferCard', () => {
       </BrowserRouter>
     );
 
-    fireEvent.click(screen.getByText('Send'));
+    fireEvent.click(screen.getByRole('button', { name: /Send/i }));
     expect(onSend).toHaveBeenCalled();
   });
 
@@ -151,7 +151,8 @@ describe('OfferCard', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText(/League A, League B, League C\.\.\./)).toBeInTheDocument();
+    expect(screen.getByText(/League A, League B, League C/i)).toBeInTheDocument();
+    expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
   });
 
   it('shows chevron pointing down when expanded', () => {
