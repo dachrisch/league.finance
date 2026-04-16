@@ -73,6 +73,48 @@ body {
   padding: var(--spacing-xl);
 }
 
+/* Redesigned Summary Card (Icon + Text) */
+.summary-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.summary-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  flex-shrink: 0;
+  border: 1px solid currentColor;
+}
+
+.summary-card-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  display: block;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.summary-card-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-main);
+  display: block;
+  margin-top: 2px;
+}
+
 /* Responsive Grid/Flex Utilities */
 .responsive-flex {
   display: flex;
@@ -147,23 +189,35 @@ body {
 
 /* Buttons */
 .btn {
-  padding: 8px 16px;
-  border-radius: var(--border-radius-md);
-  border: none;
-  cursor: pointer;
-  font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-sm);
-  transition: all var(--transition-normal);
-  text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-xs);
-  min-height: 38px;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+  min-height: 40px;
 }
 
-.btn:active {
-  opacity: 0.8;
+.btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-xs);
+  min-height: 32px;
 }
 
 .btn-primary { 
@@ -181,12 +235,21 @@ body {
 }
 
 .btn-outline { 
-  background: none; 
+  background: transparent; 
   border: 1px solid var(--border-color); 
   color: var(--text-main); 
 }
 
 .btn-outline:hover {
+  background: var(--bg-secondary);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-main);
+}
+
+.btn-ghost:hover {
   background: var(--bg-secondary);
 }
 

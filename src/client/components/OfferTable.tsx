@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Offer } from '../lib/schemas';
+import wizardStyles from '../styles/OfferWizard.module.css';
 
 interface OfferTableProps {
   offers: Offer[];
@@ -12,24 +13,26 @@ interface OfferTableProps {
 }
 
 const statusBadgeStyle = (status: string): React.CSSProperties => {
-  const colors: Record<string, { bg: string; color: string }> = {
-    draft: { bg: 'var(--bg-secondary)', color: 'var(--text-muted)' },
-    sent: { bg: '#eff6ff', color: '#0369a1' },
-    accepted: { bg: '#ecfdf5', color: 'var(--success-color)' },
+  const colors: Record<string, { bg: string; color: string; border: string }> = {
+    draft: { bg: 'var(--bg-secondary)', color: 'var(--text-muted)', border: 'var(--border-color)' },
+    sent: { bg: '#eff6ff', color: '#0369a1', border: '#bae6fd' },
+    accepted: { bg: '#ecfdf5', color: 'var(--success-color)', border: 'var(--success-color)' },
   };
 
   const colorSet = colors[status] || colors.draft;
 
   return {
-    display: 'inline-block',
-    padding: '0.25rem 0.5rem',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '4px 8px',
     background: colorSet.bg,
     color: colorSet.color,
-    borderRadius: 'var(--border-radius-sm)',
+    borderRadius: 'var(--border-radius-md)',
     fontSize: 'var(--font-size-xs)',
     fontWeight: 'var(--font-weight-medium)',
-    border: '1px solid currentColor',
-    opacity: 0.8,
+    border: `1px solid ${colorSet.border}`,
+    textTransform: 'capitalize',
   };
 };
 
@@ -97,12 +100,7 @@ export function OfferTable({
             key={label}
             onClick={() => setFilterStatus(value)}
             disabled={isLoading}
-            className={`btn ${filterStatus === value ? 'btn-primary' : 'btn-outline'}`}
-            style={{
-              padding: '4px 12px',
-              fontSize: 'var(--font-size-xs)',
-              minHeight: '32px',
-            }}
+            className={`${wizardStyles.leagueFilter} ${filterStatus === value ? wizardStyles.active : ''}`}
           >
             {label}
           </button>
@@ -113,13 +111,15 @@ export function OfferTable({
       <div style={{ opacity: isLoading ? 0.6 : 1, pointerEvents: isLoading ? 'none' : 'auto' }}>
         <table className="mobile-cards-table" style={{
           width: '100%',
-          borderCollapse: 'collapse',
+          borderCollapse: 'separate',
+          borderSpacing: 0,
           background: 'var(--bg-primary)',
           borderRadius: 'var(--border-radius-lg)',
           overflow: 'hidden',
           boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+          border: '1px solid var(--border-color)',
         }}>
-          <thead style={{ background: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)' }}>
+          <thead style={{ background: 'var(--bg-secondary)' }}>
             <tr>
               <th
                 onClick={() => setSortBy('createdAt')}
@@ -131,11 +131,12 @@ export function OfferTable({
                   cursor: 'pointer',
                   userSelect: 'none',
                   color: 'var(--text-main)',
+                  borderBottom: '1px solid var(--border-color)',
                 }}
               >
                 Created {sortBy === 'createdAt' ? '↓' : ''}
               </th>
-              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Association</th>
+              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)' }}>Association</th>
               <th
                 onClick={() => setSortBy('seasonId')}
                 style={{
@@ -146,11 +147,12 @@ export function OfferTable({
                   cursor: 'pointer',
                   userSelect: 'none',
                   color: 'var(--text-main)',
+                  borderBottom: '1px solid var(--border-color)',
                 }}
               >
                 Season {sortBy === 'seasonId' ? '↓' : ''}
               </th>
-              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Leagues</th>
+              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)' }}>Leagues</th>
               <th
                 onClick={() => setSortBy('status')}
                 style={{
@@ -161,11 +163,12 @@ export function OfferTable({
                   cursor: 'pointer',
                   userSelect: 'none',
                   color: 'var(--text-main)',
+                  borderBottom: '1px solid var(--border-color)',
                 }}
               >
                 Status {sortBy === 'status' ? '↓' : ''}
               </th>
-              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Actions</th>
+              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -177,7 +180,9 @@ export function OfferTable({
                 </td>
                 <td data-label="Season" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', color: 'var(--text-main)' }}>Season {seasonYears[offer.seasonId] || offer.seasonId}</td>
                 <td data-label="Leagues" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', textAlign: 'center', color: 'var(--text-main)' }}>
-                  {offer.leagueIds.length}
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '50%', background: 'var(--bg-secondary)', fontSize: 'var(--font-size-xs)', fontWeight: 'var(--font-weight-semibold)', border: '1px solid var(--border-color)' }}>
+                    {offer.leagueIds.length}
+                  </div>
                 </td>
                 <td data-label="Status" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>
                   <div style={statusBadgeStyle(offer.status)}>{offer.status}</div>
@@ -185,8 +190,7 @@ export function OfferTable({
                 <td data-label="Actions" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
                   <div style={{ display: 'flex', gap: 'var(--spacing-sm)', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <button
-                      className="btn btn-outline"
-                      style={{ minHeight: '32px', padding: '4px 12px', fontSize: 'var(--font-size-xs)' }}
+                      className={`${wizardStyles.button} ${wizardStyles.buttonGhost} ${wizardStyles.buttonSmall}`}
                       onClick={() => onView(offer._id)}
                       disabled={isLoading}
                     >
@@ -194,8 +198,8 @@ export function OfferTable({
                     </button>
                     {offer.status === 'draft' && onSend && (
                       <button
-                        className="btn btn-primary"
-                        style={{ minHeight: '32px', padding: '4px 12px', fontSize: 'var(--font-size-xs)', background: 'var(--success-color)' }}
+                        className={`${wizardStyles.button} ${wizardStyles.buttonPrimary} ${wizardStyles.buttonSmall}`}
+                        style={{ background: 'var(--success-color)' }}
                         onClick={() => onSend(offer._id)}
                         disabled={isLoading}
                       >
@@ -204,8 +208,8 @@ export function OfferTable({
                     )}
                     {offer.status === 'draft' && onEdit && (
                       <button
-                        className="btn btn-secondary"
-                        style={{ minHeight: '32px', padding: '4px 12px', fontSize: 'var(--font-size-xs)', background: 'var(--warning-color)', color: '#000' }}
+                        className={`${wizardStyles.button} ${wizardStyles.buttonGhost} ${wizardStyles.buttonSmall}`}
+                        style={{ background: 'var(--warning-color)', borderColor: 'var(--warning-color)', color: '#000' }}
                         onClick={() => onEdit(offer._id)}
                         disabled={isLoading}
                       >

@@ -1,5 +1,4 @@
 // src/client/components/OfferCard.tsx
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getStatusColor, getStatusLabel, getTimeAgoText } from '../lib/offerHelpers';
 
@@ -40,114 +39,122 @@ export function OfferCard({
   return (
     <div
       style={{
-        border: '1px solid #dee2e6',
-        borderRadius: '8px',
-        borderLeft: `4px solid ${statusColor}`,
+        background: 'var(--bg-primary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--border-radius-lg)',
         overflow: 'hidden',
-        backgroundColor: '#fff',
-        transition: 'box-shadow 0.2s',
-        cursor: 'default',
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
+        boxShadow: isExpanded ? '0 4px 12px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.05)',
+        transition: 'all var(--transition-normal)',
       }}
     >
-      {/* Header with Association Name and Status */}
+      {/* Block Header Style */}
       <div
         style={{
+          padding: 'var(--spacing-lg)',
           display: 'flex',
-          justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '1rem',
-          borderBottom: '1px solid #dee2e6',
+          gap: 'var(--spacing-md)',
           cursor: 'pointer',
+          background: isExpanded ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+          transition: 'background var(--transition-normal)',
         }}
         onClick={onToggleExpand}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '1.2rem', color: '#666' }}>
-            {isExpanded ? '▼' : '▶'}
-          </span>
-          <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '600' }}>
-            {associationName}
-          </h3>
+        <div style={{ 
+          width: '28px', 
+          height: '28px', 
+          borderRadius: '50%', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          background: statusColor,
+          color: 'white',
+          fontSize: '10px',
+          fontWeight: 'var(--font-weight-semibold)',
+          flexShrink: 0,
+        }}>
+          {status === 'accepted' ? '✓' : status === 'sent' ? '✉' : '✎'}
         </div>
-        <span
-          style={{
-            backgroundColor: statusColor,
-            color: '#fff',
-            padding: '0.25rem 0.75rem',
-            borderRadius: '4px',
-            fontSize: '0.75rem',
-            fontWeight: '600',
-          }}
-        >
-          {getStatusLabel(status)}
+        
+        <div style={{ flex: 1 }}>
+          <strong style={{ 
+            fontSize: 'var(--font-size-lg)', 
+            fontWeight: 'var(--font-weight-semibold)', 
+            color: 'var(--text-main)',
+            display: 'block' 
+          }}>
+            {associationName}
+          </strong>
+          <span style={{ 
+            fontSize: 'var(--font-size-xs)', 
+            color: 'var(--text-muted)',
+            display: 'block',
+            marginTop: '2px'
+          }}>
+            {seasonName} · {contactName}
+          </span>
+        </div>
+        
+        <span style={{ 
+          fontSize: 'var(--font-size-xs)', 
+          color: 'var(--text-muted)',
+          transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+          transition: 'transform var(--transition-normal)',
+        }}>
+          ▼
         </span>
       </div>
 
-      {/* Collapsed Content */}
-      {!isExpanded && (
-        <div style={{ padding: '1rem' }}>
-          <div style={{ marginBottom: '0.5rem', color: '#495057' }}>
-            <strong>Season:</strong> {seasonName}
-          </div>
-          <div style={{ marginBottom: '0.5rem', color: '#495057' }}>
-            <strong>Contact:</strong> {contactName}
-          </div>
-          <div style={{ marginBottom: '1rem', color: '#495057' }}>
-            <strong>Leagues:</strong> {leagueCount} selected
-            {leagueCount > 0 && leagueNames.length > 0 && (
-              <> ({leagueNames.slice(0, 3).join(', ')}{leagueCount > 3 ? '...' : ''})</>
-            )}
-          </div>
-          <div style={{ color: '#999', fontSize: '0.875rem' }}>
-            Created {getTimeAgoText(createdAt)}
-          </div>
+      {/* Body Content */}
+      <div style={{ 
+        maxHeight: isExpanded ? '1000px' : '0', 
+        opacity: isExpanded ? 1 : 0,
+        overflow: 'hidden',
+        transition: 'all var(--transition-normal)',
+      }}>
+        {isExpanded ? (
+          children
+        ) : (
+          <div style={{ padding: '0 var(--spacing-lg) var(--spacing-lg) calc(28px + var(--spacing-md) + var(--spacing-lg))' }}>
+            <div style={{ marginBottom: 'var(--spacing-md)', fontSize: 'var(--font-size-sm)', color: 'var(--text-main)' }}>
+              <strong>Leagues:</strong> {leagueCount} selected
+              {leagueCount > 0 && leagueNames.length > 0 && (
+                <span style={{ color: 'var(--text-muted)' }}> ({leagueNames.slice(0, 2).join(', ')}{leagueCount > 2 ? '...' : ''})</span>
+              )}
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)' }}>
+                Created {getTimeAgoText(createdAt)}
+              </div>
 
-          {/* Actions */}
-          <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/offers/${id}`);
-              }}
-            >
-              View
-            </button>
-            {status === 'draft' && (
-              <>
+              <div style={{ display: 'flex', gap: 'var(--spacing-xs)' }}>
                 <button
-                  className="btn btn-secondary btn-sm"
+                  className="btn btn-primary btn-sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onSend?.();
+                    navigate(`/offers/${id}`);
                   }}
                 >
-                  Send
+                  View details
                 </button>
-                <button
-                  className="btn btn-outline btn-sm"
-                  style={{ color: '#dc3545' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete?.();
-                  }}
-                >
-                  Delete
-                </button>
-              </>
-            )}
+                {status === 'draft' && (
+                  <button
+                    className="btn btn-outline btn-sm"
+                    style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete?.();
+                    }}
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* Expanded Content */}
-      {isExpanded && children}
+        )}
+      </div>
     </div>
   );
 }

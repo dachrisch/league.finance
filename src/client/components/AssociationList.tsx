@@ -28,64 +28,58 @@ export function AssociationList({ associations, onEdit, onDelete, isLoading = fa
 
   return (
     <div style={{ ...statusStyle(isLoading) }}>
-      <table className="mobile-cards-table" style={{
-        width: '100%',
-        borderCollapse: 'collapse',
-        background: 'var(--bg-primary)',
-        borderRadius: 'var(--border-radius-lg)',
-        overflow: 'hidden',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-      }}>
-        <thead style={{ background: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)' }}>
-          <tr>
-            <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Name</th>
-            <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Address</th>
-            <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {associations.map((association) => (
-            <tr key={association._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-              <td data-label="Name" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>
-                <strong style={{ color: 'var(--primary-color)' }}>{association.name}</strong>
-              </td>
-              <td data-label="Address" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', color: 'var(--text-main)' }}>
-                {association.address ? (
-                  <>
-                    {association.address.street}, {association.address.postalCode} {association.address.city}, {association.address.country}
-                  </>
-                ) : (
-                  <span style={{ color: 'var(--text-muted)' }}>No address</span>
-                )}
-              </td>
-              <td data-label="Actions" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
-                <div style={{ display: 'flex', gap: 'var(--spacing-sm)', justifyContent: 'center' }}>
-                  <button
-                    className="btn btn-primary"
-                    style={{ minHeight: '32px', padding: '4px 12px', fontSize: 'var(--font-size-xs)' }}
-                    onClick={() => onEdit(association._id)}
-                    disabled={isLoading}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn btn-secondary"
-                    style={{ minHeight: '32px', padding: '4px 12px', fontSize: 'var(--font-size-xs)', background: 'var(--danger-color)' }}
-                    onClick={() => {
-                      if (window.confirm(`Delete "${association.name}"?`)) {
-                        onDelete(association._id);
-                      }
-                    }}
-                    disabled={isLoading}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </td>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <table className="mobile-cards-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Name</th>
+              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Address</th>
+              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {associations.map((association) => (
+              <tr key={association._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <td data-label="Name" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>
+                  <strong style={{ color: 'var(--primary-color)' }}>{association.name}</strong>
+                </td>
+                <td data-label="Address" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', color: 'var(--text-main)' }}>
+                  {association.address ? (
+                    <span style={{ fontSize: 'var(--font-size-sm)' }}>
+                      {association.address.street}, {association.address.postalCode} {association.address.city}
+                    </span>
+                  ) : (
+                    <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>No address</span>
+                  )}
+                </td>
+                <td data-label="Actions" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
+                  <div style={{ display: 'flex', gap: 'var(--spacing-sm)', justifyContent: 'center' }}>
+                    <button
+                      className="btn btn-outline btn-sm"
+                      onClick={() => onEdit(association._id)}
+                      disabled={isLoading}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-outline btn-sm"
+                      style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
+                      onClick={() => {
+                        if (window.confirm(`Delete "${association.name}"?`)) {
+                          onDelete(association._id);
+                        }
+                      }}
+                      disabled={isLoading}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

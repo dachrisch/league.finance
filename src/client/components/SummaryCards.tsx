@@ -1,32 +1,36 @@
+import React from 'react';
+
 interface Props {
   totalGross: number;
   totalDiscount: number;
   totalNet: number;
 }
 
-const cardStyle = (color: string): React.CSSProperties => ({
-  flex: 1,
-  padding: '1.5rem',
-  borderRadius: 8,
-  borderLeft: `6px solid ${color}`,
-  background: '#fff',
-  boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-});
-
 export function SummaryCards({ totalGross, totalDiscount, totalNet }: Props) {
   return (
     <div className="responsive-flex" style={{ marginBottom: '2rem' }}>
-      <div style={cardStyle('#0d6efd')}>
-        <p style={{ margin: 0, color: '#666', fontSize: 12, textTransform: 'uppercase' }}>Gross Revenue</p>
-        <h2 style={{ margin: 0, color: '#0d6efd' }}>{totalGross.toFixed(2)} €</h2>
+      <div className="summary-card" style={{ flex: 1 }}>
+        <div className="summary-card-icon" style={{ color: 'var(--primary-color)', background: 'var(--primary-color)15' }}>G</div>
+        <div>
+          <span className="summary-card-label">Gross Revenue</span>
+          <strong className="summary-card-value">{totalGross.toFixed(2)} €</strong>
+        </div>
       </div>
-      <div style={cardStyle('#dc3545')}>
-        <p style={{ margin: 0, color: '#666', fontSize: 12, textTransform: 'uppercase' }}>Total Discounts</p>
-        <h2 style={{ margin: 0, color: '#dc3545' }}>-{totalDiscount.toFixed(2)} €</h2>
+      
+      <div className="summary-card" style={{ flex: 1 }}>
+        <div className="summary-card-icon" style={{ color: 'var(--danger-color)', background: 'var(--danger-color)15' }}>D</div>
+        <div>
+          <span className="summary-card-label">Total Discounts</span>
+          <strong className="summary-card-value" style={{ color: 'var(--danger-color)' }}>-{totalDiscount.toFixed(2)} €</strong>
+        </div>
       </div>
-      <div style={cardStyle('#198754')}>
-        <p style={{ margin: 0, color: '#666', fontSize: 12, textTransform: 'uppercase' }}>Projected Net</p>
-        <h2 style={{ margin: 0, color: '#198754' }}>{totalNet.toFixed(2)} €</h2>
+      
+      <div className="summary-card" style={{ flex: 1 }}>
+        <div className="summary-card-icon" style={{ color: 'var(--success-color)', background: 'var(--success-color)15' }}>N</div>
+        <div>
+          <span className="summary-card-label">Projected Net</span>
+          <strong className="summary-card-value" style={{ color: 'var(--success-color)' }}>{totalNet.toFixed(2)} €</strong>
+        </div>
       </div>
     </div>
   );

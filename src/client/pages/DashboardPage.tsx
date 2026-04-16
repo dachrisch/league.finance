@@ -89,17 +89,20 @@ export function DashboardPage() {
           marginBottom: 'var(--spacing-xl)',
         }}
       >
-        <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary-color)' }}>Offers</h1>
-        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary-color)', fontWeight: 'var(--font-weight-semibold)' }}>Offers Dashboard</h1>
+          <p style={{ margin: '4px 0 0 0', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Quick access to your pricing offers</p>
+        </div>
+        <div style={{ display: 'flex', gap: 'var(--spacing-md)', flexWrap: 'wrap' }}>
           <button
             onClick={() => navigate('/offers/new')}
             className="btn btn-primary"
           >
-            + New Offer
+            + Create New Offer
           </button>
           <button
             onClick={() => navigate('/associations')}
-            className="btn btn-secondary"
+            className="btn btn-outline"
           >
             Associations
           </button>
@@ -114,17 +117,21 @@ export function DashboardPage() {
           gap: 'var(--spacing-sm)',
           flexWrap: 'wrap',
           alignItems: 'center',
+          background: 'var(--bg-secondary)',
+          padding: 'var(--spacing-md)',
+          borderRadius: 'var(--border-radius-lg)',
+          border: '1px solid var(--border-color)',
         }}
       >
-        <label style={{ fontWeight: 'var(--font-weight-medium)', marginRight: 'var(--spacing-sm)' }}>Filter by Status:</label>
+        <label style={{ fontWeight: 'var(--font-weight-semibold)', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: 'var(--spacing-sm)' }}>Filter status:</label>
         {(['all', 'draft', 'sent', 'accepted'] as const).map((status) => (
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
-            className={`btn ${
-              statusFilter === status ? 'btn-primary' : 'btn-outline'
+            className={`btn btn-sm ${
+              statusFilter === status ? 'btn-primary' : 'btn-ghost'
             }`}
-            style={{ padding: '4px 12px', fontSize: 'var(--font-size-xs)', minHeight: '32px' }}
+            style={statusFilter !== status ? { border: '1px solid transparent' } : {}}
           >
             {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
           </button>
@@ -139,13 +146,15 @@ export function DashboardPage() {
           className="card"
           style={{
             textAlign: 'center',
-            padding: 'var(--spacing-xl)',
+            padding: '3rem var(--spacing-xl)',
             color: 'var(--text-muted)',
+            background: 'var(--bg-secondary)',
+            borderStyle: 'dashed',
           }}
         >
           <div style={{ fontSize: '3rem', marginBottom: 'var(--spacing-lg)' }}>📋</div>
-          <h3 style={{ color: 'var(--text-main)' }}>No offers yet</h3>
-          <p>Create your first offer to get started</p>
+          <h3 style={{ color: 'var(--text-main)', margin: '0 0 var(--spacing-sm) 0' }}>No offers yet</h3>
+          <p style={{ margin: '0 0 var(--spacing-xl) 0' }}>Create your first offer to get started</p>
           <button
             onClick={() => navigate('/offers/new')}
             className="btn btn-primary"

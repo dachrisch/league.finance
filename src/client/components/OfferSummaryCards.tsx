@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface OfferSummaryCardsProps {
   totalOffers: number;
   draftOffers: number;
@@ -6,32 +8,6 @@ interface OfferSummaryCardsProps {
   acceptedOffers: number;
   totalRevenue: number;
 }
-
-const cardStyle = (color: string): React.CSSProperties => ({
-  flex: 1,
-  minWidth: '150px',
-  padding: '1.5rem',
-  borderRadius: 8,
-  borderLeft: `6px solid ${color}`,
-  background: '#fff',
-  boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-});
-
-const valueStyle = (color: string): React.CSSProperties => ({
-  margin: 0,
-  color,
-  fontSize: 24,
-  fontWeight: 600,
-  marginTop: '0.5rem',
-});
-
-const labelStyle: React.CSSProperties = {
-  margin: 0,
-  color: '#666',
-  fontSize: 12,
-  textTransform: 'uppercase',
-  fontWeight: 500,
-};
 
 export function OfferSummaryCards({
   totalOffers,
@@ -44,33 +20,56 @@ export function OfferSummaryCards({
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-      gap: '1rem',
-      marginBottom: '2rem',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+      gap: 'var(--spacing-lg)',
+      marginBottom: 'var(--spacing-xl)',
     }}>
-      <div style={cardStyle('#0d6efd')}>
-        <p style={labelStyle}>Total Offers</p>
-        <p style={valueStyle('#0d6efd')}>{totalOffers}</p>
+      <div className="summary-card">
+        <div className="summary-card-icon" style={{ background: 'var(--primary-color)', color: 'white', border: 'none' }}>Σ</div>
+        <div>
+          <span className="summary-card-label">Total Offers</span>
+          <strong className="summary-card-value">{totalOffers}</strong>
+        </div>
       </div>
-      <div style={cardStyle('#6c757d')}>
-        <p style={labelStyle}>Draft</p>
-        <p style={valueStyle('#6c757d')}>{draftOffers}</p>
+      
+      <div className="summary-card">
+        <div className="summary-card-icon" style={{ color: 'var(--secondary-color)', background: 'var(--secondary-color)15' }}>D</div>
+        <div>
+          <span className="summary-card-label">Draft</span>
+          <strong className="summary-card-value">{draftOffers}</strong>
+        </div>
       </div>
-      <div style={cardStyle('#0dcaf0')}>
-        <p style={labelStyle}>Sent</p>
-        <p style={valueStyle('#0dcaf0')}>{sentOffers}</p>
+      
+      <div className="summary-card">
+        <div className="summary-card-icon" style={{ color: '#0369a1', background: '#0369a115' }}>S</div>
+        <div>
+          <span className="summary-card-label">Sent</span>
+          <strong className="summary-card-value">{sentOffers}</strong>
+        </div>
       </div>
-      <div style={cardStyle('#ffc107')}>
-        <p style={labelStyle}>Pending Response</p>
-        <p style={valueStyle('#ffc107')}>{pendingOffers}</p>
+      
+      <div className="summary-card">
+        <div className="summary-card-icon" style={{ color: 'var(--warning-color)', background: 'var(--warning-color)15' }}>P</div>
+        <div>
+          <span className="summary-card-label">Pending Response</span>
+          <strong className="summary-card-value">{pendingOffers}</strong>
+        </div>
       </div>
-      <div style={cardStyle('#198754')}>
-        <p style={labelStyle}>Accepted</p>
-        <p style={valueStyle('#198754')}>{acceptedOffers}</p>
+      
+      <div className="summary-card">
+        <div className="summary-card-icon" style={{ color: 'var(--success-color)', background: 'var(--success-color)15' }}>A</div>
+        <div>
+          <span className="summary-card-label">Accepted</span>
+          <strong className="summary-card-value">{acceptedOffers}</strong>
+        </div>
       </div>
-      <div style={cardStyle('#28a745')}>
-        <p style={labelStyle}>Total Revenue</p>
-        <p style={valueStyle('#28a745')}>${totalRevenue.toFixed(2)}</p>
+      
+      <div className="summary-card">
+        <div className="summary-card-icon" style={{ color: 'var(--success-color)', background: 'var(--success-color)15' }}>€</div>
+        <div>
+          <span className="summary-card-label">Total Revenue</span>
+          <strong className="summary-card-value">{totalRevenue.toFixed(2)} €</strong>
+        </div>
       </div>
     </div>
   );

@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 import { OfferSummaryCards } from '../components/OfferSummaryCards';
 import { OfferTable } from '../components/OfferTable';
+import wizardStyles from '../styles/OfferWizard.module.css';
 
 export function OffersPage() {
   const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
 
   // Fetch offers, associations, and seasons
-  const { data: offers = [], isLoading: offersLoading, refetch: refetchOffers } = trpc.finance.offers.list.useQuery({});
+  const { data: offers = [], isLoading: offersLoading } = trpc.finance.offers.list.useQuery({});
   const { data: associations = [] } = trpc.finance.associations.list.useQuery();
   const { data: seasons = [] } = trpc.finance.seasons.list.useQuery();
 
@@ -59,9 +60,12 @@ export function OffersPage() {
     <div className="container" style={{ paddingBottom: 'var(--spacing-xl)' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-xl)' }}>
-        <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary-color)' }}>Pricing Offers</h1>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary-color)', fontWeight: 'var(--font-weight-semibold)' }}>Pricing Offers</h1>
+          <p style={{ margin: '4px 0 0 0', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Manage and track your association pricing offers</p>
+        </div>
         <button
-          className="btn btn-primary"
+          className={`${wizardStyles.button} ${wizardStyles.buttonPrimary}`}
           onClick={handleCreateOffer}
         >
           + Create New Offer
@@ -78,16 +82,23 @@ export function OffersPage() {
         totalRevenue={summary.totalOfferValue}
       />
 
-      {/* Offers Table */}
-      <OfferTable
-        offers={offers}
-        associationNames={associationNames}
-        seasonYears={seasonYears}
-        onView={handleViewOffer}
-        onSend={handleSendOffer}
-        onEdit={handleEditOffer}
-        isLoading={offersLoading}
-      />
+      {/* Table */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: 'var(--spacing-lg) var(--spacing-lg) 0 var(--spacing-lg)' }}>
+          <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)', fontWeight: 'var(--font-weight-semibold)' }}>All Offers</h2>
+        </div>
+        <div style={{ padding: 'var(--spacing-lg)' }}>
+          <OfferTable
+            offers={offers}
+            associationNames={associationNames}
+            seasonYears={seasonYears}
+            onView={handleViewOffer}
+            onSend={handleSendOffer}
+            onEdit={handleEditOffer}
+            isLoading={offersLoading}
+          />
+        </div>
+      </div>
     </div>
   );
 }

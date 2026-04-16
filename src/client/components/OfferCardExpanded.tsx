@@ -31,64 +31,54 @@ export function OfferCardExpanded({
   const totalRevenue = calculateTotalExpectedRevenue(configs);
 
   return (
-    <div style={{ padding: '1rem' }}>
+    <div style={{ padding: 'var(--spacing-lg)', background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-color)' }}>
       {/* Summary Info */}
-      <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid #dee2e6' }}>
-        <div style={{ marginBottom: '0.5rem', color: '#495057' }}>
-          <strong>Season:</strong> {seasonName}
+      <div style={{ marginBottom: 'var(--spacing-lg)', paddingBottom: 'var(--spacing-md)', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-md)' }}>
+          <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-main)' }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', display: 'block', textTransform: 'uppercase' }}>Season</span>
+            <strong>{seasonName}</strong>
+          </div>
+          <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-main)' }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', display: 'block', textTransform: 'uppercase' }}>Contact</span>
+            <strong>{contactName}</strong>
+          </div>
         </div>
-        <div style={{ marginBottom: '0.5rem', color: '#495057' }}>
-          <strong>Contact:</strong> {contactName}
-        </div>
-        <div style={{ color: '#495057' }}>
-          <strong>Leagues:</strong> {leagueNames.join(', ')}
+        <div style={{ marginTop: 'var(--spacing-sm)', fontSize: 'var(--font-size-sm)', color: 'var(--text-main)' }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', display: 'block', textTransform: 'uppercase' }}>Leagues</span>
+          <strong>{leagueNames.join(', ')}</strong>
         </div>
       </div>
 
       {/* League Configurations Table */}
-      <div style={{ marginBottom: '1rem' }}>
-        <h4 style={{ marginBottom: '0.5rem' }}>LEAGUE CONFIGURATIONS</h4>
-        <div style={{ overflowX: 'auto' }}>
+      <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+        <h4 style={{ marginBottom: 'var(--spacing-sm)', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>League Pricing</h4>
+        <div style={{ overflowX: 'auto', borderRadius: 'var(--border-radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-primary)' }}>
           <table
             style={{
               width: '100%',
               borderCollapse: 'collapse',
-              fontSize: '0.875rem',
+              fontSize: 'var(--font-size-xs)',
             }}
           >
             <thead>
-              <tr style={{ borderBottom: '2px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                <th style={{ padding: '0.5rem', textAlign: 'left', fontWeight: '600' }}>
-                  League
-                </th>
-                <th style={{ padding: '0.5rem', textAlign: 'left', fontWeight: '600' }}>
-                  Cost Model
-                </th>
-                <th style={{ padding: '0.5rem', textAlign: 'left', fontWeight: '600' }}>
-                  Base Rate
-                </th>
-                <th style={{ padding: '0.5rem', textAlign: 'left', fontWeight: '600' }}>
-                  Expected Teams
-                </th>
+              <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
+                <th style={{ padding: 'var(--spacing-sm) var(--spacing-md)', textAlign: 'left', fontWeight: '600', color: 'var(--text-muted)' }}>League</th>
+                <th style={{ padding: 'var(--spacing-sm) var(--spacing-md)', textAlign: 'left', fontWeight: '600', color: 'var(--text-muted)' }}>Model</th>
+                <th style={{ padding: 'var(--spacing-sm) var(--spacing-md)', textAlign: 'right', fontWeight: '600', color: 'var(--text-muted)' }}>Rate</th>
+                <th style={{ padding: 'var(--spacing-sm) var(--spacing-md)', textAlign: 'right', fontWeight: '600', color: 'var(--text-muted)' }}>Teams</th>
               </tr>
             </thead>
             <tbody>
               {configs.map((config, idx) => (
                 <tr
                   key={idx}
-                  style={{
-                    borderBottom: '1px solid #dee2e6',
-                    backgroundColor: idx % 2 === 0 ? '#fff' : '#f8f9fa',
-                  }}
+                  style={{ borderBottom: idx === configs.length - 1 ? 'none' : '1px solid var(--border-color)' }}
                 >
-                  <td style={{ padding: '0.5rem' }}>{config.leagueName}</td>
-                  <td style={{ padding: '0.5rem' }}>
-                    {config.costModel === 'SEASON' ? '⏱️ SEASON' : '📅 GAMEDAY'}
-                  </td>
-                  <td style={{ padding: '0.5rem' }}>
-                    €{(config.baseRateOverride ?? 50).toFixed(2)}
-                  </td>
-                  <td style={{ padding: '0.5rem' }}>{config.expectedTeamsCount}</td>
+                  <td style={{ padding: 'var(--spacing-sm) var(--spacing-md)' }}>{config.leagueName}</td>
+                  <td style={{ padding: 'var(--spacing-sm) var(--spacing-md)' }}>{config.costModel}</td>
+                  <td style={{ padding: 'var(--spacing-sm) var(--spacing-md)', textAlign: 'right' }}>€{(config.baseRateOverride ?? 50).toFixed(2)}</td>
+                  <td style={{ padding: 'var(--spacing-sm) var(--spacing-md)', textAlign: 'right' }}>{config.expectedTeamsCount}</td>
                 </tr>
               ))}
             </tbody>
@@ -96,42 +86,34 @@ export function OfferCardExpanded({
         </div>
       </div>
 
-      {/* Total Revenue */}
-      <div
-        style={{
-          marginBottom: '1rem',
-          padding: '0.75rem',
-          backgroundColor: '#e7f3ff',
-          borderRadius: '4px',
-          textAlign: 'right',
-          fontWeight: '600',
-          color: '#0d6efd',
-        }}
-      >
-        Total Expected Revenue: €{totalRevenue.toFixed(2)}
-      </div>
-
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
-        {onViewDetails && (
-          <button className="btn btn-primary btn-sm" onClick={onViewDetails}>
-            View Details
-          </button>
-        )}
-        {onEdit && (
-          <button className="btn btn-secondary btn-sm" onClick={onEdit}>
-            Edit
-          </button>
-        )}
-        {onDelete && (
-          <button
-            className="btn btn-outline btn-sm"
-            style={{ color: '#dc3545' }}
-            onClick={onDelete}
-          >
-            Delete
-          </button>
-        )}
+      {/* Footer Actions & Revenue */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--spacing-md)' }}>
+        <div style={{ textAlign: 'left' }}>
+           <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', display: 'block', textTransform: 'uppercase' }}>Total Expected</span>
+           <strong style={{ color: 'var(--primary-color)', fontSize: 'var(--font-size-md)' }}>€{totalRevenue.toFixed(2)}</strong>
+        </div>
+        
+        <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
+          {onViewDetails && (
+            <button className="btn btn-primary btn-sm" onClick={onViewDetails}>
+              View details
+            </button>
+          )}
+          {onEdit && (
+            <button className="btn btn-outline btn-sm" onClick={onEdit}>
+              Edit
+            </button>
+          )}
+          {onDelete && (
+            <button
+              className="btn btn-outline btn-sm"
+              style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
+              onClick={onDelete}
+            >
+              Delete
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

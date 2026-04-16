@@ -43,20 +43,29 @@ export function ConfigDetailPage() {
 
       {stats && (
         <section className="responsive-flex" style={{ marginBottom: 'var(--spacing-xl)' }}>
-          <div className="card" style={{ flex: 1, borderTop: '4px solid var(--primary-color)', padding: 'var(--spacing-lg)' }}>
-            <p style={{ margin: '0 0 var(--spacing-xs) 0', color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Live Gross</p>
-            <h2 style={{ margin: 0, color: 'var(--primary-color)', fontSize: 'var(--font-size-xl)' }}>{stats.gross.toFixed(2)} €</h2>
-            <p style={{ margin: 'var(--spacing-xs) 0 0 0', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>
-              {stats.liveParticipationCount} {config.costModel === 'SEASON' ? 'teams' : 'participations'}
-            </p>
+          <div className="summary-card" style={{ flex: 1 }}>
+            <div className="summary-card-icon" style={{ color: 'var(--primary-color)', background: 'var(--primary-color)15' }}>G</div>
+            <div>
+              <span className="summary-card-label">Live Gross</span>
+              <strong className="summary-card-value">{stats.gross.toFixed(2)} €</strong>
+              <p style={{ margin: 'var(--spacing-xs) 0 0 0', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+                {stats.liveParticipationCount} {config.costModel === 'SEASON' ? 'teams' : 'participations'}
+              </p>
+            </div>
           </div>
-          <div className="card" style={{ flex: 1, borderTop: '4px solid var(--danger-color)', padding: 'var(--spacing-lg)' }}>
-            <p style={{ margin: '0 0 var(--spacing-xs) 0', color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Discount</p>
-            <h2 style={{ margin: 0, color: 'var(--danger-color)', fontSize: 'var(--font-size-xl)' }}>-{stats.discount.toFixed(2)} €</h2>
+          <div className="summary-card" style={{ flex: 1 }}>
+            <div className="summary-card-icon" style={{ color: 'var(--danger-color)', background: 'var(--danger-color)15' }}>D</div>
+            <div>
+              <span className="summary-card-label">Total Discount</span>
+              <strong className="summary-card-value" style={{ color: 'var(--danger-color)' }}>-{stats.discount.toFixed(2)} €</strong>
+            </div>
           </div>
-          <div className="card" style={{ flex: 1, borderTop: '4px solid var(--success-color)', padding: 'var(--spacing-lg)' }}>
-            <p style={{ margin: '0 0 var(--spacing-xs) 0', color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Live Net</p>
-            <h2 style={{ margin: 0, color: 'var(--success-color)', fontSize: 'var(--font-size-xl)' }}>{stats.net.toFixed(2)} €</h2>
+          <div className="summary-card" style={{ flex: 1 }}>
+            <div className="summary-card-icon" style={{ color: 'var(--success-color)', background: 'var(--success-color)15' }}>N</div>
+            <div>
+              <span className="summary-card-label">Live Net</span>
+              <strong className="summary-card-value" style={{ color: 'var(--success-color)' }}>{stats.net.toFixed(2)} €</strong>
+            </div>
           </div>
         </section>
       )}
