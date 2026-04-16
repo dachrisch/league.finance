@@ -8,6 +8,7 @@ import { dashboardRouter } from './finance/dashboard';
 import { calculateRouter } from './finance/calculate';
 import { associationsRouter } from './finance/associations';
 import { offersRouter } from './finance/offers';
+import { offersSendRouter } from './finance/offers-send';
 import { contactsRouter } from './finance/contacts';
 import { leaguesRouter } from './finance/leagues';
 import { seasonsRouter } from './finance/seasons';
@@ -25,6 +26,7 @@ export const appRouter = router({
     calculate: calculateRouter,
     associations: associationsRouter,
     offers: offersRouter,
+    offersSend: offersSendRouter,
     contacts: contactsRouter,
     leagues: leaguesRouter,
     seasons: seasonsRouter,

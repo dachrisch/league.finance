@@ -6,6 +6,7 @@ import { JwtPayloadSchema } from '../../shared/schemas/user';
 
 export interface Context {
   user: JwtPayload | null;
+  accessToken?: string;
 }
 
 export function createInnerTRPCContext(partial: Partial<Context> = {}): Context {
@@ -32,7 +33,12 @@ export function createContext({ req }: trpcExpress.CreateExpressContextOptions):
   try {
     const verifiedPayload = jwt.verify(token, process.env.JWT_SECRET!, { algorithms: ['HS256'] });
     const payload = JwtPayloadSchema.parse(verifiedPayload);
-    return { user: payload };
+
+    // Extract access token from cookies or Authorization header
+    const accessToken = (req.cookies as Record<string, string>)?.access_token ||
+                       req.headers.authorization?.replace('Bearer ', '');
+
+    return { user: payload, accessToken };
   } catch {
     return { user: null };
   }
