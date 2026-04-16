@@ -1,7 +1,7 @@
 import { Schema, model, Document, Types } from 'mongoose';
 
 export interface IOffer extends Document {
-  status: 'draft' | 'sent' | 'accepted';
+  status: 'draft' | 'sending' | 'sent' | 'accepted';
   associationId: string;
   seasonId: number;
   leagueIds: number[];
@@ -9,6 +9,19 @@ export interface IOffer extends Document {
   financialConfigId?: Types.ObjectId;
   sentAt?: Date;
   acceptedAt?: Date;
+  emailMetadata?: {
+    sentVia?: 'gmail' | null;
+    messageId?: string;
+    driveFileId?: string;
+    driveFolderId?: string;
+    driveLink?: string;
+    recipientEmail?: string;
+    sentAt?: Date;
+    lastSendAttempt?: Date;
+    failureReason?: string;
+  };
+  sendJobId?: string;
+  sendJobAttempts?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,7 +30,7 @@ const OfferSchema = new Schema<IOffer>(
   {
     status: {
       type: String,
-      enum: ['draft', 'sent', 'accepted'],
+      enum: ['draft', 'sending', 'sent', 'accepted'],
       default: 'draft',
     },
     associationId: { type: String, required: true },
@@ -34,16 +47,36 @@ const OfferSchema = new Schema<IOffer>(
     financialConfigId: { type: Schema.Types.ObjectId, ref: 'FinancialConfig' },
     sentAt: { type: Date },
     acceptedAt: { type: Date },
+    emailMetadata: {
+      sentVia: {
+        type: String,
+        enum: ['gmail'],
+        default: null,
+      },
+      messageId: String,
+      driveFileId: String,
+      driveFolderId: String,
+      driveLink: String,
+      recipientEmail: String,
+      sentAt: Date,
+      lastSendAttempt: Date,
+      failureReason: String,
+    },
+    sendJobId: String,
+    sendJobAttempts: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
 
-// Unique partial index: prevents duplicate draft/sent offers for same association-season
+// Unique partial index: prevents duplicate draft/sending/sent offers for same association-season
 // but allows new draft offers after acceptance
 OfferSchema.index(
   { associationId: 1, seasonId: 1, status: 1 },
   {
-    partialFilterExpression: { status: { $in: ['draft', 'sent'] } },
+    partialFilterExpression: { status: { $in: ['draft', 'sending', 'sent'] } },
     unique: true,
   }
 );
