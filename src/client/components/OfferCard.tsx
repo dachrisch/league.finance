@@ -126,59 +126,61 @@ export function OfferCard({
         overflow: 'hidden',
         transition: 'all var(--transition-normal)',
       }}>
-        {isExpanded && children ? (
-          children
-        ) : (
-          <div style={{ padding: '0 var(--spacing-lg) var(--spacing-lg) calc(28px + var(--spacing-md) + var(--spacing-lg))' }}>
-            <div style={{ marginBottom: 'var(--spacing-md)', fontSize: 'var(--font-size-sm)', color: 'var(--text-main)' }}>
-              <span style={{ fontWeight: 'bold' }}>Leagues:</span> {leagueCount} selected
-              {leagueCount > 0 && leagueNames.length > 0 && (
-                <span style={{ color: 'var(--text-muted)' }}> ({leagueNames.slice(0, 3).join(', ')}{leagueCount > 3 ? '...' : ''})</span>
-              )}
+        <div style={{ padding: '0 var(--spacing-lg) var(--spacing-lg) calc(28px + var(--spacing-md) + var(--spacing-lg))' }}>
+          <div style={{ marginBottom: 'var(--spacing-md)', fontSize: 'var(--font-size-sm)', color: 'var(--text-main)' }}>
+            <span style={{ fontWeight: 'bold' }}>Leagues:</span> {leagueCount} selected
+            {leagueCount > 0 && leagueNames.length > 0 && (
+              <span style={{ color: 'var(--text-muted)' }}> ({leagueNames.slice(0, 3).join(', ')}{leagueCount > 3 ? '...' : ''})</span>
+            )}
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)' }}>
+              Created {getTimeAgoText(createdAt)}
             </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)' }}>
-                Created {getTimeAgoText(createdAt)}
-              </div>
 
-              <div style={{ display: 'flex', gap: 'var(--spacing-xs)' }}>
+            <div style={{ display: 'flex', gap: 'var(--spacing-xs)' }}>
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onView ? onView() : navigate(`/offers/${id}`);
+                }}
+              >
+                View
+              </button>
+              {(status === 'draft' || status === 'sending') && onSend && (
                 <button
-                  className="btn btn-ghost btn-sm"
+                  className="btn btn-primary btn-sm"
+                  style={{ background: 'var(--success-color)' }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onView ? onView() : navigate(`/offers/${id}`);
+                    onSend();
+                  }}
+                  disabled={status === 'sending'}
+                >
+                  Send
+                </button>
+              )}
+              {status === 'draft' && onDelete && (
+                <button
+                  className="btn btn-outline btn-sm"
+                  style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
                   }}
                 >
-                  View
+                  Delete
                 </button>
-                {(status === 'draft' || status === 'sending') && onSend && (
-                  <button
-                    className="btn btn-primary btn-sm"
-                    style={{ background: 'var(--success-color)' }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSend();
-                    }}
-                    disabled={status === 'sending'}
-                  >
-                    Send
-                  </button>
-                )}
-                {status === 'draft' && onDelete && (
-                  <button
-                    className="btn btn-outline btn-sm"
-                    style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete();
-                    }}
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
+              )}
             </div>
+          </div>
+        </div>
+
+        {isExpanded && children && (
+          <div style={{ borderTop: '1px solid var(--border-color)', marginTop: 'var(--spacing-md)' }}>
+            {children}
           </div>
         )}
       </div>
