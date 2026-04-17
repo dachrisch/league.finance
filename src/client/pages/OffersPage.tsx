@@ -12,8 +12,19 @@ export function OffersPage() {
 
   // Fetch offers, associations, and seasons
   const { data: offers = [], isLoading: offersLoading, refetch } = trpc.finance.offers.list.useQuery({});
-  const { data: associations = [] } = trpc.finance.associations.list.useQuery();
-  const { data: seasons = [] } = trpc.finance.seasons.list.useQuery();
+  const { data: associations = [], isError: assocError, error: assocErrorObj } = trpc.finance.associations.list.useQuery();
+  const { data: seasons = [], isError: seasonsError, error: seasonsErrorObj } = trpc.finance.seasons.list.useQuery();
+
+  // Check for errors
+  const hasError = assocError || seasonsError;
+  const getErrorMessage = (error: any): string => {
+    if (!error) return 'Failed to load data';
+    if (typeof error === 'string') return error;
+    if (error.message) return error.message;
+    if (error.data?.message) return error.data.message;
+    return 'Failed to load data';
+  };
+  const errorMessage = getErrorMessage(assocErrorObj) || getErrorMessage(seasonsErrorObj);
 
   // Mutations
   const deleteOffer = trpc.finance.offers.delete.useMutation({
@@ -72,6 +83,35 @@ export function OffersPage() {
 
   if (offersLoading) {
     return <div className="container"><p>Loading offers...</p></div>;
+  }
+
+  if (hasError) {
+    const displayError = errorMessage || 'Unknown error - database may be unavailable';
+    return (
+      <div className="container" style={{ paddingTop: 'var(--spacing-xl)' }}>
+        <div className="card" style={{
+          padding: 'var(--spacing-xl)',
+          background: '#fef2f2',
+          borderColor: 'var(--danger-color)',
+          border: '1px solid',
+          borderRadius: 'var(--border-radius-lg)',
+          minHeight: '200px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center'
+        }}>
+          <p style={{ margin: 0, color: 'var(--danger-color)', fontSize: 'var(--font-size-lg)', fontWeight: 'var(--font-weight-semibold)' }}>
+            ✕ Unable to Load Offers
+          </p>
+          <p style={{ margin: 'var(--spacing-sm) 0 0 0', color: 'var(--danger-color)', fontSize: 'var(--font-size-sm)', minHeight: '1.5em' }}>
+            {displayError}
+          </p>
+          <p style={{ margin: 'var(--spacing-md) 0 0 0', color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)' }}>
+            Please check your database connection or try again later.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
