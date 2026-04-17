@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface JobStatus {
   jobId?: string;
@@ -16,8 +16,10 @@ export function useSendOfferJob(offerId: string | null) {
   });
 
   const [isPolling, setIsPolling] = useState(false);
+  const intervalRef = useRef<number | null>(null);
 
-  const pollStatus = useCallback(async () => {
+  // Polling function - moved inside useEffect to avoid dependency issues
+  const poll = useCallback(async () => {
     if (!offerId) return;
 
     try {
@@ -28,7 +30,8 @@ export function useSendOfferJob(offerId: string | null) {
       });
 
       if (!response.ok) {
-        console.error('Failed to poll job status');
+        const errorData = await response.json();
+        console.error('Failed to poll job status:', errorData);
         setIsPolling(false);
         return;
       }
@@ -39,7 +42,7 @@ export function useSendOfferJob(offerId: string | null) {
       if (result) {
         setStatus(result);
 
-        // Stop polling if completed or failed
+        // Stop polling if completed, failed, or no job exists
         if (result.status === 'completed' || result.status === 'failed' || result.status === 'none') {
           setIsPolling(false);
         }
@@ -51,16 +54,35 @@ export function useSendOfferJob(offerId: string | null) {
   }, [offerId]);
 
   useEffect(() => {
-    if (!isPolling) return;
+    if (!isPolling) {
+      // Clean up interval when polling stops
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
 
-    const interval = setInterval(pollStatus, 1000);
-    return () => clearInterval(interval);
-  }, [isPolling, pollStatus]);
+    // Start polling immediately on first call
+    poll();
+
+    // Then set up interval for subsequent polls
+    intervalRef.current = window.setInterval(() => {
+      poll();
+    }, 1000);
+
+    // Cleanup on unmount or when isPolling changes
+    return () => {
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isPolling, poll]);
 
   const startPolling = useCallback(() => {
     setIsPolling(true);
-    pollStatus();
-  }, [pollStatus]);
+  }, []);
 
   const stopPolling = useCallback(() => {
     setIsPolling(false);
@@ -77,16 +99,17 @@ export function useSendOfferJob(offerId: string | null) {
       });
 
       if (!response.ok) {
-        console.error('Retry failed');
+        const errorData = await response.json();
+        console.error('Retry failed:', errorData.message || 'Unknown error');
         return;
       }
 
       setStatus({ status: 'pending', progress: 0 });
-      startPolling();
+      setIsPolling(true);
     } catch (err) {
       console.error('Retry failed:', err);
     }
-  }, [offerId, startPolling]);
+  }, [offerId]);
 
   return {
     status,

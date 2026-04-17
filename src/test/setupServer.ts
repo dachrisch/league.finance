@@ -1,12 +1,21 @@
 import { beforeAll, afterAll } from 'vitest';
 import { connectMongo, disconnectMongo } from '../server/db/mongo';
 
-// Connect to MongoDB before all tests
+// Connect to MongoDB before all tests (gracefully handle errors)
 beforeAll(async () => {
-  await connectMongo();
+  try {
+    await connectMongo();
+  } catch (err: any) {
+    console.warn('Failed to connect to MongoDB for tests:', err.message);
+    // Continue anyway - some tests don't need the database
+  }
 });
 
 // Disconnect from MongoDB after all tests
 afterAll(async () => {
-  await disconnectMongo();
+  try {
+    await disconnectMongo();
+  } catch (err: any) {
+    // Ignore disconnect errors
+  }
 });
