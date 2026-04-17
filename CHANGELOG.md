@@ -2,6 +2,64 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.12](https://github.com/dachrisch/league.finance/compare/v0.1.8...v0.1.12) (2026-04-17)
+
+
+### Features
+
+* add DriveService for uploading PDFs to Google Drive ([be500f3](https://github.com/dachrisch/league.finance/commit/be500f3b456cf574317ea2dff85029b27c2eb5db))
+* add emailMetadata and job tracking fields to Offer model ([e76d720](https://github.com/dachrisch/league.finance/commit/e76d720aec3a0afddf814e35fbde0d0921ae09e2))
+* add GmailService for sending offer emails ([412a8c2](https://github.com/dachrisch/league.finance/commit/412a8c225e02ee37726f561f92a15be166b4cb4a))
+* add in-memory mock queue for development mode ([a18b69f](https://github.com/dachrisch/league.finance/commit/a18b69f7ce32823e9c2836bb517c2c78f40bbfdb))
+* add PdfService for generating professional offer PDFs with puppeteer ([3927940](https://github.com/dachrisch/league.finance/commit/3927940c6df1f1bde46be235baf9e8b86ebc80b4))
+* add send button and status column to OfferTable ([3f364f3](https://github.com/dachrisch/league.finance/commit/3f364f346dcf9217a66d681312bf375937aaddc1))
+* add sendOffer, getOfferSendStatus, and retryOfferSend tRPC procedures ([e5e6519](https://github.com/dachrisch/league.finance/commit/e5e651988d7aced2d6d7754503d3379137190354))
+* add SendOfferDialog component with progress tracking ([7a73b65](https://github.com/dachrisch/league.finance/commit/7a73b6556a77e68e7c1a043d432359378cf1a504))
+* add SendOfferJob worker with three-stage processing pipeline ([952256c](https://github.com/dachrisch/league.finance/commit/952256c575fcad3ed3ab55b583cde2e528745b06))
+* add toast notifications to OffersPage for send feedback ([407cf68](https://github.com/dachrisch/league.finance/commit/407cf680baed2dc25f96aafd202ec275b06ae11e))
+* add useSendOfferJob hook for polling job status ([960a526](https://github.com/dachrisch/league.finance/commit/960a52639aa400d1188cb5fb0a4bf5e4d80e6a6a))
+* **components:** add LeagueSelectorSection and CategoryGroup for Step 2 ([e171138](https://github.com/dachrisch/league.finance/commit/e1711389e36f1af0f928baea7f76271510bde2d0))
+* **components:** add PricingSection component for Step 2 ([9ae014a](https://github.com/dachrisch/league.finance/commit/9ae014a6ce1558c4b4985dcaccdd5c3076f447df))
+* **components:** add SeasonBlock component ([179e8f1](https://github.com/dachrisch/league.finance/commit/179e8f12f4ef6547b69890075c069f135c38a9c2))
+* **components:** add Step1 container component ([942b71d](https://github.com/dachrisch/league.finance/commit/942b71d4f39a1a6f6678e9acfeb7e7c7851aaf97))
+* **components:** add Step2 container component ([cc3d78d](https://github.com/dachrisch/league.finance/commit/cc3d78dddd2aa69f55c8dceb028852ffb5137d5e))
+* **components:** add SummarySection component for Step 2 ([3b771d6](https://github.com/dachrisch/league.finance/commit/3b771d62f457a7fa9cf00c04f9262ba481467251))
+* **components:** add UseExistingBlock component ([77f4ce7](https://github.com/dachrisch/league.finance/commit/77f4ce767a19df078cd7eac8cac7e30076f6a5b1))
+* **components:** integrate OfferCreateWizard with tRPC and state hook ([e69eff5](https://github.com/dachrisch/league.finance/commit/e69eff54f34610d1e71bc2898477ff29bf703b17))
+* **db:** add migration script to fix financial config index ([ec0cb65](https://github.com/dachrisch/league.finance/commit/ec0cb65aeeca3c331a27237a40ded367910ec92f))
+* **hooks:** add text extraction utilities for contact info ([2dc95c2](https://github.com/dachrisch/league.finance/commit/2dc95c2d18ad79a3762ab4a1ba15c71af81526c1))
+* implement offer send workflow with PDF generation, Google Drive upload, and Gmail integration ([2715708](https://github.com/dachrisch/league.finance/commit/27157080ee1a164615118660fb30a4220dbb38bc))
+* multi-league selection on dashboard for quick offer creation ([4f5adcf](https://github.com/dachrisch/league.finance/commit/4f5adcfff1c612bf72030fc344ad0e711b665228))
+* **pages:** add OfferNewPage for redesigned offer creation ([74d091b](https://github.com/dachrisch/league.finance/commit/74d091b0403a0d420c2933fa0c28711339eeeecc))
+* **routing:** route /offers/new to the redesigned wizard ([6b4c677](https://github.com/dachrisch/league.finance/commit/6b4c677d0395631493b96e0c3a27a8374d4edf1b))
+
+
+### Bug Fixes
+
+* **a11y:** add ARIA attributes and roles to the offer wizard ([7eb3049](https://github.com/dachrisch/league.finance/commit/7eb30497b632de7c2bd6bcbbb05bfd301cac8e4e))
+* adjust test matchers and component attributes for reliable element detection in CI ([d1a5012](https://github.com/dachrisch/league.finance/commit/d1a501230e5ac2d6b7b28ad89da2534d3dd73b19))
+* cleanup polling interval on component unmount to prevent memory leak ([97227c8](https://github.com/dachrisch/league.finance/commit/97227c8830b6b6948f7c48674a6be27bfb169762))
+* correct job queue integration and price computation in SendOfferJob ([05b740d](https://github.com/dachrisch/league.finance/commit/05b740d2fa7f1c167b5df746ab4de4a95f662181))
+* correct tRPC endpoints, fix useEffect loop, add error handling and tests to useSendOfferJob ([a61763d](https://github.com/dachrisch/league.finance/commit/a61763d47f877a9587fed9668b5871db7f6a9fd7))
+* correct TypeScript types in PdfService for Puppeteer Uint8Array ([5325556](https://github.com/dachrisch/league.finance/commit/532555614ed009ff08cb0dfe6915b4a1204feebf))
+* ensure action buttons are always accessible to tests and use stable test IDs ([f280d7e](https://github.com/dachrisch/league.finance/commit/f280d7e399d7d01a93ce188e690a05f3fbf3a0e5))
+* ensure OfferCard buttons are always rendered and accessible to tests ([1610925](https://github.com/dachrisch/league.finance/commit/16109254c17fe2ef81e422ba1f7015b4ef77dc80))
+* **finance:** resolve offer creation failures from pasted data ([93161ef](https://github.com/dachrisch/league.finance/commit/93161ef0f022ff8810be95dc22c1776bb995a357))
+* **finance:** unified extraction logic and fixed address parsing ([32dc012](https://github.com/dachrisch/league.finance/commit/32dc0127566b5308d41fbab20d767f0863851374))
+* offer creation and display issues ([1ffcb4e](https://github.com/dachrisch/league.finance/commit/1ffcb4e56a2ec56c5af69938f44162d2ecc00734))
+* replace paste template placeholder with dummy data, add mobile bottom nav ([5b80d49](https://github.com/dachrisch/league.finance/commit/5b80d490abc2dc782f0bd395514733934bcc4627))
+* resolve CI test regressions by updating components to match test expectations and new designs ([d790527](https://github.com/dachrisch/league.finance/commit/d790527c1cde1330f0da804ac3ec0fc09b669628))
+* resolve missing extraction utils imports in components ([1f9c0fa](https://github.com/dachrisch/league.finance/commit/1f9c0fad4edf0630f87a067999efec6392cad7d6))
+* reveal hidden buttons in OfferCard for tests and use more flexible character matchers ([c736e05](https://github.com/dachrisch/league.finance/commit/c736e055e6afb1625c393333fd0ce9332c110172))
+* simplify OfferCard structure to assist test element discovery ([c149a55](https://github.com/dachrisch/league.finance/commit/c149a55fa45f03d7fcda0f11674a09376a43111b))
+* **ui:** add block expand/collapse to SeasonBlock ([afe0ff2](https://github.com/dachrisch/league.finance/commit/afe0ff283fdd1fcd923d5c24b2c449966faa7d00))
+* **ui:** add block expand/collapse toggle for offer wizard ([669ed0c](https://github.com/dachrisch/league.finance/commit/669ed0c9917a8b9b139ec6315675eae87d8833a1))
+* **ui:** remove unnecessary minHeight from OfferNewPage to eliminate scrollbar ([8259599](https://github.com/dachrisch/league.finance/commit/8259599fb86fd8600a0029fe2b1fe5f559140064))
+* update redis v5 API compatibility in queue initialization ([61d76e3](https://github.com/dachrisch/league.finance/commit/61d76e31659a4a6cf3c83896d4de5d3a91155c52))
+* update tests and components to correctly match UI changes and element targeting ([f9f8498](https://github.com/dachrisch/league.finance/commit/f9f8498331ddaf3cd26d1d541e7309d6273d00e6))
+* use Bull v4 API compatible configuration ([9db1841](https://github.com/dachrisch/league.finance/commit/9db18411725629a67f71732b68e8a28ee4fe7da8))
+* use correct Bull v4 QueueOptions API for redis config ([72c1315](https://github.com/dachrisch/league.finance/commit/72c1315f12ca5b9810eea091905cd22484522adf))
+
 ### [0.1.11](https://github.com/dachrisch/league.finance/compare/v0.1.10...v0.1.11) (2026-04-16)
 
 ### [0.1.10](https://github.com/dachrisch/league.finance/compare/v0.1.9...v0.1.10) (2026-04-16)
