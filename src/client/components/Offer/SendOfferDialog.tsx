@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 
 interface SendOfferDialogProps {
   open: boolean;
@@ -31,6 +31,16 @@ export function SendOfferDialog({
   const [selectedFolderId, setSelectedFolderId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState<JobProgress | null>(null);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup polling interval on component unmount
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
+  }, []);
 
   const handleSelectFolder = useCallback(async () => {
     // This would integrate with Google Drive Picker API
@@ -75,7 +85,7 @@ export function SendOfferDialog({
       const maxAttempts = 60;
       let attempts = 0;
 
-      const pollInterval = setInterval(async () => {
+      pollIntervalRef.current = setInterval(async () => {
         attempts++;
 
         try {
@@ -86,7 +96,8 @@ export function SendOfferDialog({
           });
 
           if (!statusResponse.ok) {
-            clearInterval(pollInterval);
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
             setIsLoading(false);
             onError('Failed to check job status');
             return;
@@ -107,22 +118,26 @@ export function SendOfferDialog({
           });
 
           if (status === 'completed') {
-            clearInterval(pollInterval);
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
             setIsLoading(false);
             onSuccess(driveLink);
             setTimeout(onClose, 1000);
           } else if (status === 'failed') {
-            clearInterval(pollInterval);
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
             setIsLoading(false);
             onError(error || 'Job failed to complete');
           } else if (attempts >= maxAttempts) {
-            clearInterval(pollInterval);
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
             setIsLoading(false);
             onError('Job timeout - took too long to complete');
           }
         } catch (pollError: any) {
           console.error('Poll error:', pollError);
-          clearInterval(pollInterval);
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
           setIsLoading(false);
           onError('Error checking job status: ' + pollError.message);
         }
