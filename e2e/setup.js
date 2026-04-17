@@ -43,116 +43,51 @@ async function globalSetup() {
     }
     console.log('✓ Test user authenticated\n');
 
-    // Step 2: Create associations in MongoDB directly
-    console.log('📝 Creating test associations...');
-    try {
-      const mongoose = require('mongoose');
+    // Step 2: Check test preconditions
+    console.log('🔍 Checking test preconditions...\n');
 
-      // Connect to MongoDB
-      const mongoUrl = process.env.MONGODB_URI || 'mongodb://localhost:27017/leagues-finance';
-      await mongoose.connect(mongoUrl);
+    const assocResponse = await page.request.get('http://localhost:3000/trpc/finance.associations.list');
+    const assocData = await assocResponse.json();
+    const associations = assocData[0]?.result?.data || [];
 
-      // Import the Association model
-      const { Association } = require('./src/server/models/Association');
+    const leaguesResponse = await page.request.get('http://localhost:3000/trpc/teams.leagues');
+    const leaguesData = await leaguesResponse.json();
+    const leagues = leaguesData[0]?.result?.data || [];
 
-      const testAssociations = [
-        {
-          name: 'Test Association 1',
-          address: {
-            street: '123 Test Street',
-            city: 'Test City',
-            postalCode: '12345',
-            country: 'Germany',
-          },
-        },
-        {
-          name: 'Test Association 2',
-          address: {
-            street: '456 Test Avenue',
-            city: 'Another City',
-            postalCode: '67890',
-            country: 'Germany',
-          },
-        },
-      ];
+    const seasonsResponse = await page.request.get('http://localhost:3000/trpc/teams.seasons');
+    const seasonsData = await seasonsResponse.json();
+    const seasons = seasonsData[0]?.result?.data || [];
 
-      for (const assoc of testAssociations) {
-        // Check if already exists
-        const existing = await Association.findOne({ name: assoc.name });
-        if (existing) {
-          console.log(`  ✓ Association already exists: ${assoc.name}`);
-        } else {
-          await Association.create(assoc);
-          console.log(`  ✓ Created association: ${assoc.name}`);
-        }
+    console.log('Preconditions Status:');
+    console.log(`  🏢 Associations: ${associations.length} available`);
+    console.log(`  ⚽ Leagues: ${leagues.length} available`);
+    console.log(`  📅 Seasons: ${seasons.length} available`);
+
+    // Fail if preconditions are not met
+    const missingData = [];
+    if (associations.length === 0) missingData.push('Associations');
+    if (leagues.length === 0) missingData.push('Leagues');
+    if (seasons.length === 0) missingData.push('Seasons');
+
+    if (missingData.length > 0) {
+      console.log(`\n❌ Missing test data: ${missingData.join(', ')}`);
+      console.log('\nTo fix:');
+      if (associations.length === 0) {
+        console.log('  1. Create associations:');
+        console.log('     - Navigate to http://localhost:5173');
+        console.log('     - Go to Settings or Admin section');
+        console.log('     - Create at least one association');
       }
-
-      await mongoose.disconnect();
-    } catch (error) {
-      throw new Error(`Failed to create associations: ${error.message}`);
-    }
-    console.log();
-
-    // Step 3: Create leagues in MySQL
-    console.log('⚽ Creating test leagues in MySQL...');
-    const mysqlConnection = await mysql.createConnection({
-      host: process.env.MYSQL_HOST || 'localhost',
-      user: process.env.MYSQL_USER || 'root',
-      password: process.env.MYSQL_PASSWORD || '',
-      database: process.env.MYSQL_DATABASE || 'gamedays',
-    });
-
-    try {
-      // Check if test leagues exist
-      const [existingLeagues] = await mysqlConnection.query(
-        'SELECT id FROM gamedays_league WHERE slug IN ("test-league-1", "test-league-2") LIMIT 2'
-      );
-
-      if (existingLeagues.length < 2) {
-        // Create test leagues
-        const leagues = [
-          ['test-league-1', 'Test League 1'],
-          ['test-league-2', 'Test League 2'],
-        ];
-
-        for (const [slug, name] of leagues) {
-          await mysqlConnection.query(
-            'INSERT IGNORE INTO gamedays_league (slug, name) VALUES (?, ?)',
-            [slug, name]
-          );
-        }
-        console.log('  ✓ Created test leagues');
-      } else {
-        console.log('  ✓ Test leagues already exist');
+      if (leagues.length === 0 || seasons.length === 0) {
+        console.log('  2. Database seeding:');
+        console.log('     - Connect to production MySQL database');
+        console.log('     - Ensure gamedays_league and gamedays_season have data');
+        console.log('     - Or configure test database with sample data');
       }
-
-      // Step 4: Create seasons in MySQL
-      console.log('📅 Creating test seasons in MySQL...');
-      const [existingSeasons] = await mysqlConnection.query(
-        'SELECT id FROM gamedays_season WHERE slug IN ("test-2026", "test-2025") LIMIT 2'
-      );
-
-      if (existingSeasons.length < 2) {
-        const seasons = [
-          ['test-2026', '2026'],
-          ['test-2025', '2025'],
-        ];
-
-        for (const [slug, name] of seasons) {
-          await mysqlConnection.query(
-            'INSERT IGNORE INTO gamedays_season (slug, name) VALUES (?, ?)',
-            [slug, name]
-          );
-        }
-        console.log('  ✓ Created test seasons');
-      } else {
-        console.log('  ✓ Test seasons already exist');
-      }
-    } finally {
-      await mysqlConnection.end();
+      throw new Error(`Missing test preconditions: ${missingData.join(', ')}`);
     }
 
-    console.log('\n✅ Test preconditions ready!\n');
+    console.log('\n✅ All test preconditions met!\n');
   } catch (error) {
     console.error('\n❌ Setup failed! Tests will fail because preconditions are missing.\n');
     console.error('Error:', error.message);
