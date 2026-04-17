@@ -112,6 +112,49 @@ export function createApp() {
     res.redirect(`${CLIENT_URL}/login`);
   });
 
+  // Test auth endpoint (development only)
+  if (process.env.NODE_ENV === 'development') {
+    app.get('/auth/test-token', async (req, res) => {
+      try {
+        // Create or get test user
+        const testUser = await User.findOneAndUpdate(
+          { email: 'test@bumbleflies.de' },
+          {
+            $set: {
+              email: 'test@bumbleflies.de',
+              displayName: 'Test User',
+            },
+            $setOnInsert: {
+              role: 'admin',
+            },
+          },
+          { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+        );
+
+        // Create JWT token
+        const token = jwt.sign(
+          { userId: testUser._id.toString(), email: testUser.email, role: testUser.role },
+          process.env.JWT_SECRET!,
+          { expiresIn: '24h', algorithm: 'HS256' }
+        );
+
+        // Set cookie
+        res.cookie('auth_token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 24 * 60 * 60 * 1000,
+          path: '/',
+        });
+
+        // Return token in response (for API tests)
+        res.json({ token, userId: testUser._id });
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to create test token' });
+      }
+    });
+  }
+
   // tRPC handler
   app.use(
     '/trpc',

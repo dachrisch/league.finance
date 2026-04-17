@@ -1,9 +1,33 @@
-import { Page } from '@playwright/test';
+import { Page, BrowserContext } from '@playwright/test';
+
+// Track authenticated contexts to avoid re-auth
+const authenticatedContexts = new Set<BrowserContext>();
+
+// Utility to ensure the page is authenticated
+export async function ensurePageAuthenticated(page: Page): Promise<void> {
+  const context = page.context();
+
+  // Skip if already authenticated in this context
+  if (authenticatedContexts.has(context)) {
+    return;
+  }
+
+  // Call test auth endpoint to set auth cookie
+  const authResponse = await page.request.get('/auth/test-token');
+  if (!authResponse.ok()) {
+    throw new Error('Failed to authenticate: /auth/test-token returned ' + authResponse.status());
+  }
+
+  // Mark context as authenticated
+  authenticatedContexts.add(context);
+}
 
 // Utility to get auth token from backend
 export async function getAuthToken(page: Page): Promise<string> {
-  // Use the mock auth setup - in development mode, we can get a token from the server
-  const response = await page.request.get('/api/auth/test-token');
+  const response = await page.request.get('/auth/test-token');
+  if (!response.ok()) {
+    throw new Error('Failed to get test token');
+  }
   const data = await response.json();
   return data.token;
 }
@@ -14,6 +38,10 @@ export async function callTRPC(
   path: string,
   input: any = {}
 ) {
+  // Ensure authentication is set up
+  await ensurePageAuthenticated(page);
+
+  // Make the request with credentials (cookies will be sent automatically)
   const response = await page.request.get(
     `/trpc/${path}?input=${encodeURIComponent(JSON.stringify(input))}`,
     {
