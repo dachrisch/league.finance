@@ -15,11 +15,10 @@ test.describe('Backend Offer Creation Flow', () => {
     let seasons = await getSeasonsList(page);
     let associations = await getAssociationsList(page);
 
-    // Skip test if required data doesn't exist
-    if (leagues.length === 0 || seasons.length === 0 || associations.length === 0) {
-      test.skip();
-      return;
-    }
+    // Fail if test preconditions are not met (tests must fail, not skip)
+    expect(leagues.length).toBeGreaterThan(0);
+    expect(seasons.length).toBeGreaterThan(0);
+    expect(associations.length).toBeGreaterThan(0);
 
     const testLeague = leagues[0];
     const testSeason = seasons[0];
@@ -94,11 +93,10 @@ test.describe('Backend Offer Creation Flow', () => {
     let seasons = await getSeasonsList(page);
     let associations = await getAssociationsList(page);
 
-    // Skip if test data missing
-    if (leagues.length === 0 || seasons.length === 0 || associations.length === 0) {
-      test.skip();
-      return;
-    }
+    // Fail if test preconditions are not met
+    expect(leagues.length).toBeGreaterThan(0);
+    expect(seasons.length).toBeGreaterThan(0);
+    expect(associations.length).toBeGreaterThan(0);
 
     const testLeague = leagues[0];
     const testSeason = seasons[0];
@@ -159,11 +157,10 @@ test.describe('Backend Offer Creation Flow', () => {
     let seasons = await getSeasonsList(page);
     let associations = await getAssociationsList(page);
 
-    // Skip if test data missing
-    if (leagues.length === 0 || seasons.length === 0 || associations.length === 0) {
-      test.skip();
-      return;
-    }
+    // Fail if test preconditions are not met
+    expect(leagues.length).toBeGreaterThan(0);
+    expect(seasons.length).toBeGreaterThan(0);
+    expect(associations.length).toBeGreaterThan(0);
 
     const testLeague = leagues[0];
     const testSeason = seasons[0];
