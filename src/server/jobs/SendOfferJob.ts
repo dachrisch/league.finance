@@ -99,7 +99,17 @@ export class SendOfferJobHandler {
 
       const gmailService = new GmailService(accessToken);
       const leagueNames = configs.map((c) => leaguesMap[c.leagueId] || 'Unknown');
-      const totalPrice = configs.reduce((sum, c) => sum + (c.finalPrice || 0), 0);
+
+      // Compute prices for each config
+      const computePrice = (config: any) => {
+        const baseRate = config.baseRateOverride ?? 50; // DEFAULT_BASE_RATE
+        const basePrice = config.costModel === 'SEASON'
+          ? baseRate * config.expectedTeamsCount
+          : baseRate * config.expectedGamedaysCount * config.expectedTeamsPerGameday;
+        return config.customPrice != null ? config.customPrice : Math.round(basePrice * 100) / 100;
+      };
+
+      const totalPrice = configs.reduce((sum, c) => sum + computePrice(c), 0);
 
       const emailParams: SendEmailParams = {
         to: recipientEmail,
