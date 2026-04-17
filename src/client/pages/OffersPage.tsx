@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 import { OfferSummaryCards } from '../components/OfferSummaryCards';
 import { OfferTable } from '../components/OfferTable';
+import { Toast } from '../components/Toast';
 
 export function OffersPage() {
   const navigate = useNavigate();
-  
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+
   // Fetch offers, associations, and seasons
   const { data: offers = [], isLoading: offersLoading, refetch } = trpc.finance.offers.list.useQuery({});
   const { data: associations = [] } = trpc.finance.associations.list.useQuery();
@@ -28,6 +31,13 @@ export function OffersPage() {
     acc[s._id] = s.year;
     return acc;
   }, {});
+
+  // Helper function to show toast notifications
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage(message);
+    setToastType(type);
+    setTimeout(() => setToastMessage(null), 5000);
+  };
 
   // Calculate summary from offers
   const summary = {
@@ -104,10 +114,17 @@ export function OffersPage() {
             onSend={handleSendOffer}
             onEdit={handleEditOffer}
             onDelete={handleDeleteOffer}
+            onSendSuccess={() => showToast('Offer sent successfully!')}
+            onSendError={(message) => showToast(message, 'error')}
             isLoading={offersLoading || deleteOffer.isPending}
           />
         </div>
       </div>
+
+      {/* Toast Notifications */}
+      {toastMessage && (
+        <Toast message={toastMessage} type={toastType} />
+      )}
     </div>
   );
 }

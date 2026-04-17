@@ -11,6 +11,8 @@ interface OfferTableProps {
   onSend?: (id: string) => void;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onSendSuccess?: (driveLink: string) => void;
+  onSendError?: (message: string) => void;
   isLoading?: boolean;
 }
 
@@ -52,6 +54,8 @@ export function OfferTable({
   onSend,
   onEdit,
   onDelete,
+  onSendSuccess,
+  onSendError,
   isLoading = false,
 }: OfferTableProps) {
   const [sortBy, setSortBy] = useState<'createdAt' | 'seasonId' | 'status'>('createdAt');
@@ -69,14 +73,14 @@ export function OfferTable({
     // Show success message with the drive link
     const message = `Offer sent! View it here: ${driveLink}`;
     console.log(message);
-    // In a real app, you'd show a toast notification here
     setSendDialogOpen(false);
+    onSendSuccess?.(driveLink);
     // Could trigger a refetch of offers here if needed
   };
 
   const handleSendError = (message: string) => {
     console.error('Send error:', message);
-    // In a real app, you'd show an error toast notification here
+    onSendError?.(message);
   };
 
   const filteredOffers = filterStatus
