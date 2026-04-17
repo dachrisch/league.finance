@@ -1,29 +1,74 @@
 import Bull from 'bull';
 import type { RedisOptions } from 'ioredis';
 
-// Redis configuration for Bull v4
-const port = parseInt(process.env.REDIS_PORT || '6379', 10);
-if (isNaN(port)) {
-  throw new Error(`Invalid REDIS_PORT: ${process.env.REDIS_PORT}`);
+// In-memory mock queue for development
+class MockQueue {
+  private jobs = new Map<string, any>();
+  private jobId = 0;
+  private eventHandlers: { [key: string]: Function[] } = {};
+
+  async add(data: any, options?: any) {
+    const id = String(++this.jobId);
+    this.jobs.set(id, {
+      id,
+      state: 'completed' as const,
+      progress: () => 100,
+      getState: async () => 'completed' as const,
+      failedReason: undefined,
+      data,
+    });
+    return { id: parseInt(id) };
+  }
+
+  async getJob(id: string) {
+    return this.jobs.get(id) || null;
+  }
+
+  process(handler: Function) {
+    // Mock processor - jobs complete immediately
+  }
+
+  on(event: string, handler: Function) {
+    if (!this.eventHandlers[event]) {
+      this.eventHandlers[event] = [];
+    }
+    this.eventHandlers[event].push(handler);
+  }
+
+  async close() {
+    this.jobs.clear();
+  }
 }
 
-const redisConfig: RedisOptions = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port,
-};
+// Create queue - use mock in development, Redis in production
+export const offerSendQueue =
+  process.env.NODE_ENV === 'development'
+    ? new MockQueue()
+    : (() => {
+        const port = parseInt(process.env.REDIS_PORT || '6379', 10);
+        if (isNaN(port)) {
+          throw new Error(`Invalid REDIS_PORT: ${process.env.REDIS_PORT}`);
+        }
 
-// Create queue - pass redis config via QueueOptions
-export const offerSendQueue = new Bull('offer-send', { redis: redisConfig });
+        const redisConfig: RedisOptions = {
+          host: process.env.REDIS_HOST || 'localhost',
+          port,
+        };
 
-// Global error handlers
-offerSendQueue.on('error', (err) => {
-  console.error('[offer-send-queue] Queue error:', err.message || err);
-});
+        const queue = new Bull('offer-send', { redis: redisConfig });
 
-offerSendQueue.on('failed', (job, err) => {
-  console.error(`[offer-send-queue] Job ${job.id} failed: ${err.message}`);
-});
+        // Global error handlers
+        queue.on('error', (err) => {
+          console.error('[offer-send-queue] Queue error:', err.message || err);
+        });
+
+        queue.on('failed', (job, err) => {
+          console.error(`[offer-send-queue] Job ${job.id} failed: ${err.message}`);
+        });
+
+        return queue;
+      })();
 
 export async function closeQueues() {
-  await offerSendQueue.close();
+  await (offerSendQueue as any).close();
 }
