@@ -109,7 +109,7 @@ describe('OfferTable', () => {
     expect(sendButtons.length).toBeGreaterThan(0);
   });
 
-  it('calls onSend when send button is clicked', () => {
+  it('opens dialog when send button is clicked', () => {
     render(
       <OfferTable
         offers={mockOffers}
@@ -122,7 +122,10 @@ describe('OfferTable', () => {
     const sendButtons = screen.getAllByRole('button', { name: /Send/i });
     fireEvent.click(sendButtons[0]);
 
-    expect(mockOnSend).toHaveBeenCalledWith('1');
+    // The dialog should render with the recipient name and email from the selected offer
+    // Since the offer doesn't have contact info in the test, the dialog should still render
+    // but with empty recipient fields
+    expect(screen.queryByText(/Send Offer/i)).toBeInTheDocument();
   });
 
   it('filters offers by status', () => {

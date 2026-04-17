@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Offer } from '../lib/schemas';
+import { SendOfferDialog } from './Offer/SendOfferDialog';
+import { useSendOfferJob } from '../hooks/useSendOfferJob';
 
 interface OfferTableProps {
   offers: Offer[];
@@ -54,6 +56,28 @@ export function OfferTable({
 }: OfferTableProps) {
   const [sortBy, setSortBy] = useState<'createdAt' | 'seasonId' | 'status'>('createdAt');
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState<any>(null);
+  const { status: jobStatus } = useSendOfferJob(selectedOffer?._id || null);
+
+  const openSendDialog = (offer: any) => {
+    setSelectedOffer(offer);
+    setSendDialogOpen(true);
+  };
+
+  const handleSendSuccess = (driveLink: string) => {
+    // Show success message with the drive link
+    const message = `Offer sent! View it here: ${driveLink}`;
+    console.log(message);
+    // In a real app, you'd show a toast notification here
+    setSendDialogOpen(false);
+    // Could trigger a refetch of offers here if needed
+  };
+
+  const handleSendError = (message: string) => {
+    console.error('Send error:', message);
+    // In a real app, you'd show an error toast notification here
+  };
 
   const filteredOffers = filterStatus
     ? offers.filter((o) => o.status === filterStatus)
@@ -205,11 +229,11 @@ export function OfferTable({
                         Edit
                       </button>
                     )}
-                    {offer.status === 'draft' && onSend && (
+                    {offer.status === 'draft' && (
                       <button
                         className="btn btn-primary btn-sm"
                         style={{ background: 'var(--success-color)' }}
-                        onClick={() => onSend(offer._id)}
+                        onClick={() => openSendDialog(offer)}
                         disabled={isLoading}
                       >
                         Send
@@ -232,6 +256,18 @@ export function OfferTable({
           </tbody>
         </table>
       </div>
+
+      {/* Send Offer Dialog */}
+      <SendOfferDialog
+        open={sendDialogOpen}
+        offerId={selectedOffer?._id || ''}
+        recipientEmail={selectedOffer?.contactId?.email || ''}
+        recipientName={selectedOffer?.contactId?.name || ''}
+        totalPrice={selectedOffer?.finalPrice || 0}
+        onClose={() => setSendDialogOpen(false)}
+        onSuccess={handleSendSuccess}
+        onError={handleSendError}
+      />
     </div>
   );
 }
