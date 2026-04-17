@@ -57,7 +57,7 @@ describe('OfferSummaryCards', () => {
       />
     );
 
-    expect(screen.getByText('$5000.50')).toBeInTheDocument();
+    expect(screen.getByText('5000.50 €')).toBeInTheDocument();
   });
 
   it('handles zero values', () => {
@@ -88,6 +88,6 @@ describe('OfferSummaryCards', () => {
       />
     );
 
-    expect(screen.getByText('$1234.56')).toBeInTheDocument();
+    expect(screen.getByText('1234.56 €')).toBeInTheDocument();
   });
 });

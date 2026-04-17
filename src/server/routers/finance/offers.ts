@@ -9,6 +9,7 @@ import { FinancialConfig } from '../../models/FinancialConfig';
 import { Contact } from '../../models/Contact';
 import { getMysqlPool } from '../../db/mysql';
 import { extractContactInfo } from '../../../../shared/lib/extraction';
+import { offerSendQueue } from '../../lib/queue';
 
 const DEFAULT_BASE_RATE = 50;
 
@@ -329,5 +330,101 @@ export const offersRouter = router({
       }
 
       return computeConfigPrices(config.toObject(), leagueName);
+    }),
+
+  sendOffer: adminProcedure
+    .input(z.object({
+      offerId: z.string(),
+      driveFolderId: z.string(),
+      recipientEmail: z.string().email(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const offer = await Offer.findById(input.offerId);
+      if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
+      if (offer.status === 'sent') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Offer already sent' });
+
+      const job = await offerSendQueue.add({
+        offerId: input.offerId,
+        userId: ctx.user.userId,
+        driveFolderId: input.driveFolderId,
+        recipientEmail: input.recipientEmail,
+      });
+
+      return {
+        jobId: job.id,
+        status: 'queued',
+      };
+    }),
+
+  getOfferSendStatus: adminProcedure
+    .input(z.object({ offerId: z.string() }))
+    .query(async ({ input }) => {
+      const offer = await Offer.findById(input.offerId).lean();
+      if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      if (offer.status === 'sent') {
+        return {
+          status: 'completed' as const,
+          progress: 100,
+          driveLink: offer.emailMetadata?.driveLink,
+          completedAt: offer.sentAt,
+          error: undefined,
+        };
+      }
+
+      if (!offer.sendJobId) {
+        return { status: 'none' as const, progress: 0, error: undefined };
+      }
+
+      const job = await offerSendQueue.getJob(offer.sendJobId);
+      if (!job) {
+        // If job is gone but offer status is not 'sent', it must have failed or was cleaned up
+        return {
+          status: offer.emailMetadata?.failureReason ? 'failed' as const : 'none' as const,
+          progress: 0,
+          error: offer.emailMetadata?.failureReason,
+        };
+      }
+
+      const state = await job.getState();
+      let status: 'pending' | 'generating-pdf' | 'uploading' | 'sending-email' | 'completed' | 'failed' = 'pending';
+      const progress = job.progress() as number;
+
+      if (state === 'failed') status = 'failed';
+      else if (state === 'completed') status = 'completed';
+      else if (progress >= 90) status = 'sending-email';
+      else if (progress >= 50) status = 'uploading';
+      else if (progress >= 20) status = 'generating-pdf';
+
+      return {
+        jobId: job.id,
+        status,
+        progress,
+        error: job.failedReason,
+      };
+    }),
+
+  retryOfferSend: adminProcedure
+    .input(z.object({ offerId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const offer = await Offer.findById(input.offerId);
+      if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
+      if (offer.status === 'sent') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Offer already sent' });
+      
+      if (!offer.emailMetadata?.driveFolderId || !offer.emailMetadata?.recipientEmail) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Missing previous send attempt data' });
+      }
+
+      const job = await offerSendQueue.add({
+        offerId: input.offerId,
+        userId: ctx.user.userId,
+        driveFolderId: offer.emailMetadata.driveFolderId,
+        recipientEmail: offer.emailMetadata.recipientEmail,
+      });
+
+      return {
+        jobId: job.id,
+        status: 'queued',
+      };
     }),
 });

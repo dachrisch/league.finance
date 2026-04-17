@@ -32,7 +32,7 @@ export function createApp() {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
         callbackURL: process.env.GOOGLE_CALLBACK_URL!,
       },
-      async (_accessToken, _refreshToken, profile, done) => {
+      async (accessToken, refreshToken, profile, done) => {
         const email = profile.emails?.[0]?.value ?? '';
 
         if (!email.endsWith('@bumbleflies.de')) {
@@ -42,10 +42,20 @@ export function createApp() {
         const hasAdmin = await User.exists({ role: 'admin' });
         const role = hasAdmin ? 'viewer' : 'admin';
 
+        const update: any = {
+          email,
+          displayName: profile.displayName,
+          googleAccessToken: accessToken,
+        };
+
+        if (refreshToken) {
+          update.googleRefreshToken = refreshToken;
+        }
+
         const user = await User.findOneAndUpdate(
           { googleId: profile.id },
           {
-            $set: { email, displayName: profile.displayName },
+            $set: update,
             $setOnInsert: { googleId: profile.id, role },
           },
           { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
@@ -61,7 +71,20 @@ export function createApp() {
   app.get('/health', healthHandler);
 
   // OAuth routes (not tRPC)
-  app.get('/auth/google', passport.authenticate('google', { scope: ['email', 'profile'] }));
+  app.get(
+    '/auth/google',
+    passport.authenticate('google', {
+      scope: [
+        'email',
+        'profile',
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/gmail.send',
+        'https://www.googleapis.com/auth/drive.readonly',
+      ],
+      accessType: 'offline',
+      prompt: 'consent',
+    })
+  );
 
   app.get(
     '/auth/google/callback',

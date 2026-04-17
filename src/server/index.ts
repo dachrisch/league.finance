@@ -2,6 +2,11 @@ import 'dotenv/config';
 import { connectMongo } from './db/mongo';
 import { setDbStatus } from './health';
 import { createApp } from './app';
+import { offerSendQueue } from './lib/queue';
+import { processSendOfferJob } from './jobs/SendOfferJob';
+
+// Initialize workers
+offerSendQueue.process(processSendOfferJob);
 
 declare global {
   namespace Express {

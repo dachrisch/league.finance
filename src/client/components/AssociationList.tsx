@@ -46,7 +46,7 @@ export function AssociationList({ associations, onEdit, onDelete, isLoading = fa
                 <td data-label="Address" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', color: 'var(--text-main)' }}>
                   {association.address ? (
                     <span style={{ fontSize: 'var(--font-size-sm)' }}>
-                      {association.address.street}, {association.address.postalCode} {association.address.city}
+                      {association.address.street}, {association.address.postalCode} {association.address.city}, {association.address.country}
                     </span>
                   ) : (
                     <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>No address</span>

@@ -119,8 +119,8 @@ describe('OfferTable', () => {
       />
     );
 
-    const sendButtons = screen.getAllByRole('button', { name: /Send/i });
-    fireEvent.click(sendButtons[0]);
+    const sendButton = screen.getByTestId('send-button-1');
+    fireEvent.click(sendButton);
 
     // The dialog should render with the recipient name and email from the selected offer
     // Since the offer doesn't have contact info in the test, the dialog should still render

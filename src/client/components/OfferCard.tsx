@@ -9,12 +9,13 @@ export interface OfferCardProps {
   contactName: string;
   leagueCount: number;
   leagueNames: string[];
-  status: 'draft' | 'sent' | 'accepted';
+  status: 'draft' | 'sending' | 'sent' | 'accepted';
   createdAt: Date | string;
   isExpanded: boolean;
   onToggleExpand: () => void;
   onDelete?: () => void;
   onSend?: () => void;
+  onView?: () => void;
   children?: React.ReactNode; // For expanded content
 }
 
@@ -31,10 +32,12 @@ export function OfferCard({
   onToggleExpand,
   onDelete,
   onSend,
+  onView,
   children,
 }: OfferCardProps) {
   const navigate = useNavigate();
   const statusColor = getStatusColor(status);
+  const statusLabel = getStatusLabel(status);
 
   return (
     <div
@@ -77,21 +80,34 @@ export function OfferCard({
         </div>
         
         <div style={{ flex: 1 }}>
-          <strong style={{ 
-            fontSize: 'var(--font-size-lg)', 
-            fontWeight: 'var(--font-weight-semibold)', 
-            color: 'var(--text-main)',
-            display: 'block' 
-          }}>
-            {associationName}
-          </strong>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ 
+              fontSize: 'var(--font-size-lg)', 
+              fontWeight: 'var(--font-weight-semibold)', 
+              color: 'var(--text-main)',
+            }}>
+              {associationName}
+            </span>
+            <span style={{ 
+              fontSize: '8px', 
+              padding: '2px 6px', 
+              borderRadius: '4px', 
+              background: statusColor + '20', 
+              color: statusColor,
+              border: `1px solid ${statusColor}40`,
+              textTransform: 'uppercase',
+              fontWeight: 'bold'
+            }}>
+              {statusLabel}
+            </span>
+          </div>
           <span style={{ 
             fontSize: 'var(--font-size-xs)', 
             color: 'var(--text-muted)',
             display: 'block',
             marginTop: '2px'
           }}>
-            {seasonName} · {contactName}
+            Season: {seasonName} · Contact: {contactName}
           </span>
         </div>
         
@@ -101,57 +117,70 @@ export function OfferCard({
           transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
           transition: 'transform var(--transition-normal)',
         }}>
-          ▼
+          {isExpanded ? '▼' : '▶'}
         </span>
       </div>
 
       {/* Body Content */}
       <div style={{ 
-        maxHeight: isExpanded ? '1000px' : '0', 
-        opacity: isExpanded ? 1 : 0,
         overflow: 'hidden',
         transition: 'all var(--transition-normal)',
       }}>
-        {isExpanded ? (
-          children
-        ) : (
-          <div style={{ padding: '0 var(--spacing-lg) var(--spacing-lg) calc(28px + var(--spacing-md) + var(--spacing-lg))' }}>
-            <div style={{ marginBottom: 'var(--spacing-md)', fontSize: 'var(--font-size-sm)', color: 'var(--text-main)' }}>
-              <strong>Leagues:</strong> {leagueCount} selected
-              {leagueCount > 0 && leagueNames.length > 0 && (
-                <span style={{ color: 'var(--text-muted)' }}> ({leagueNames.slice(0, 2).join(', ')}{leagueCount > 2 ? '...' : ''})</span>
-              )}
+        <div style={{ padding: '0 var(--spacing-lg) var(--spacing-lg) calc(28px + var(--spacing-md) + var(--spacing-lg))' }}>
+          <div style={{ marginBottom: 'var(--spacing-md)', fontSize: 'var(--font-size-sm)', color: 'var(--text-main)' }}>
+            <span style={{ fontWeight: 'bold' }}>Leagues:</span> {leagueCount} selected
+            {leagueCount > 0 && leagueNames.length > 0 && (
+              <span style={{ color: 'var(--text-muted)' }}> ({leagueNames.slice(0, 3).join(', ')}{leagueCount > 3 ? '...' : ''})</span>
+            )}
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)' }}>
+              Created {getTimeAgoText(createdAt)}
             </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)' }}>
-                Created {getTimeAgoText(createdAt)}
-              </div>
 
-              <div style={{ display: 'flex', gap: 'var(--spacing-xs)' }}>
+            <div style={{ display: 'flex', gap: 'var(--spacing-xs)' }}>
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onView ? onView() : navigate(`/offers/${id}`);
+                }}
+              >
+                View
+              </button>
+              {(status === 'draft' || status === 'sending') && onSend && (
                 <button
                   className="btn btn-primary btn-sm"
+                  style={{ background: 'var(--success-color)' }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/offers/${id}`);
+                    onSend();
+                  }}
+                  disabled={status === 'sending'}
+                >
+                  Send
+                </button>
+              )}
+              {status === 'draft' && onDelete && (
+                <button
+                  className="btn btn-outline btn-sm"
+                  style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
                   }}
                 >
-                  View details
+                  Delete
                 </button>
-                {status === 'draft' && (
-                  <button
-                    className="btn btn-outline btn-sm"
-                    style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete?.();
-                    }}
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
+              )}
             </div>
+          </div>
+        </div>
+
+        {isExpanded && children && (
+          <div style={{ borderTop: '1px solid var(--border-color)', marginTop: 'var(--spacing-md)' }}>
+            {children}
           </div>
         )}
       </div>

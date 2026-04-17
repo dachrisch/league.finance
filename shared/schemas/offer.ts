@@ -9,20 +9,46 @@ export const CreateOfferSchema = z.object({
 });
 
 export const UpdateOfferSchema = z.object({
-  status: z.enum(['draft', 'sent', 'accepted']).optional(),
+  status: z.enum(['draft', 'sending', 'sent', 'accepted']).optional(),
   contactId: z.string().optional(),
   leagueIds: z.array(z.number().int().positive()).min(1).optional(),
   sentAt: z.date().optional(),
   acceptedAt: z.date().optional(),
+  sendJobId: z.string().optional(),
+  sendJobAttempts: z.number().optional(),
+  emailMetadata: z.object({
+    sentVia: z.literal('gmail'),
+    messageId: z.string().optional(),
+    driveFileId: z.string().optional(),
+    driveFolderId: z.string().optional(),
+    driveLink: z.string().optional(),
+    recipientEmail: z.string().email(),
+    sentAt: z.date(),
+    lastSendAttempt: z.date().optional(),
+    failureReason: z.string().optional(),
+  }).optional(),
 });
 
 export const OfferSchema = CreateOfferSchema.extend({
   _id: z.string(),
-  status: z.enum(['draft', 'sent', 'accepted']),
+  status: z.enum(['draft', 'sending', 'sent', 'accepted']),
   createdAt: z.date(),
   updatedAt: z.date(),
   sentAt: z.date().optional(),
   acceptedAt: z.date().optional(),
+  sendJobId: z.string().optional(),
+  sendJobAttempts: z.number().optional(),
+  emailMetadata: z.object({
+    sentVia: z.literal('gmail'),
+    messageId: z.string().optional(),
+    driveFileId: z.string().optional(),
+    driveFolderId: z.string().optional(),
+    driveLink: z.string().optional(),
+    recipientEmail: z.string().email(),
+    sentAt: z.date(),
+    lastSendAttempt: z.date().optional(),
+    failureReason: z.string().optional(),
+  }).optional(),
 });
 
 export type CreateOfferInput = z.infer<typeof CreateOfferSchema>;
