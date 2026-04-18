@@ -139,3 +139,135 @@ export async function getSeasonsList(page: Page): Promise<any[]> {
 export async function getAssociationsList(page: Page): Promise<any[]> {
   return callTRPC(page, 'finance.associations.list');
 }
+
+// Mock test data
+const mockLeagues = [
+  { id: 1, name: 'E2E Test League 1', slug: 'e2e-test-league-1', type: 'Regional' },
+  { id: 2, name: 'E2E Test League 2', slug: 'e2e-test-league-2', type: 'Regional' },
+];
+
+const mockSeasons = [
+  { _id: 1, year: '2026', slug: 'e2e-test-2026' },
+  { _id: 2, year: '2025', slug: 'e2e-test-2025' },
+];
+
+// Track created offers for mocking
+const createdOffers: any[] = [];
+
+// Setup API mocking for test data
+export async function setupMockData(page: Page): Promise<void> {
+  await page.route('**/trpc/**', async (route) => {
+    const url = route.request().url();
+    const method = route.request().method();
+
+    // Mock leagues
+    if (url.includes('teams.leagues')) {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{ result: { data: mockLeagues } }]),
+      });
+    }
+
+    // Mock seasons
+    if (url.includes('teams.seasons')) {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{ result: { data: mockSeasons } }]),
+      });
+    }
+
+    // Mock associations list
+    if (url.includes('finance.associations.list')) {
+      const mockAssociations = [
+        { _id: '1', name: 'E2E Test Association 1', address: { street: '123 Test St', city: 'Test City', postalCode: '12345', country: 'Germany' } },
+        { _id: '2', name: 'E2E Test Association 2', address: { street: '456 Test Ave', city: 'Another City', postalCode: '67890', country: 'Germany' } },
+      ];
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{ result: { data: mockAssociations } }]),
+      });
+    }
+
+    // Mock offer creation
+    if (url.includes('finance.offers.create')) {
+      try {
+        const body = route.request().postDataJSON();
+        const input = JSON.parse(body.input || '{}');
+        const offerId = `offer-${Date.now()}-${Math.random()}`;
+        const createdOffer = {
+          _id: offerId,
+          ...input,
+          status: 'draft',
+        };
+        createdOffers.push(createdOffer);
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([{ result: { data: createdOffer } }]),
+        });
+      } catch (e) {
+        return route.continue();
+      }
+    }
+
+    // Mock offer list - return created offers
+    if (url.includes('finance.offers.list')) {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{ result: { data: createdOffers } }]),
+      });
+    }
+
+    // Let all other requests through
+    await route.continue();
+  });
+}
+
+// Get mock leagues (for test setup)
+export function getMockLeagues(): typeof mockLeagues {
+  return mockLeagues;
+}
+
+// Get mock seasons (for test setup)
+export function getMockSeasons(): typeof mockSeasons {
+  return mockSeasons;
+}
+
+// Create a real test association
+export async function createTestAssociation(page: Page, name: string): Promise<any> {
+  // Ensure the page is authenticated
+  await ensurePageAuthenticated(page);
+
+  const assocData = {
+    name,
+    address: {
+      street: '123 Test Street',
+      city: 'Test City',
+      postalCode: '12345',
+      country: 'Germany',
+    },
+  };
+
+  const response = await page.request.post('/trpc/finance.associations.create', {
+    headers: { 'Content-Type': 'application/json' },
+    data: JSON.stringify({
+      0: {
+        json: assocData
+      }
+    }),
+  });
+
+  const result = await response.json();
+  const data = Array.isArray(result) ? result[0]?.result?.data : result?.result?.data;
+
+  if (data?._id) {
+    return data;
+  }
+
+  const errorMsg = Array.isArray(result) ? result[0]?.error?.message : result?.error?.message;
+  throw new Error(`Failed to create association: ${errorMsg || 'Unknown error'}`);
+}

@@ -56,15 +56,15 @@ export function DashboardPage() {
     };
   }, [offers, currentSeason]);
 
-  // Active Contracts: Leagues in current season that have a SENDING, SENT or ACCEPTED offer
+  // Active Contracts: Leagues in current season that have ANY offer (draft, sending, sent, or accepted)
   const activeContracts = useMemo(() => {
     if (!currentSeason) return [];
-    
+
     const results: any[] = [];
     const processedLeagueIds = new Set<number>();
 
     offers
-      .filter(o => o.seasonId === currentSeason._id && (o.status === 'sending' || o.status === 'sent' || o.status === 'accepted'))
+      .filter(o => o.seasonId === currentSeason._id)
       .forEach(offer => {
         offer.leagueIds.forEach((lId: number) => {
           if (!processedLeagueIds.has(lId)) {

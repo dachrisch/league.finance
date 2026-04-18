@@ -5,7 +5,7 @@ import type { RowDataPacket } from 'mysql2';
 export const seasonsRouter = router({
   list: protectedProcedure.query(async () => {
     const pool = getMysqlPool();
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT id as _id, name as year, slug FROM gamedays_season ORDER BY year DESC');
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT id as _id, name, slug FROM gamedays_season ORDER BY name DESC');
     return rows;
   }),
 });
