@@ -1,4 +1,5 @@
 import { google, gmail_v1 } from 'googleapis';
+import { convert } from 'html-to-text';
 import { generateOfferEmailSubject, generateOfferEmailBody } from '../lib/emailTemplate';
 
 export interface SendEmailParams {
@@ -93,12 +94,11 @@ export class GmailService {
   }
 
   private htmlToPlainText(html: string): string {
-    return html
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/<[^>]*>/g, '') // Remove HTML tags after decoding entities
-      .trim();
+    return convert(html, {
+      wordwrap: false,
+      selectors: [
+        { selector: 'a', options: { ignoreHref: true } },
+      ],
+    }).trim();
   }
 }

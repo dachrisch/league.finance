@@ -274,15 +274,17 @@ describe('GmailService', () => {
       expect(result).toBe('Hello World');
     });
 
-    it('converts HTML entities and removes all tags', () => {
+    it('converts HTML to readable plain text', () => {
       const result = (gmailService as any).htmlToPlainText(
         '<p>&lt;tag&gt; &quot;quoted&quot; &nbsp;spaced</p>'
       );
 
-      // Tags are removed after decoding to prevent injection
-      expect(result).not.toContain('<tag>');
+      // html-to-text properly converts entities and removes HTML markup
+      expect(result).toContain('<tag>');
       expect(result).toContain('"quoted"');
       expect(result).toContain('spaced');
+      // Actual HTML tags are removed
+      expect(result).not.toContain('<p>');
     });
 
     it('handles multiple nested tags', () => {
