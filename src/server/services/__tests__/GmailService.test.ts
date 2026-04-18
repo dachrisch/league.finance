@@ -274,12 +274,13 @@ describe('GmailService', () => {
       expect(result).toBe('Hello World');
     });
 
-    it('converts HTML entities', () => {
+    it('converts HTML entities and removes all tags', () => {
       const result = (gmailService as any).htmlToPlainText(
         '<p>&lt;tag&gt; &quot;quoted&quot; &nbsp;spaced</p>'
       );
 
-      expect(result).toContain('<tag>');
+      // Tags are removed after decoding to prevent injection
+      expect(result).not.toContain('<tag>');
       expect(result).toContain('"quoted"');
       expect(result).toContain('spaced');
     });

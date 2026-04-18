@@ -94,11 +94,11 @@ export class GmailService {
 
   private htmlToPlainText(html: string): string {
     return html
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
       .replace(/&nbsp;/g, ' ')
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .replace(/&quot;/g, '"')
+      .replace(/<[^>]*>/g, '') // Remove HTML tags after decoding entities
       .trim();
   }
 }

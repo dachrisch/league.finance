@@ -12,6 +12,7 @@ import path from 'path';
 import { healthHandler } from './health';
 import { offerSendQueue } from './jobs/queue';
 import { SendOfferJobHandler } from './jobs/SendOfferJob';
+import rateLimit from 'express-rate-limit';
 
 export function createApp() {
   const app = express();
@@ -112,9 +113,22 @@ export function createApp() {
     res.redirect(`${CLIENT_URL}/login`);
   });
 
+  // Rate limiters
+  const devAuthLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // 10 requests per windowMs
+    message: 'Too many test token requests, please try again later',
+  });
+
+  const staticFileLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 100, // 100 requests per windowMs
+    message: 'Too many static file requests, please try again later',
+  });
+
   // Test auth endpoint (development only)
   if (process.env.NODE_ENV === 'development') {
-    app.get('/auth/test-token', async (req, res) => {
+    app.get('/auth/test-token', devAuthLimiter, async (req, res) => {
       try {
         // Create or get test user
         const testUser = await User.findOneAndUpdate(
@@ -165,7 +179,7 @@ export function createApp() {
   if (process.env.NODE_ENV === 'production') {
     const clientDir = path.join(__dirname, '../..');
     app.use(express.static(clientDir));
-    app.get('/*splat', (req, res, next) => {
+    app.get('/*splat', staticFileLimiter, (req, res, next) => {
       if (req.url.startsWith('/trpc') || req.url.startsWith('/auth')) {
         return next();
       }
