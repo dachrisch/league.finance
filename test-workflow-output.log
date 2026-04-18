@@ -1,0 +1,44 @@
+
+> leagues-finance@0.1.12 test:e2e
+> playwright test e2e/test-complete-offer-workflow.spec.ts
+
+🔧 Setting up test preconditions...
+
+⏳ Waiting for server...
+✓ Server ready
+
+🔐 Authenticating test user...
+✓ Test user authenticated
+
+📝 Verifying infrastructure...
+  ✓ Associations API is available
+
+✅ Test infrastructure ready!
+
+
+Running 2 tests using 1 worker
+
+[1A[2K[1/2] [chromium] › e2e/test-complete-offer-workflow.spec.ts:18:7 › Complete Offer Creation Workflow › should create offer via form and verify it appears in offers list and dashboard
+[1A[2K[chromium] › e2e/test-complete-offer-workflow.spec.ts:18:7 › Complete Offer Creation Workflow › should create offer via form and verify it appears in offers list and dashboard
+
+=== Starting Complete Offer Workflow Test ===
+
+
+[1A[2K📍 Step 1: Navigating to create offer page
+
+[1A[2K✓ Create offer page loaded
+
+[1A[2K
+📸 Step 2: Getting page structure
+
+[1A[2KPage loaded, looking for form elements...
+
+[1A[2K
+📝 Step 3: Filling out offer creation form
+
+[1A[2K  - Looking for league selector (mock league: E2E Test League 1)
+
+[1A[2K  - Found 3 form inputs
+
+[1A[2K  - First element is a SELECT
+

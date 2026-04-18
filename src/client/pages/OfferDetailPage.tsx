@@ -274,14 +274,17 @@ export function OfferDetailPage() {
 
       {showSendDialog && (
         <SendOfferDialog
+          open={showSendDialog}
           offerId={id}
-          initialEmail={data.contact?.email || ''}
-          associationName={association?.name || 'Unknown Association'}
+          recipientEmail={data?.contact?.email || ''}
+          recipientName={data?.contact?.name || 'Unknown Contact'}
+          totalPrice={data?.offer?.pricing?.expectedPrice || 0}
           onClose={() => setShowSendDialog(false)}
           onSuccess={() => {
             setShowSendDialog(false);
             refetch();
           }}
+          onError={(message) => console.error(message)}
         />
       )}
     </div>

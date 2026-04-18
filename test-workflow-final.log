@@ -1,0 +1,116 @@
+
+> leagues-finance@0.1.12 test:e2e
+> playwright test e2e/test-complete-offer-workflow.spec.ts
+
+🔧 Setting up test preconditions...
+
+⏳ Waiting for server...
+✓ Server ready
+
+🔐 Authenticating test user...
+✓ Test user authenticated
+
+📝 Verifying infrastructure...
+  ✓ Associations API is available
+
+✅ Test infrastructure ready!
+
+
+Running 2 tests using 1 worker
+
+[1A[2K[1/2] [chromium] › e2e/test-complete-offer-workflow.spec.ts:19:7 › Complete Offer Creation Workflow › should create offer via form and verify it appears in offers list and dashboard
+[1A[2K[chromium] › e2e/test-complete-offer-workflow.spec.ts:19:7 › Complete Offer Creation Workflow › should create offer via form and verify it appears in offers list and dashboard
+
+=== Starting Complete Offer Workflow Test ===
+
+
+[1A[2KUsing mock data: E2E Test League 1, Season 2026
+
+[1A[2K
+📍 Step 1: Navigating to create offer page
+
+[1A[2K✓ Create offer page navigated to
+
+[1A[2K
+📝 Step 2: Waiting for form to load and inspecting structure
+
+[1A[2K  1) [chromium] › e2e/test-complete-offer-workflow.spec.ts:19:7 › Complete Offer Creation Workflow › should create offer via form and verify it appears in offers list and dashboard 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('h1')
+    Expected: visible
+    Error: strict mode violation: locator('h1') resolved to 2 elements:
+        1) <h1>Leagues Finance</h1> aka getByRole('heading', { name: 'Leagues Finance' })
+        2) <h1 class="_wizardTitle_p1c7c_21">Create New Offer</h1> aka getByRole('heading', { name: 'Create New Offer' })
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('h1')[22m
+
+
+      40 |     // Wait for wizard elements to appear
+      41 |     const wizardHeader = page.locator('h1');
+    > 42 |     await expect(wizardHeader).toBeVisible({ timeout: 5000 });
+         |                                ^
+      43 |     console.log('✓ Wizard header visible');
+      44 |
+      45 |     // Step 3: Interact with form - use PasteExtractBlock first
+        at /home/cda/dev/leagues.finance/e2e/test-complete-offer-workflow.spec.ts:42:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/test-complete-offer-workfl-e5f1c-n-offers-list-and-dashboard-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/test-complete-offer-workfl-e5f1c-n-offers-list-and-dashboard-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/test-complete-offer-workfl-e5f1c-n-offers-list-and-dashboard-chromium/error-context.md
+
+
+[1A[2K[2/2] [chromium] › e2e/test-complete-offer-workflow.spec.ts:192:7 › Complete Offer Creation Workflow › should verify offers API mocks are working
+[1A[2K[chromium] › e2e/test-complete-offer-workflow.spec.ts:192:7 › Complete Offer Creation Workflow › should verify offers API mocks are working
+
+=== Testing Offers API Mocks ===
+
+
+[1A[2K✓ Mock leagues available: 2 leagues
+
+[1A[2K✓ Mock seasons available: 2 seasons
+
+[1A[2K
+Testing API endpoints:
+
+[1A[2K  - teams.leagues: 500
+
+[1A[2K  2) [chromium] › e2e/test-complete-offer-workflow.spec.ts:192:7 › Complete Offer Creation Workflow › should verify offers API mocks are working 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected value: [32m500[39m
+    Received array: [31m[200, 400][39m
+
+      208 |     const leaguesResponse = await page.request.get('/trpc/teams.leagues');
+      209 |     console.log(`  - teams.leagues: ${leaguesResponse.status()}`);
+    > 210 |     expect([200, 400]).toContain(leaguesResponse.status());
+          |                        ^
+      211 |
+      212 |     const seasonsResponse = await page.request.get('/trpc/teams.seasons');
+      213 |     console.log(`  - teams.seasons: ${seasonsResponse.status()}`);
+        at /home/cda/dev/leagues.finance/e2e/test-complete-offer-workflow.spec.ts:210:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/test-complete-offer-workfl-f2113-ffers-API-mocks-are-working-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/test-complete-offer-workfl-f2113-ffers-API-mocks-are-working-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/test-complete-offer-workfl-f2113-ffers-API-mocks-are-working-chromium/error-context.md
+
+
+[1A[2K  2 failed
+    [chromium] › e2e/test-complete-offer-workflow.spec.ts:19:7 › Complete Offer Creation Workflow › should create offer via form and verify it appears in offers list and dashboard 
+    [chromium] › e2e/test-complete-offer-workflow.spec.ts:192:7 › Complete Offer Creation Workflow › should verify offers API mocks are working 

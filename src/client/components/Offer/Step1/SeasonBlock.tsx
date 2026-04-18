@@ -5,7 +5,8 @@ import styles from '../../../styles/OfferWizard.module.css';
 
 interface Season {
   _id: string;
-  year: number;
+  name: string;
+  slug: string;
 }
 
 interface SeasonBlockProps {
@@ -61,7 +62,7 @@ export function SeasonBlock({
               <option value="">-- Select season --</option>
               {seasons.map((season) => (
                 <option key={season._id} value={season._id}>
-                  {season.year}
+                  {season.name}
                 </option>
               ))}
             </select>

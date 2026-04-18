@@ -18,7 +18,8 @@ interface Contact {
 
 interface Season {
   _id: string;
-  year: number;
+  name: string;
+  slug: string;
 }
 
 interface Step1Props {

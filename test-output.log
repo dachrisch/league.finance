@@ -1,0 +1,93 @@
+
+> leagues-finance@0.1.12 test:e2e
+> playwright test
+
+
+Running 5 tests using 1 worker
+
+[1A[2K[1/5] [chromium] › e2e/test-backend-create-offer.spec.ts:10:7 › Backend Offer Creation Flow › should create an offer via API and display in dashboard
+[1A[2K  1) [chromium] › e2e/test-backend-create-offer.spec.ts:10:7 › Backend Offer Creation Flow › should create an offer via API and display in dashboard 
+
+    Error: browserType.launch: Executable doesn't exist at /home/cda/.cache/ms-playwright/chromium_headless_shell-1217/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/test-backend-create-offer--ce79c-PI-and-display-in-dashboard-chromium/error-context.md
+
+
+[1A[2K[2/5] [chromium] › e2e/test-backend-create-offer.spec.ts:87:7 › Backend Offer Creation Flow › should list multiple backend-created offers in dashboard
+[1A[2K  2) [chromium] › e2e/test-backend-create-offer.spec.ts:87:7 › Backend Offer Creation Flow › should list multiple backend-created offers in dashboard 
+
+    Error: browserType.launch: Executable doesn't exist at /home/cda/.cache/ms-playwright/chromium_headless_shell-1217/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/test-backend-create-offer--93ec6-created-offers-in-dashboard-chromium/error-context.md
+
+
+[1A[2K[3/5] [chromium] › e2e/test-backend-create-offer.spec.ts:148:7 › Backend Offer Creation Flow › should have correct offer status in dashboard
+[1A[2K  3) [chromium] › e2e/test-backend-create-offer.spec.ts:148:7 › Backend Offer Creation Flow › should have correct offer status in dashboard 
+
+    Error: browserType.launch: Executable doesn't exist at /home/cda/.cache/ms-playwright/chromium_headless_shell-1217/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/test-backend-create-offer--90f0c-t-offer-status-in-dashboard-chromium/error-context.md
+
+
+[1A[2K[4/5] [chromium] › e2e/test-frontend-create-offer.spec.ts:11:7 › Frontend Offer Creation Flow › should create an offer through the UI and see it in the dashboard
+[1A[2K  4) [chromium] › e2e/test-frontend-create-offer.spec.ts:11:7 › Frontend Offer Creation Flow › should create an offer through the UI and see it in the dashboard 
+
+    Error: browserType.launch: Executable doesn't exist at /home/cda/.cache/ms-playwright/chromium_headless_shell-1217/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/test-frontend-create-offer-e641d-and-see-it-in-the-dashboard-chromium/error-context.md
+
+
+[1A[2K[5/5] [chromium] › e2e/test-frontend-create-offer.spec.ts:79:7 › Frontend Offer Creation Flow › should navigate to offer details after creation
+[1A[2K  5) [chromium] › e2e/test-frontend-create-offer.spec.ts:79:7 › Frontend Offer Creation Flow › should navigate to offer details after creation 
+
+    Error: browserType.launch: Executable doesn't exist at /home/cda/.cache/ms-playwright/chromium_headless_shell-1217/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/test-frontend-create-offer-8bc25-ffer-details-after-creation-chromium/error-context.md
+
+
+[1A[2K  5 failed
+    [chromium] › e2e/test-backend-create-offer.spec.ts:10:7 › Backend Offer Creation Flow › should create an offer via API and display in dashboard 
+    [chromium] › e2e/test-backend-create-offer.spec.ts:87:7 › Backend Offer Creation Flow › should list multiple backend-created offers in dashboard 
+    [chromium] › e2e/test-backend-create-offer.spec.ts:148:7 › Backend Offer Creation Flow › should have correct offer status in dashboard 
+    [chromium] › e2e/test-frontend-create-offer.spec.ts:11:7 › Frontend Offer Creation Flow › should create an offer through the UI and see it in the dashboard 
+    [chromium] › e2e/test-frontend-create-offer.spec.ts:79:7 › Frontend Offer Creation Flow › should navigate to offer details after creation 

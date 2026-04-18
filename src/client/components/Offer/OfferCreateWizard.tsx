@@ -5,6 +5,12 @@ import { Step2 } from './Step2/Step2';
 import { useOfferCreation } from '../../hooks/useOfferCreation';
 import { trpc } from '../../lib/trpc';
 
+interface Season {
+  _id: string | number;
+  name: string;
+  slug: string;
+}
+
 interface Props {
   editId?: string;
 }
@@ -19,7 +25,7 @@ export function OfferCreateWizard({ editId }: Props) {
   // Queries
   const { data: associations = [] } = trpc.finance.associations.list.useQuery();
   const { data: contacts = [] } = trpc.finance.contacts.list.useQuery();
-  const { data: seasons = [] } = trpc.finance.seasons.list.useQuery();
+  const { data: seasons = [] } = trpc.finance.seasons.list.useQuery() as { data?: Season[] };
   
   const { data: existingOffer, isLoading: isLoadingOffer } = trpc.finance.offers.get.useQuery(
     { id: editId! },
@@ -179,7 +185,7 @@ export function OfferCreateWizard({ editId }: Props) {
         {...wizard.step1}
         associations={associations}
         contacts={contacts}
-        seasons={seasons.map(s => ({ ...s, _id: s._id.toString(), year: s.year }))}
+        seasons={seasons.map(s => ({ ...s, _id: s._id.toString() }))}
         onUpdatePasteInput={wizard.updatePasteInput}
         onSelectPath={wizard.selectPath}
         onExtract={handleExtract}
