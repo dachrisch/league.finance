@@ -115,7 +115,7 @@ export function OfferDetailPage() {
                 style={{ background: 'var(--warning-color)', color: '#000' }}
                 onClick={() => navigate(`/offers/${id}/edit`)}
               >
-                ✎ Full Edit
+                ✎ Edit
               </button>
             )}
             <button

@@ -4,11 +4,13 @@ import { trpc } from '../lib/trpc';
 import { OfferSummaryCards } from '../components/OfferSummaryCards';
 import { OfferTable } from '../components/OfferTable';
 import { Toast } from '../components/Toast';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 export function OffersPage() {
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Fetch offers, associations, and seasons
   const { data: offers = [], isLoading: offersLoading, refetch } = trpc.finance.offers.list.useQuery({});
@@ -75,10 +77,19 @@ export function OffersPage() {
     navigate(`/offers/${id}/edit`);
   };
 
-  const handleDeleteOffer = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this offer?')) {
-      await deleteOffer.mutateAsync({ id });
+  const handleDeleteOffer = (id: string) => {
+    setConfirmDeleteId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (confirmDeleteId) {
+      await deleteOffer.mutateAsync({ id: confirmDeleteId });
+      setConfirmDeleteId(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDeleteId(null);
   };
 
   if (offersLoading) {
@@ -165,6 +176,17 @@ export function OffersPage() {
       {toastMessage && (
         <Toast message={toastMessage} type={toastType} />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDeleteId !== null}
+        title="Delete Offer"
+        message="Are you sure you want to delete this offer? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 }

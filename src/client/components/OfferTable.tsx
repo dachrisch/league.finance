@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Offer } from '../lib/schemas';
 import { SendOfferDialog } from './Offer/SendOfferDialog';
 import { useSendOfferJob } from '../hooks/useSendOfferJob';
+import { KebabMenu, MenuItem } from './KebabMenu';
 
 interface OfferTableProps {
   offers: Offer[];
@@ -215,46 +216,40 @@ export function OfferTable({
                   <div style={statusBadgeStyle(offer.status)}>{offer.status}</div>
                 </td>
                 <td data-label="Actions" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
-                  <div style={{ display: 'flex', gap: 'var(--spacing-sm)', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button
-                      className="btn btn-ghost btn-sm"
-                      onClick={() => onView(offer._id)}
-                      disabled={isLoading}
-                    >
-                      View
-                    </button>
-                    {offer.status === 'draft' && onEdit && (
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        style={{ background: 'var(--warning-color)', color: '#000' }}
-                        onClick={() => onEdit(offer._id)}
-                        disabled={isLoading}
-                      >
-                        Edit
-                      </button>
-                    )}
-                    {offer.status === 'draft' && (
-                      <button
-                        className="btn btn-primary btn-sm"
-                        style={{ background: 'var(--success-color)' }}
-                        onClick={() => openSendDialog(offer)}
-                        disabled={isLoading}
-                        data-testid={`send-button-${offer._id}`}
-                      >
-                        Send
-                      </button>
-                    )}
-                    {offer.status === 'draft' && onDelete && (
-                      <button
-                        className="btn btn-outline btn-sm"
-                        style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
-                        onClick={() => onDelete(offer._id)}
-                        disabled={isLoading}
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
+                  <KebabMenu
+                    disabled={isLoading}
+                    items={[
+                      {
+                        label: 'View',
+                        onClick: () => onView(offer._id),
+                      },
+                      ...(offer.status === 'draft' && onEdit
+                        ? [
+                            {
+                              label: 'Edit',
+                              onClick: () => onEdit(offer._id),
+                            } as MenuItem,
+                          ]
+                        : []),
+                      ...(offer.status === 'draft'
+                        ? [
+                            {
+                              label: 'Send',
+                              onClick: () => openSendDialog(offer),
+                            } as MenuItem,
+                          ]
+                        : []),
+                      ...(offer.status === 'draft' && onDelete
+                        ? [
+                            {
+                              label: 'Delete',
+                              onClick: () => onDelete(offer._id),
+                              danger: true,
+                            } as MenuItem,
+                          ]
+                        : []),
+                    ]}
+                  />
                 </td>
               </tr>
             ))}
