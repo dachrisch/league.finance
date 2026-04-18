@@ -78,8 +78,8 @@ export function Step1({
   // Map seasons for UseExistingBlock (which expects { _id, name, year: string })
   const existingSeasons = seasons.map(s => ({
     _id: s._id,
-    name: `Season ${s.year}`,
-    year: String(s.year)
+    name: `Season ${s.name}`,
+    year: String(s.name)
   }));
 
   return (

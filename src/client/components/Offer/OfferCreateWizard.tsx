@@ -164,7 +164,7 @@ export function OfferCreateWizard({ editId }: Props) {
     }
 
     const season = seasons.find(s => s._id.toString() === wizard.step1.selectedSeasonId?.toString());
-    seasonYear = season?.year.toString() || '';
+    seasonYear = season?.name || '';
 
     return { associationName, contactName, seasonYear };
   }, [wizard.step1, associations, contacts, seasons]);
