@@ -5,8 +5,8 @@ import { SeasonBlock } from '../SeasonBlock';
 
 describe('SeasonBlock', () => {
   const mockSeasons = [
-    { _id: 'season1', year: 2025 },
-    { _id: 'season2', year: 2026 },
+    { _id: 'season1', name: '2025', slug: 'season-2025' },
+    { _id: 'season2', name: '2026', slug: 'season-2026' },
   ];
 
   it('should render nothing if showBlock is false', () => {

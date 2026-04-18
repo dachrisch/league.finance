@@ -51,7 +51,6 @@ const OfferSchema = new Schema<IOffer>(
       sentVia: {
         type: String,
         enum: ['gmail'],
-        default: null,
       },
       messageId: String,
       driveFileId: String,

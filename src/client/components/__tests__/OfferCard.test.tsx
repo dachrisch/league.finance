@@ -58,7 +58,7 @@ describe('OfferCard', () => {
   it('shows View, Send, Delete buttons in draft status', () => {
     render(
       <BrowserRouter>
-        <OfferCard {...defaultProps} status="draft" isExpanded={true} />
+        <OfferCard {...defaultProps} status="draft" isExpanded={true} onSend={vi.fn()} onDelete={vi.fn()} />
       </BrowserRouter>
     );
 
@@ -70,7 +70,7 @@ describe('OfferCard', () => {
   it('shows View, Sending... buttons in sending status', () => {
     render(
       <BrowserRouter>
-        <OfferCard {...defaultProps} status="sending" isExpanded={true} />
+        <OfferCard {...defaultProps} status="sending" isExpanded={true} onSend={vi.fn()} />
       </BrowserRouter>
     );
 

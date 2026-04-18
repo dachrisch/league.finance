@@ -45,7 +45,9 @@ describe('Offer Send Workflow Integration', () => {
     });
 
     expect(offer.status).toBe('draft');
-    expect(offer.emailMetadata).toBeUndefined();
+    expect(!offer.emailMetadata?.sentVia).toBeTruthy();
+    expect(!offer.emailMetadata?.messageId).toBeTruthy();
+    expect(!offer.emailMetadata?.failureReason).toBeTruthy();
     expect(offer.sendJobId).toBeUndefined();
     expect(offer.sendJobAttempts).toBe(0);
     expect(offer.sentAt).toBeUndefined();

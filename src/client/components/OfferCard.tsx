@@ -159,7 +159,7 @@ export function OfferCard({
                   }}
                   disabled={status === 'sending'}
                 >
-                  Send
+                  {status === 'sending' ? 'Sending...' : 'Send'}
                 </button>
               )}
               {status === 'draft' && onDelete && (
