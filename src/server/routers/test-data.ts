@@ -92,7 +92,7 @@ export const testDataRouter = router({
         const created = await Association.findOneAndUpdate(
           { name: assoc.name },
           assoc,
-          { upsert: true, new: true }
+          { upsert: true, returnDocument: 'after' }
         );
         testAssocId = created._id.toString();
         results.push({ type: 'association', name: assoc.name, status: 'created' });
@@ -117,7 +117,7 @@ export const testDataRouter = router({
           await Contact.findOneAndUpdate(
             { name: contact.name, associationId: contact.associationId },
             contact,
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
           );
           results.push({ type: 'contact', name: contact.name, status: 'created' });
         } catch (err: any) {

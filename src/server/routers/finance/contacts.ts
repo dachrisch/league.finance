@@ -34,7 +34,7 @@ export const contactsRouter = router({
     .input(z.object({ id: z.string(), data: UpdateContactSchema }))
     .mutation(async ({ input }) => {
       const contact = await Contact.findByIdAndUpdate(input.id, input.data, {
-        new: true,
+        returnDocument: 'after',
       }).lean();
       if (!contact) throw new TRPCError({ code: 'NOT_FOUND' });
       return normalizeContact(contact);

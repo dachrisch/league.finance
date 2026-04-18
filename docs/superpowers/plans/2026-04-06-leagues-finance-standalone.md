@@ -790,7 +790,7 @@ passport.use(
           displayName: profile.displayName,
           $setOnInsert: { role },
         },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
       );
 
       done(null, user);
@@ -1240,7 +1240,7 @@ export const configsRouter = router({
   update: adminProcedure
     .input(z.object({ id: z.string(), data: UpdateFinancialConfigSchema }))
     .mutation(async ({ input }) => {
-      const config = await FinancialConfig.findByIdAndUpdate(input.id, input.data, { new: true }).lean();
+      const config = await FinancialConfig.findByIdAndUpdate(input.id, input.data, { returnDocument: 'after' }).lean();
       if (!config) throw new TRPCError({ code: 'NOT_FOUND' });
       return config;
     }),
