@@ -1244,7 +1244,7 @@ export const associationsRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const association = await Association.findByIdAndUpdate(input.id, input.data, { new: true });
+      const association = await Association.findByIdAndUpdate(input.id, input.data, { returnDocument: 'after' });
       if (!association) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
@@ -1417,7 +1417,7 @@ export const offersRouter = router({
       const offer = await Offer.findByIdAndUpdate(
         input.id,
         { status: input.status },
-        { new: true }
+        { returnDocument: 'after' }
       );
       if (!offer) {
         throw new TRPCError({ code: 'NOT_FOUND' });
@@ -1643,7 +1643,7 @@ customizePrice: protectedProcedure
     const lineItem = await OfferLineItem.findOneAndUpdate(
       { offerId: input.offerId, leagueId: input.leagueId },
       { customPrice: input.customPrice },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!lineItem) {

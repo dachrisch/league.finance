@@ -67,7 +67,7 @@ export const associationsRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const association = await Association.findByIdAndUpdate(input.id, input.data, { new: true });
+      const association = await Association.findByIdAndUpdate(input.id, input.data, { returnDocument: 'after' });
       if (!association) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
