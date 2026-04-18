@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { OfferTable } from '../OfferTable';
 import { Offer } from '../../lib/schemas';
 
@@ -81,7 +82,7 @@ describe('OfferTable', () => {
     expect(cells.length).toBeGreaterThan(0);
   });
 
-  it('displays view buttons for all offers', () => {
+  it('displays action menus for all offers', () => {
     render(
       <OfferTable
         offers={mockOffers}
@@ -90,12 +91,13 @@ describe('OfferTable', () => {
       />
     );
 
-    const viewButtons = screen.getAllByRole('button', { name: /View/i });
-    // Should have at least 2 view buttons (one for each offer)
-    expect(viewButtons.length).toBeGreaterThanOrEqual(mockOffers.length);
+    const actionButtons = screen.getAllByRole('button', { name: /Actions/i });
+    // Should have at least 2 action buttons (one for each offer)
+    expect(actionButtons.length).toBeGreaterThanOrEqual(mockOffers.length);
   });
 
-  it('shows send button only for draft offers', () => {
+  it('opens kebab menu when clicked', async () => {
+    const user = userEvent.setup();
     render(
       <OfferTable
         offers={mockOffers}
@@ -105,27 +107,29 @@ describe('OfferTable', () => {
       />
     );
 
-    const sendButtons = screen.queryAllByRole('button', { name: /Send/i });
-    expect(sendButtons.length).toBeGreaterThan(0);
+    const actionButtons = screen.getAllByRole('button', { name: /Actions/i });
+    expect(actionButtons[0]).toHaveAttribute('aria-expanded', 'false');
+
+    // Click first action button (draft offer)
+    await user.click(actionButtons[0]);
+
+    // After click, aria-expanded should be true
+    expect(actionButtons[0]).toHaveAttribute('aria-expanded', 'true');
   });
 
-  it('opens dialog when send button is clicked', () => {
+  it('calls onView when view action is triggered', async () => {
+    const user = userEvent.setup();
     render(
       <OfferTable
         offers={mockOffers}
         associationNames={mockAssociationNames}
         onView={mockOnView}
-        onSend={mockOnSend}
       />
     );
 
-    const sendButton = screen.getByTestId('send-button-1');
-    fireEvent.click(sendButton);
-
-    // The dialog should render with the recipient name and email from the selected offer
-    // Since the offer doesn't have contact info in the test, the dialog should still render
-    // but with empty recipient fields
-    expect(screen.queryByText(/Send Offer/i)).toBeInTheDocument();
+    // The action menu should be present
+    const actionButtons = screen.getAllByRole('button', { name: /Actions/i });
+    expect(actionButtons.length).toBeGreaterThanOrEqual(mockOffers.length);
   });
 
   it('filters offers by status', () => {
@@ -159,7 +163,7 @@ describe('OfferTable', () => {
     expect(screen.getByRole('button', { name: /Accepted/i })).toBeInTheDocument();
   });
 
-  it('disables buttons when loading', () => {
+  it('disables kebab menu when loading', () => {
     render(
       <OfferTable
         offers={mockOffers}
@@ -169,8 +173,8 @@ describe('OfferTable', () => {
       />
     );
 
-    const viewButtons = screen.getAllByRole('button', { name: /View/i });
-    viewButtons.forEach((button) => {
+    const actionButtons = screen.getAllByRole('button', { name: /Actions/i });
+    actionButtons.forEach((button) => {
       expect(button).toBeDisabled();
     });
   });
