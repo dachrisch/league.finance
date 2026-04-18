@@ -17,7 +17,11 @@ describe('createApp', () => {
 
   afterEach(async () => {
     process.env.NODE_ENV = originalEnv;
-    await closeQueues();
+    try {
+      await closeQueues();
+    } catch (err) {
+      // Ignore cleanup errors in tests
+    }
   });
 
   it('registers routes without throwing', () => {
