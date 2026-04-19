@@ -92,7 +92,7 @@ export function OfferDetailPage() {
   const configs = data.configs || [];
   const totalPrice = configs.reduce((sum, config) => sum + config.finalPrice, 0);
   const season = seasons.find(s => s._id === offer.seasonId);
-  const seasonYear = season?.year || offer.seasonId;
+  const seasonYear = season?.name || offer.seasonId;
 
   return (
     <div className="container" style={{ paddingBottom: 'var(--spacing-xl)' }}>

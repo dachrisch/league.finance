@@ -207,7 +207,7 @@ export function useOfferCreation() {
       step1: {
         pathChoice: 'existing',
         selectedAssociationId: offer.associationId,
-        selectedContactId: offer.contact?._id,
+        selectedContactId: offer.contactId,
         selectedSeasonId: String(offer.seasonId),
         pasteInput: '',
         isExtracting: false,

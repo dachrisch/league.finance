@@ -40,8 +40,8 @@ export function OffersPage() {
   }, {});
 
   // Create season year map
-  const seasonYears: Record<string | number, number> = seasons.reduce((acc: Record<string | number, number>, s: any) => {
-    acc[s._id] = s.year;
+  const seasonYears: Record<string | number, string> = seasons.reduce((acc: Record<string | number, string>, s: any) => {
+    acc[s._id] = s.name;
     return acc;
   }, {});
 

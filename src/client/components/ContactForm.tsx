@@ -4,10 +4,13 @@ export interface ContactFormProps {
   initialData?: any;
   onSubmit: (data: {
     name: string;
-    street: string;
-    city: string;
-    postalCode: string;
-    country: string;
+    email: string;
+    address: {
+      street: string;
+      city: string;
+      postalCode: string;
+      country: string;
+    };
   }) => Promise<void>;
   onCancel?: () => void;
   isLoading?: boolean;
@@ -16,6 +19,7 @@ export interface ContactFormProps {
 export function ContactForm({ initialData, onSubmit, onCancel, isLoading = false }: ContactFormProps) {
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
     street: '',
     city: '',
     postalCode: '',
@@ -27,6 +31,7 @@ export function ContactForm({ initialData, onSubmit, onCancel, isLoading = false
     if (initialData) {
       setFormData({
         name: initialData.name || '',
+        email: initialData.email || '',
         street: initialData.address?.street || initialData.street || '',
         city: initialData.address?.city || initialData.city || '',
         postalCode: initialData.address?.postalCode || initialData.postalCode || '',
@@ -49,13 +54,27 @@ export function ContactForm({ initialData, onSubmit, onCancel, isLoading = false
       return;
     }
 
+    if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) {
+      setError('A valid email address is required');
+      return;
+    }
+
     if (!formData.street.trim() || !formData.city.trim() || !formData.postalCode.trim()) {
       setError('Address is required');
       return;
     }
 
     try {
-      await onSubmit(formData);
+      await onSubmit({
+        name: formData.name,
+        email: formData.email,
+        address: {
+          street: formData.street,
+          city: formData.city,
+          postalCode: formData.postalCode,
+          country: formData.country,
+        },
+      });
     } catch (err: any) {
       setError(err?.message || 'Failed to save contact');
     }
@@ -80,6 +99,28 @@ export function ContactForm({ initialData, onSubmit, onCancel, isLoading = false
           value={formData.name}
           onChange={handleChange}
           placeholder="John Doe"
+          style={{
+            width: '100%',
+            padding: '0.5rem',
+            border: '1px solid #dee2e6',
+            borderRadius: '4px',
+            fontSize: '0.875rem',
+          }}
+          disabled={isLoading}
+        />
+      </div>
+
+      <div>
+        <label htmlFor="email" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500' }}>
+          Email Address *
+        </label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="john.doe@example.com"
           style={{
             width: '100%',
             padding: '0.5rem',

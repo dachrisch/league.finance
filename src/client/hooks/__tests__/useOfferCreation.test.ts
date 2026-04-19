@@ -79,4 +79,35 @@ describe('useOfferCreation', () => {
     expect(result.current.step1.pasteInput).toBe('');
     expect(result.current.step2.selectedLeagueIds).toEqual([]);
   });
+
+  it('should reset wizard with existing offer data', () => {
+    const { result } = renderHook(() => useOfferCreation());
+
+    const existingOffer = {
+      associationId: 'assoc123',
+      contactId: 'contact456',
+      seasonId: 2026,
+      leagueIds: [1, 2],
+      financialConfigs: [
+        {
+          costModel: 'SEASON',
+          baseRateOverride: 100,
+          expectedTeamsCount: 10,
+        },
+      ],
+    };
+
+    act(() => {
+      result.current.resetWithData(existingOffer);
+    });
+
+    expect(result.current.currentStep).toBe('step1');
+    expect(result.current.step1.pathChoice).toBe('existing');
+    expect(result.current.step1.selectedAssociationId).toBe('assoc123');
+    expect(result.current.step1.selectedContactId).toBe('contact456');
+    expect(result.current.step1.selectedSeasonId).toBe('2026');
+    expect(result.current.step2.pricing.costModel).toBe('flatFee');
+    expect(result.current.step2.pricing.baseRateOverride).toBe(100);
+    expect(result.current.step2.selectedLeagueIds).toEqual(['1', '2']);
+  });
 });

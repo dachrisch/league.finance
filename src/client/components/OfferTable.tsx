@@ -7,7 +7,7 @@ import { KebabMenu, MenuItem } from './KebabMenu';
 interface OfferTableProps {
   offers: Offer[];
   associationNames: Record<string, string>;
-  seasonYears?: Record<string | number, number>;
+  seasonYears?: Record<string | number, string>;
   onView: (id: string) => void;
   onSend?: (id: string) => void;
   onEdit?: (id: string) => void;
