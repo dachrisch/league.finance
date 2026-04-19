@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.13](https://github.com/dachrisch/league.finance/compare/v0.1.12...v0.1.13) (2026-04-19)
+
+
+### Features
+
+* add global test setup to check test data availability ([4a00b2d](https://github.com/dachrisch/league.finance/commit/4a00b2dea441f92284ccea61587851364059acca))
+* add Playwright E2E tests for offer creation flows ([a2c7816](https://github.com/dachrisch/league.finance/commit/a2c7816953e9ccbf6ea70bd2bcf978ca23614cee))
+* add test auth endpoint and fix E2E test authentication ([bd57be0](https://github.com/dachrisch/league.finance/commit/bd57be051918bf3c5cbe386d20005f324f5d118a))
+* update E2E setup to create test preconditions and fail tests if missing ([5115f46](https://github.com/dachrisch/league.finance/commit/5115f46c6e0ee0b33cac300833e00ee0bbbf4f96))
+
+
+### Bug Fixes
+
+* handle cleanup errors in app test to prevent junit reporter exit code 1 ([c31a952](https://github.com/dachrisch/league.finance/commit/c31a95264d06b59a8d9fbbc582add39371e996c4))
+* increase timeout for slow PDF generation test ([536bcc6](https://github.com/dachrisch/league.finance/commit/536bcc684c24c7ed80599acc17448c4d6ca42dd6))
+* make E2E tests skip gracefully when test data is missing ([fbebdd4](https://github.com/dachrisch/league.finance/commit/fbebdd482ebed6e07ba7d71176adb69d093aed78))
+* resolve all remaining test failures and ensure 100% pass rate ([0ca5272](https://github.com/dachrisch/league.finance/commit/0ca5272f7ee9d38f8f505fb3f403e502fec45736))
+* resolve database schema mismatch in finance seasons router ([c27f0ce](https://github.com/dachrisch/league.finance/commit/c27f0ce31215bf7c872faa66df7c97808901e434))
+* resolve season field undefined error in offer creation wizard ([9e858f1](https://github.com/dachrisch/league.finance/commit/9e858f18549625b6eaa1bdfeb57ab2e41c266ee4))
+* resolve TypeScript errors from season field schema change ([5a8b120](https://github.com/dachrisch/league.finance/commit/5a8b120b2c2154a1abd7d77a67211e91b3fa6927))
+* set NODE_ENV=development for tests to use MockQueue instead of Redis ([fbc5447](https://github.com/dachrisch/league.finance/commit/fbc54479c6a2110b03bc335f94bb2777299c1ece))
+* show database errors instead of success messages when DB unavailable ([a83017d](https://github.com/dachrisch/league.finance/commit/a83017d0c6f9d7358ac3d19d228f691638e4d473))
+
 ### [0.1.12](https://github.com/dachrisch/league.finance/compare/v0.1.8...v0.1.12) (2026-04-17)
 
 
