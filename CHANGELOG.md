@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.14](https://github.com/dachrisch/league.finance/compare/v0.1.13...v0.1.14) (2026-04-19)
+
+
+### Bug Fixes
+
+* resolve season display, contact email editing, and wizard pre-selection ([cecdf2d](https://github.com/dachrisch/league.finance/commit/cecdf2d3c77e400db4627dc3fd0bb4d55e0cbc45))
+
 ### [0.1.13](https://github.com/dachrisch/league.finance/compare/v0.1.12...v0.1.13) (2026-04-19)
 
 
