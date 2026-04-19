@@ -1,14 +1,35 @@
-import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, afterAll, vi, beforeEach } from 'vitest';
 import { Contact } from '../models/Contact';
 import { Offer } from '../models/Offer';
 import { FinancialConfig } from '../models/FinancialConfig';
 import { connectMongo, disconnectMongo } from '../db/mongo';
 import { appRouter } from '../routers/index';
 import { createInnerTRPCContext } from '../trpc';
+import { getMysqlPool } from '../db/mysql';
+
+vi.mock('../db/mysql');
 
 describe('Offer Redesign Integration', () => {
   beforeAll(async () => {
     await connectMongo();
+  });
+
+  beforeEach(() => {
+    // Mock MySQL pool to return test league data
+    const mockPool = {
+      query: vi.fn().mockImplementation((sql: string) => {
+        if (sql.includes('gamedays_league')) {
+          return Promise.resolve([
+            [
+              { id: 101, name: 'Test League 1', slug: 'test-league-1' },
+              { id: 102, name: 'Test League 2', slug: 'test-league-2' }
+            ]
+          ]);
+        }
+        return Promise.resolve([[]]);
+      })
+    };
+    vi.mocked(getMysqlPool).mockReturnValue(mockPool as any);
   });
 
   afterEach(async () => {

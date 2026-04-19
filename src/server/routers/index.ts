@@ -12,7 +12,6 @@ import { offersSendRouter } from './finance/offers-send';
 import { contactsRouter } from './finance/contacts';
 import { leaguesRouter } from './finance/leagues';
 import { seasonsRouter } from './finance/seasons';
-import { testDataRouter } from './test-data';
 import { healthRouter } from './health';
 
 export const appRouter = router({
@@ -31,7 +30,6 @@ export const appRouter = router({
     contacts: contactsRouter,
     leagues: leaguesRouter,
     seasons: seasonsRouter,
-    testData: testDataRouter,
   }),
 });
 

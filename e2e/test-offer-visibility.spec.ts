@@ -1,23 +1,16 @@
 import { test, expect } from '@playwright/test';
-import { ensurePageAuthenticated } from './utils';
+import { ensurePageAuthenticated, setupMockData } from './utils';
 
 test.describe('Offer Visibility Bug Fix', () => {
   test.beforeEach(async ({ page }) => {
     await ensurePageAuthenticated(page);
+    await setupMockData(page);
   });
 
   test('Draft offers created via API should appear in Dashboard Active Contracts', async ({
     page,
   }) => {
-    // Step 1: Seed test data
-    console.log('🌱 Seeding test data...');
-    const seedResponse = await page.request.post('/trpc/finance.testData.seedTestData', {
-      data: JSON.stringify({ 0: { json: {} } })
-    });
-    const seedResult = await seedResponse.json();
-    console.log('✓ Test data seeded');
-
-    // Step 2: Get test data (associations, leagues, seasons)
+    // Step 1: Get test data from mocks (associations, leagues, seasons)
     console.log('\n📋 Fetching test data...');
     const [assocResponse, leaguesResponse, seasonsResponse] = await Promise.all([
       page.request.get('/trpc/finance.associations.list'),
