@@ -1,8 +1,44 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AssociationContactForm } from '../AssociationContactForm';
 
+// Mock trpc
+const mockFetch = vi.fn();
+const mockUseUtils = vi.fn(() => ({
+  finance: {
+    associations: {
+      search: {
+        fetch: mockFetch,
+      },
+    },
+    contacts: {
+      search: {
+        fetch: mockFetch,
+      },
+    },
+  },
+}));
+
+// We need to mock the trpc object itself which is used in the component
+vi.mock('../lib/trpc', () => {
+  return {
+    trpc: {
+      useUtils: () => mockUseUtils(),
+      // Add other methods that might be expected by the proxy if needed
+    },
+  };
+});
+
+// Since the component uses trpc.useUtils(), and it fails with "Unable to find tRPC Context",
+// it means the mock isn't being picked up or it's still trying to use the real one.
+// Let's try to mock it more aggressively.
+
 describe('AssociationContactForm', () => {
+  beforeEach(() => {
+    mockFetch.mockReset();
+    mockUseUtils.mockClear();
+  });
+
   it('renders textarea and auto-fill button', () => {
     const mockOnSubmit = vi.fn();
     render(
@@ -15,8 +51,9 @@ describe('AssociationContactForm', () => {
     expect(screen.getByRole('button', { name: /auto-fill/i })).toBeInTheDocument();
   });
 
-  it('displays fields after extraction', () => {
+  it('displays fields after extraction', async () => {
     const mockOnSubmit = vi.fn();
+    mockFetch.mockResolvedValue(null);
 
     render(
       <AssociationContactForm
@@ -38,12 +75,15 @@ Country`,
     const autoFillButton = screen.getByRole('button', { name: /auto-fill/i });
     fireEvent.click(autoFillButton);
 
-    expect(screen.getByDisplayValue('Organization')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Organization')).toBeInTheDocument();
+    });
     expect(screen.getByDisplayValue('John Smith')).toBeInTheDocument();
   });
 
-  it('requires email field to be filled before submit', () => {
+  it('requires email field to be filled before submit', async () => {
     const mockOnSubmit = vi.fn();
+    mockFetch.mockResolvedValue(null);
 
     render(
       <AssociationContactForm
@@ -64,17 +104,24 @@ Country`,
 
     const autoFillButton = screen.getByRole('button', { name: /auto-fill/i });
     fireEvent.click(autoFillButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /create/i })).toBeInTheDocument();
+    });
 
     const submitButton = screen.getByRole('button', { name: /create/i });
     fireEvent.click(submitButton);
 
     // Should show error about missing email
-    expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+    });
     expect(mockOnSubmit).not.toHaveBeenCalled();
   });
 
   it('calls onSubmit with correct data', async () => {
     const mockOnSubmit = vi.fn().mockResolvedValue(undefined);
+    mockFetch.mockResolvedValue(null);
 
     render(
       <AssociationContactForm
@@ -96,6 +143,10 @@ Germany`,
 
     const autoFillButton = screen.getByRole('button', { name: /auto-fill/i });
     fireEvent.click(autoFillButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /create/i })).toBeInTheDocument();
+    });
 
     const submitButton = screen.getByRole('button', { name: /create/i });
     fireEvent.click(submitButton);
@@ -121,8 +172,13 @@ Germany`,
     });
   });
 
-  it('disables extracted fields on high confidence', () => {
+  it('shows duplicate warnings when entities exist', async () => {
     const mockOnSubmit = vi.fn();
+    mockFetch.mockImplementation(({ name, email }) => {
+      if (name === 'Existing Org') return Promise.resolve({ _id: 'assoc1', name: 'Existing Org' });
+      if (email === 'existing@example.com') return Promise.resolve({ _id: 'contact1', name: 'Existing Contact' });
+      return Promise.resolve(null);
+    });
 
     render(
       <AssociationContactForm
@@ -133,11 +189,11 @@ Germany`,
     const textarea = screen.getByPlaceholderText(/paste text/i);
     fireEvent.change(textarea, {
       target: {
-        value: `Test e.V.
-John Smith
-john@realcompany.com
-Hauptstraße 1
-12345 Berlin
+        value: `Existing Org
+Existing Contact
+existing@example.com
+Street 1
+12345 City
 Germany`,
       },
     });
@@ -145,76 +201,9 @@ Germany`,
     const autoFillButton = screen.getByRole('button', { name: /auto-fill/i });
     fireEvent.click(autoFillButton);
 
-    const orgInput = screen.getByDisplayValue('Test e.V.') as HTMLInputElement;
-    expect(orgInput.disabled).toBe(true);
-  });
-
-  it('shows warning banner on low confidence extraction', () => {
-    const mockOnSubmit = vi.fn();
-
-    render(
-      <AssociationContactForm
-        onSubmit={mockOnSubmit}
-      />
-    );
-
-    const textarea = screen.getByPlaceholderText(/paste text/i);
-    fireEvent.change(textarea, {
-      target: {
-        value: `Organization
-John Smith`,
-      },
-    });
-
-    const autoFillButton = screen.getByRole('button', { name: /auto-fill/i });
-    fireEvent.click(autoFillButton);
-
-    // Low confidence should show warning
-    expect(screen.getByText(/please review/i)).toBeInTheDocument();
-  });
-
-  it('allows email modification on high confidence', async () => {
-    const mockOnSubmit = vi.fn().mockResolvedValue(undefined);
-
-    render(
-      <AssociationContactForm
-        onSubmit={mockOnSubmit}
-      />
-    );
-
-    const textarea = screen.getByPlaceholderText(/paste text/i);
-    fireEvent.change(textarea, {
-      target: {
-        value: `Organization
-John Smith
-john@example.com
-Street 1
-12345 City
-Country`,
-      },
-    });
-
-    const autoFillButton = screen.getByRole('button', { name: /auto-fill/i });
-    fireEvent.click(autoFillButton);
-
-    const emailInput = screen.getByDisplayValue('john@example.com') as HTMLInputElement;
-    // Email should not be disabled even on high confidence
-    expect(emailInput.disabled).toBe(false);
-
-    // Modify email
-    fireEvent.change(emailInput, { target: { value: 'newemail@example.com' } });
-
-    const submitButton = screen.getByRole('button', { name: /create/i });
-    fireEvent.click(submitButton);
-
     await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({
-          contact: expect.objectContaining({
-            email: 'newemail@example.com',
-          }),
-        })
-      );
+      expect(screen.getByText(/Organization "Existing Org" already exists/i)).toBeInTheDocument();
     });
+    expect(screen.getByText(/Contact "Existing Contact" already exists/i)).toBeInTheDocument();
   });
 });

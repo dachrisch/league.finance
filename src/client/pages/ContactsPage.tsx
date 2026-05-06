@@ -3,7 +3,7 @@ import { trpc } from '../lib/trpc';
 import { ContactGrid } from '../components/ContactGrid';
 import { ContactForm } from '../components/ContactForm';
 
-type ModalState = { type: 'create' } | { type: 'edit'; id: string } | null;
+type ModalState = { type: 'create' } | { type: 'edit'; id: string } | { type: 'view'; id: string } | null;
 
 export function ContactsPage() {
   const [modal, setModal] = useState<ModalState>(null);
@@ -24,10 +24,13 @@ export function ContactsPage() {
   });
 
   const deleteContact = trpc.finance.contacts.delete.useMutation({
-    onSuccess: () => refetch(),
+    onSuccess: () => {
+      setModal(null);
+      refetch();
+    },
   });
 
-  const editingContact = modal?.type === 'edit' && modal?.id
+  const activeContact = (modal?.type === 'edit' || modal?.type === 'view') && modal?.id
     ? contacts.find((c: any) => c._id === modal.id)
     : undefined;
 
@@ -69,8 +72,7 @@ export function ContactsPage() {
       ) : (
         <ContactGrid
           contacts={contacts}
-          onEdit={(id) => setModal({ type: 'edit', id })}
-          onDelete={handleDelete}
+          onView={(id) => setModal({ type: 'view', id })}
         />
       )}
 
@@ -87,21 +89,55 @@ export function ContactsPage() {
           justifyContent: 'center',
           zIndex: 1100,
           padding: '1rem',
+          backdropFilter: 'blur(2px)',
         }}>
-          <div className="card" style={{ width: '100%', maxWidth: '500px', maxHeight: '90vh', overflow: 'auto' }}>
+          <div className="card" style={{ width: '100%', maxWidth: '500px', maxHeight: '90vh', overflow: 'auto', padding: 'var(--spacing-xl)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
-              <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
-                {modal.type === 'create' ? 'Add Person' : 'Edit Person'}
+              <h2 style={{ margin: 0, fontSize: 'var(--font-size-xl)' }}>
+                {modal.type === 'create' ? 'Add Person' : 
+                 modal.type === 'view' ? 'Person Details' : 'Edit Person'}
               </h2>
-              <button className="btn-ghost btn-sm" onClick={() => setModal(null)}>✕</button>
+              <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
+                {modal.type === 'view' && (
+                  <>
+                    <button className="btn btn-outline btn-sm" onClick={() => setModal({ type: 'edit', id: modal.id })}>Edit</button>
+                    <button className="btn btn-outline btn-sm" style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }} onClick={() => handleDelete(modal.id)}>Delete</button>
+                  </>
+                )}
+                <button className="btn-ghost btn-sm" onClick={() => setModal(null)}>✕</button>
+              </div>
             </div>
             
-            <ContactForm
-              initialData={editingContact}
-              onSubmit={handleFormSubmit}
-              onCancel={() => setModal(null)}
-              isLoading={createContact.isPending || updateContact.isPending}
-            />
+            {modal.type === 'view' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: '4px' }}>Name</label>
+                  <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 'bold' }}>{activeContact?.name}</div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: '4px' }}>Address</label>
+                  <div>
+                    {activeContact?.address ? (
+                      <>
+                        {activeContact.address.street}<br />
+                        {activeContact.address.postalCode} {activeContact.address.city}<br />
+                        {activeContact.address.country}
+                      </>
+                    ) : 'No address provided'}
+                  </div>
+                </div>
+                <div style={{ marginTop: 'var(--spacing-lg)', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className="btn btn-primary" onClick={() => setModal(null)}>Close</button>
+                </div>
+              </div>
+            ) : (
+              <ContactForm
+                initialData={activeContact}
+                onSubmit={handleFormSubmit}
+                onCancel={() => setModal(null)}
+                isLoading={createContact.isPending || updateContact.isPending}
+              />
+            )}
           </div>
         </div>
       )}

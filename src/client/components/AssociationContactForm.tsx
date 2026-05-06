@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { extractContactInfo } from '../hooks/useExtraction';
+import { trpc } from '../lib/trpc';
 
 export interface AssociationContactFormProps {
   onSubmit: (data: {
@@ -37,9 +38,16 @@ export function AssociationContactForm({ onSubmit, onCancel, isLoading = false }
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [existingAssociation, setExistingAssociation] = useState<{ _id: string; name: string } | null>(null);
+  const [existingContact, setExistingContact] = useState<{ _id: string; name: string } | null>(null);
 
-  const handleAutoFill = () => {
+  const utils = trpc.useUtils();
+
+  const handleAutoFill = async () => {
     setError('');
+    setExistingAssociation(null);
+    setExistingContact(null);
+
     if (!pastedText.trim()) {
       setError('Please paste some text to extract');
       return;
@@ -63,7 +71,7 @@ export function AssociationContactForm({ onSubmit, onCancel, isLoading = false }
     setExtractedData({ confidence });
 
     // Populate form data from extraction
-    setFormData({
+    const newFormData = {
       associationName: extracted.organizationName || '',
       contactName: extracted.contactName || '',
       email: extracted.email || '',
@@ -72,15 +80,64 @@ export function AssociationContactForm({ onSubmit, onCancel, isLoading = false }
       city: extracted.city || '',
       postalCode: extracted.postalCode || '',
       country: extracted.country || 'Germany',
-    });
+    };
+    setFormData(newFormData);
+
+    // Check for duplicates
+    if (newFormData.associationName) {
+      try {
+        const assoc = await utils.finance.associations.search.fetch({ name: newFormData.associationName });
+        if (assoc) setExistingAssociation(assoc);
+      } catch (err) {
+        console.error('Error searching association:', err);
+      }
+    }
+
+    if (newFormData.email || (newFormData.contactName && newFormData.city)) {
+      try {
+        const contact = await utils.finance.contacts.search.fetch({
+          email: newFormData.email,
+          name: newFormData.contactName,
+          city: newFormData.city
+        });
+        if (contact) setExistingContact(contact);
+      } catch (err) {
+        console.error('Error searching contact:', err);
+      }
+    }
   };
 
-  const handleFieldChange = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleFieldChange = async (field: keyof FormData, value: string) => {
+    setFormData((prev) => {
+      const next = { ...prev, [field]: value };
+      return next;
+    });
+
+    // Re-check duplicates on specific field changes
+    if (field === 'associationName') {
+      const assoc = await utils.finance.associations.search.fetch({ name: value });
+      setExistingAssociation(assoc || null);
+    } else if (field === 'email' || field === 'contactName' || field === 'city') {
+      const contact = await utils.finance.contacts.search.fetch({
+        email: field === 'email' ? value : formData.email,
+        name: field === 'contactName' ? value : formData.contactName,
+        city: field === 'city' ? value : formData.city
+      });
+      setExistingContact(contact || null);
+    }
   };
 
   const isFieldDisabled = (field: string): boolean => {
     if (!extractedData) return false;
+    // If it's an existing association, disable its fields
+    if (existingAssociation && ['associationName', 'street', 'city', 'postalCode', 'country'].includes(field)) {
+      return true;
+    }
+    // If it's an existing contact, disable its fields
+    if (existingContact && ['contactName', 'email', 'phone'].includes(field)) {
+      return true;
+    }
+
     if (extractedData.confidence !== 'high') return false;
     // Email is always editable
     if (field === 'email') return false;
@@ -146,7 +203,10 @@ export function AssociationContactForm({ onSubmit, onCancel, isLoading = false }
           email: formData.email,
           phone: formData.phone || undefined,
         },
-        createdEntities: {},
+        createdEntities: {
+          associationId: existingAssociation?._id,
+          contactId: existingContact?._id,
+        },
       });
     } catch (err: any) {
       setError(err?.message || 'Failed to create association and contact');
@@ -198,8 +258,39 @@ export function AssociationContactForm({ onSubmit, onCancel, isLoading = false }
       {/* Extracted Fields Section */}
       {showExtractedFields && (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* Duplicate Warnings */}
+          {existingAssociation && (
+            <div
+              style={{
+                padding: '0.75rem',
+                backgroundColor: '#e3f2fd',
+                color: '#0d47a1',
+                border: '1px solid #bbdefb',
+                borderRadius: '4px',
+                fontSize: '0.875rem',
+              }}
+            >
+              ℹ️ Organization "<strong>{existingAssociation.name}</strong>" already exists. It will be reused.
+            </div>
+          )}
+
+          {existingContact && (
+            <div
+              style={{
+                padding: '0.75rem',
+                backgroundColor: '#e3f2fd',
+                color: '#0d47a1',
+                border: '1px solid #bbdefb',
+                borderRadius: '4px',
+                fontSize: '0.875rem',
+              }}
+            >
+              ℹ️ Contact "<strong>{existingContact.name}</strong>" already exists. It will be reused.
+            </div>
+          )}
+
           {/* Confidence Banner */}
-          {isHighConfidence && (
+          {!existingAssociation && !existingContact && isHighConfidence && (
             <div
               style={{
                 padding: '0.75rem',
@@ -210,7 +301,7 @@ export function AssociationContactForm({ onSubmit, onCancel, isLoading = false }
                 fontSize: '0.875rem',
               }}
             >
-              High confidence extraction - fields are read-only. You can still edit email and phone.
+              ✓ High confidence extraction - fields are read-only. You can still edit email and phone.
             </div>
           )}
 
@@ -243,6 +334,7 @@ export function AssociationContactForm({ onSubmit, onCancel, isLoading = false }
               {error}
             </div>
           )}
+
 
           {/* Organization Section */}
           <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>

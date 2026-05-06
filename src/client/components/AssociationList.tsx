@@ -2,8 +2,7 @@ import { Association } from '../lib/schemas';
 
 interface AssociationListProps {
   associations: Association[];
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onView: (id: string) => void;
   isLoading?: boolean;
 }
 
@@ -12,7 +11,7 @@ const statusStyle = (isLoading?: boolean): React.CSSProperties => ({
   pointerEvents: isLoading ? 'none' : 'auto',
 });
 
-export function AssociationList({ associations, onEdit, onDelete, isLoading = false }: AssociationListProps) {
+export function AssociationList({ associations, onView, isLoading = false }: AssociationListProps) {
   if (associations.length === 0) {
     return (
       <div className="card" style={{
@@ -34,12 +33,21 @@ export function AssociationList({ associations, onEdit, onDelete, isLoading = fa
             <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
               <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Name</th>
               <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Address</th>
-              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {associations.map((association) => (
-              <tr key={association._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+              <tr 
+                key={association._id} 
+                onClick={() => onView(association._id)}
+                style={{ 
+                  borderBottom: '1px solid var(--border-color)',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-secondary)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              >
                 <td data-label="Name" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>
                   <strong style={{ color: 'var(--primary-color)' }}>{association.name}</strong>
                 </td>
@@ -51,29 +59,6 @@ export function AssociationList({ associations, onEdit, onDelete, isLoading = fa
                   ) : (
                     <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>No address</span>
                   )}
-                </td>
-                <td data-label="Actions" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
-                  <div style={{ display: 'flex', gap: 'var(--spacing-sm)', justifyContent: 'center' }}>
-                    <button
-                      className="btn btn-outline btn-sm"
-                      onClick={() => onEdit(association._id)}
-                      disabled={isLoading}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-outline btn-sm"
-                      style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
-                      onClick={() => {
-                        if (window.confirm(`Delete "${association.name}"?`)) {
-                          onDelete(association._id);
-                        }
-                      }}
-                      disabled={isLoading}
-                    >
-                      Delete
-                    </button>
-                  </div>
                 </td>
               </tr>
             ))}

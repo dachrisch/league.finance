@@ -31,21 +31,19 @@ describe('AssociationList', () => {
     },
   ];
 
-  const mockOnEdit = vi.fn();
-  const mockOnDelete = vi.fn();
+  const mockOnView = vi.fn();
 
   beforeEach(() => {
-    mockOnEdit.mockClear();
-    mockOnDelete.mockClear();
+    mockOnView.mockClear();
   });
 
   it('renders empty state when no associations', () => {
-    render(<AssociationList associations={[]} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
+    render(<AssociationList associations={[]} onView={mockOnView} />);
     expect(screen.getByText(/No associations found/i)).toBeInTheDocument();
   });
 
   it('renders table with associations', () => {
-    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
+    render(<AssociationList associations={mockAssociations} onView={mockOnView} />);
 
     expect(screen.getByText('Association 1')).toBeInTheDocument();
     expect(screen.getByText('Association 2')).toBeInTheDocument();
@@ -53,56 +51,21 @@ describe('AssociationList', () => {
     expect(screen.getByText(/Street 2, 67890 City 2, Germany/i)).toBeInTheDocument();
   });
 
-  it('calls onEdit when edit button is clicked', () => {
-    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
+  it('calls onView when a row is clicked', () => {
+    render(<AssociationList associations={mockAssociations} onView={mockOnView} />);
 
-    const editButtons = screen.getAllByRole('button', { name: /Edit/i });
-    fireEvent.click(editButtons[0]);
+    const rows = screen.getAllByRole('row');
+    // rows[0] is the header
+    fireEvent.click(rows[1]);
 
-    expect(mockOnEdit).toHaveBeenCalledWith('1');
-  });
-
-  it('calls onDelete when delete button is clicked and confirmed', () => {
-    global.confirm = vi.fn(() => true);
-    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
-
-    const deleteButtons = screen.getAllByRole('button', { name: /Delete/i });
-    fireEvent.click(deleteButtons[0]);
-
-    expect(mockOnDelete).toHaveBeenCalledWith('1');
-  });
-
-  it('does not call onDelete if deletion is not confirmed', () => {
-    global.confirm = vi.fn(() => false);
-    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
-
-    const deleteButtons = screen.getAllByRole('button', { name: /Delete/i });
-    fireEvent.click(deleteButtons[0]);
-
-    expect(mockOnDelete).not.toHaveBeenCalled();
-  });
-
-  it('disables buttons when loading', () => {
-    render(
-      <AssociationList
-        associations={mockAssociations}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        isLoading={true}
-      />
-    );
-
-    const buttons = screen.getAllByRole('button');
-    buttons.forEach((button) => {
-      expect(button).toBeDisabled();
-    });
+    expect(mockOnView).toHaveBeenCalledWith('1');
   });
 
   it('renders table headers correctly', () => {
-    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
+    render(<AssociationList associations={mockAssociations} onView={mockOnView} />);
 
     expect(screen.getByText('Name')).toBeInTheDocument();
     expect(screen.getByText('Address')).toBeInTheDocument();
-    expect(screen.getByText('Actions')).toBeInTheDocument();
+    expect(screen.queryByText('Actions')).not.toBeInTheDocument();
   });
 });

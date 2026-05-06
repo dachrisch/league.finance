@@ -6,7 +6,7 @@ import { AssociationList } from '../components/AssociationList';
 import { AssociationInput } from '../lib/schemas';
 
 interface Modal {
-  type: 'create' | 'edit';
+  type: 'create' | 'edit' | 'view';
   id?: string;
 }
 
@@ -15,8 +15,12 @@ export function AssociationsPage() {
   const { data: associations = [], isLoading, refetch } = trpc.finance.associations.list.useQuery();
   const createAssociation = trpc.finance.associations.create.useMutation({
     onSuccess: () => {
-      setModal(null);
       refetch();
+    },
+  });
+  const createContact = trpc.finance.contacts.create.useMutation({
+    onSuccess: () => {
+      // Potentially refetch contacts if they were displayed here
     },
   });
   const updateAssociation = trpc.finance.associations.update.useMutation({
@@ -26,10 +30,13 @@ export function AssociationsPage() {
     },
   });
   const deleteAssociation = trpc.finance.associations.delete.useMutation({
-    onSuccess: () => refetch(),
+    onSuccess: () => {
+      setModal(null);
+      refetch();
+    },
   });
 
-  const editingAssociation = modal?.type === 'edit' && modal?.id
+  const activeAssociation = (modal?.type === 'edit' || modal?.type === 'view') && modal?.id
     ? associations.find((a: any) => a._id === modal.id)
     : undefined;
 
@@ -45,12 +52,18 @@ export function AssociationsPage() {
     }
   }
 
+  function handleView(id: string) {
+    setModal({ type: 'view', id });
+  }
+
   function handleEdit(id: string) {
     setModal({ type: 'edit', id });
   }
 
   function handleDelete(id: string) {
-    deleteAssociation.mutate({ id });
+    if (window.confirm('Are you sure you want to delete this association?')) {
+      deleteAssociation.mutate({ id });
+    }
   }
 
   function handleCloseModal() {
@@ -100,24 +113,70 @@ export function AssociationsPage() {
               padding: 'var(--spacing-xl)',
             }}
           >
-            <h2 style={{ margin: '0 0 var(--spacing-lg) 0', fontSize: 'var(--font-size-xl)' }}>
-              {modal.type === 'create' ? 'Create Association & Contact' : 'Edit Association'}
-            </h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
+              <h2 style={{ margin: 0, fontSize: 'var(--font-size-xl)' }}>
+                {modal.type === 'create' ? 'Create Association & Contact' : 
+                 modal.type === 'view' ? 'Association Details' : 'Edit Association'}
+              </h2>
+              {modal.type === 'view' && (
+                <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
+                  <button className="btn btn-outline btn-sm" onClick={() => handleEdit(modal.id!)}>Edit</button>
+                  <button className="btn btn-outline btn-sm" style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }} onClick={() => handleDelete(modal.id!)}>Delete</button>
+                </div>
+              )}
+            </div>
+
             {modal.type === 'create' ? (
               <AssociationContactForm
                 onSubmit={async (data) => {
-                  await createAssociation.mutateAsync({
-                    name: data.association.name,
-                    address: data.association.address,
-                  });
+                  let assocId = data.createdEntities.associationId;
+                  if (!assocId) {
+                    const assoc = await createAssociation.mutateAsync({
+                      name: data.association.name,
+                      address: data.association.address,
+                    });
+                    assocId = assoc._id;
+                  }
+
+                  let contactId = data.createdEntities.contactId;
+                  if (!contactId) {
+                    await createContact.mutateAsync({
+                      name: data.contact.name,
+                      email: data.contact.email,
+                      phone: data.contact.phone,
+                      associationId: assocId,
+                    });
+                  }
                   handleCloseModal();
                 }}
-                isLoading={createAssociation.isPending}
+                isLoading={createAssociation.isPending || createContact.isPending}
                 onCancel={handleCloseModal}
               />
+            ) : modal.type === 'view' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: '4px' }}>Name</label>
+                  <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 'bold' }}>{activeAssociation?.name}</div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: '4px' }}>Address</label>
+                  <div>
+                    {activeAssociation?.address ? (
+                      <>
+                        {activeAssociation.address.street}<br />
+                        {activeAssociation.address.postalCode} {activeAssociation.address.city}<br />
+                        {activeAssociation.address.country}
+                      </>
+                    ) : 'No address provided'}
+                  </div>
+                </div>
+                <div style={{ marginTop: 'var(--spacing-lg)', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className="btn btn-primary" onClick={handleCloseModal}>Close</button>
+                </div>
+              </div>
             ) : (
               <AssociationForm
-                initialData={editingAssociation}
+                initialData={activeAssociation}
                 onSubmit={handleFormSubmit}
                 isLoading={updateAssociation.isPending}
                 onCancel={handleCloseModal}
@@ -129,8 +188,7 @@ export function AssociationsPage() {
 
       <AssociationList
         associations={associations}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        onView={handleView}
         isLoading={isLoading || deleteAssociation.isPending}
       />
     </div>
