@@ -8,6 +8,7 @@ import { Offer } from '../../models/Offer';
 import { FinancialConfig } from '../../models/FinancialConfig';
 import { Contact } from '../../models/Contact';
 import { getMysqlPool } from '../../db/mysql';
+import { supportsTransactions } from '../../db/mongo';
 import { extractContactInfo } from '../../../../shared/lib/extraction';
 import { offerSendQueue } from '../../lib/queue';
 
@@ -137,9 +138,7 @@ export const offersRouter = router({
       expectedTeamsCount: z.number().int().min(0),
     }))
     .mutation(async ({ input }) => {
-      const isTest = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
-      const isDev = process.env.NODE_ENV === 'development';
-      const session = (!isTest && !isDev) ? await Offer.startSession() : null;
+      const session = supportsTransactions() ? await Offer.startSession() : null;
       if (session) await session.startTransaction();
 
       try {
