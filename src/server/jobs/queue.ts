@@ -45,17 +45,19 @@ export const offerSendQueue =
   process.env.NODE_ENV === 'development'
     ? new MockQueue()
     : (() => {
-        const port = parseInt(process.env.REDIS_PORT || '6379', 10);
-        if (isNaN(port)) {
-          throw new Error(`Invalid REDIS_PORT: ${process.env.REDIS_PORT}`);
+        const REDIS_URL = process.env.REDIS_URL;
+        let queue: Bull.Queue;
+
+        if (REDIS_URL) {
+          queue = new Bull('offer-send', REDIS_URL);
+        } else {
+          const port = parseInt(process.env.REDIS_PORT || '6379', 10);
+          const redisConfig: RedisOptions = {
+            host: process.env.REDIS_HOST || 'localhost',
+            port: isNaN(port) ? 6379 : port,
+          };
+          queue = new Bull('offer-send', { redis: redisConfig });
         }
-
-        const redisConfig: RedisOptions = {
-          host: process.env.REDIS_HOST || 'localhost',
-          port,
-        };
-
-        const queue = new Bull('offer-send', { redis: redisConfig });
 
         // Global error handlers
         queue.on('error', (err) => {

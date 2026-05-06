@@ -10,7 +10,7 @@ import { Contact } from '../../models/Contact';
 import { getMysqlPool } from '../../db/mysql';
 import { supportsTransactions } from '../../db/mongo';
 import { extractContactInfo } from '../../../../shared/lib/extraction';
-import { offerSendQueue } from '../../lib/queue';
+import { offerSendQueue } from '../../jobs/queue';
 
 const DEFAULT_BASE_RATE = 50;
 
