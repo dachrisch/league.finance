@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.16](https://github.com/dachrisch/league.finance/compare/v0.1.15...v0.1.16) (2026-05-06)
+
+
+### Features
+
+* implement duplicate checks for associations/contacts and refactor UI to view-on-click ([2d6c81a](https://github.com/dachrisch/league.finance/commit/2d6c81a45ac944044bffe8676c8f874e282e1ff7))
+
 ### [0.1.15](https://github.com/dachrisch/league.finance/compare/v0.1.14...v0.1.15) (2026-05-06)
 
 
