@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.15](https://github.com/dachrisch/league.finance/compare/v0.1.14...v0.1.15) (2026-05-06)
+
+
+### Bug Fixes
+
+* isolate test database from production MySQL - critical security fix ([96c3c7f](https://github.com/dachrisch/league.finance/commit/96c3c7f9905b1afbe332be40604fb6d336627955))
+* **mongo:** allow disabling transactions for standalone instances ([a68ef48](https://github.com/dachrisch/league.finance/commit/a68ef48124aab6e6431231771daac8dfc22b92a4))
+* **queue:** support REDIS_URL and remove duplicate queue file ([f22c96c](https://github.com/dachrisch/league.finance/commit/f22c96c8330d8619cce66c987664248d23b5ea9d))
+
 ### [0.1.14](https://github.com/dachrisch/league.finance/compare/v0.1.13...v0.1.14) (2026-04-19)
 
 
