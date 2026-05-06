@@ -1,42 +1,35 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AssociationContactForm } from '../AssociationContactForm';
+import { trpc } from '../../lib/trpc';
 
 // Mock trpc
-const mockFetch = vi.fn();
-const mockUseUtils = vi.fn(() => ({
-  finance: {
-    associations: {
-      search: {
-        fetch: mockFetch,
-      },
-    },
-    contacts: {
-      search: {
-        fetch: mockFetch,
-      },
-    },
+vi.mock('../../lib/trpc', () => ({
+  trpc: {
+    useUtils: vi.fn(),
   },
 }));
 
-// We need to mock the trpc object itself which is used in the component
-vi.mock('../lib/trpc', () => {
-  return {
-    trpc: {
-      useUtils: () => mockUseUtils(),
-      // Add other methods that might be expected by the proxy if needed
+describe('AssociationContactForm', () => {
+  const mockFetch = vi.fn();
+  const mockUtils = {
+    finance: {
+      associations: {
+        search: {
+          fetch: mockFetch,
+        },
+      },
+      contacts: {
+        search: {
+          fetch: mockFetch,
+        },
+      },
     },
   };
-});
 
-// Since the component uses trpc.useUtils(), and it fails with "Unable to find tRPC Context",
-// it means the mock isn't being picked up or it's still trying to use the real one.
-// Let's try to mock it more aggressively.
-
-describe('AssociationContactForm', () => {
   beforeEach(() => {
-    mockFetch.mockReset();
-    mockUseUtils.mockClear();
+    vi.clearAllMocks();
+    vi.mocked(trpc.useUtils).mockReturnValue(mockUtils as any);
   });
 
   it('renders textarea and auto-fill button', () => {
@@ -174,7 +167,7 @@ Germany`,
 
   it('shows duplicate warnings when entities exist', async () => {
     const mockOnSubmit = vi.fn();
-    mockFetch.mockImplementation(({ name, email }) => {
+    mockFetch.mockImplementation(({ name, email }: any) => {
       if (name === 'Existing Org') return Promise.resolve({ _id: 'assoc1', name: 'Existing Org' });
       if (email === 'existing@example.com') return Promise.resolve({ _id: 'contact1', name: 'Existing Contact' });
       return Promise.resolve(null);
@@ -201,9 +194,11 @@ Germany`,
     const autoFillButton = screen.getByRole('button', { name: /auto-fill/i });
     fireEvent.click(autoFillButton);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Organization "Existing Org" already exists/i)).toBeInTheDocument();
-    });
-    expect(screen.getByText(/Contact "Existing Contact" already exists/i)).toBeInTheDocument();
+    // Both warnings should appear
+    const warnings = await screen.findAllByText(/already exists/i);
+    expect(warnings).toHaveLength(2);
+    
+    expect(warnings[0].textContent).toContain('Existing Org');
+    expect(warnings[1].textContent).toContain('Existing Contact');
   });
 });

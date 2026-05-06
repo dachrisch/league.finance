@@ -144,7 +144,7 @@ export function AssociationsPage() {
                       name: data.contact.name,
                       email: data.contact.email,
                       phone: data.contact.phone,
-                      associationId: assocId,
+                      address: data.association.address,
                     });
                   }
                   handleCloseModal();
