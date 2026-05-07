@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.24](https://github.com/dachrisch/league.finance/compare/v0.1.23...v0.1.24) (2026-05-07)
+
+
+### Features
+
+* implement optimistic deletion with 5-second undo toast (remove blocking dialogs) ([cc1e821](https://github.com/dachrisch/league.finance/commit/cc1e8210cb536d90e4a93b39e25e9fcaa46321b8))
+
 ### [0.1.23](https://github.com/dachrisch/league.finance/compare/v0.1.22...v0.1.23) (2026-05-07)
 
 
