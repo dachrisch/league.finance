@@ -19,6 +19,11 @@ on:
         description: Version string to embed in the build
         type: string
         default: "dev"
+      git_hash:
+        required: false
+        description: Git commit hash to embed in the build
+        type: string
+        default: "unknown"
     outputs:
       artifact_name:
         description: "Name of the uploaded artifact containing the Docker image"
@@ -48,6 +53,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             VITE_BUILD_VERSION=${{ inputs.version }}
+            VITE_GIT_COMMIT_HASH=${{ inputs.git_hash }}
 
       - name: 📤 Upload Docker image as artifact
         uses: actions/upload-artifact@v7

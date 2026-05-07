@@ -4,7 +4,9 @@ COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 COPY . .
 ARG VITE_BUILD_VERSION=dev
+ARG VITE_GIT_COMMIT_HASH=unknown
 ENV VITE_BUILD_VERSION=$VITE_BUILD_VERSION
+ENV VITE_GIT_COMMIT_HASH=$VITE_GIT_COMMIT_HASH
 RUN npm run build
 
 FROM node:24-alpine

@@ -29,6 +29,8 @@ jobs:
     with:
       dockerfile: Dockerfile
       image_name: league.finance
+      version: "${{ github.ref_name }}"
+      git_hash: "${{ github.sha }}"
 
   image-test:
     needs:
