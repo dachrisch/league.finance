@@ -4,13 +4,12 @@ import { trpc } from '../lib/trpc';
 import { OfferSummaryCards } from '../components/OfferSummaryCards';
 import { OfferTable } from '../components/OfferTable';
 import { Toast } from '../components/Toast';
-import { ConfirmDialog } from '../components/ConfirmDialog';
 
 export function OffersPage() {
   const navigate = useNavigate();
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<'success' | 'error'>('success');
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; action?: { label: string; onClick: () => void } } | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [undoTimer, setUndoTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Fetch offers, associations, and seasons
   const { data: offers = [], isLoading: offersLoading, refetch } = trpc.finance.offers.list.useQuery({});
@@ -32,7 +31,6 @@ export function OffersPage() {
   const deleteOffer = trpc.finance.offers.delete.useMutation({
     onSuccess: () => {
       refetch();
-      showToast('Offer deleted successfully');
     },
     onError: (error) => {
       showToast(error.message || 'Failed to delete offer', 'error');
@@ -52,10 +50,12 @@ export function OffersPage() {
   }, {});
 
   // Helper function to show toast notifications
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    setToastMessage(message);
-    setToastType(type);
-    setTimeout(() => setToastMessage(null), 5000);
+  const showToast = (message: string, type: 'success' | 'error' = 'success', action?: { label: string; onClick: () => void }) => {
+    setToast({ message, type, action });
+  };
+
+  const handleCloseToast = () => {
+    setToast(null);
   };
 
   // Calculate summary from offers
@@ -76,19 +76,36 @@ export function OffersPage() {
   };
 
   const handleDeleteOffer = (id: string) => {
-    setConfirmDeleteId(id);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (confirmDeleteId) {
-      await deleteOffer.mutateAsync({ id: confirmDeleteId });
-      setConfirmDeleteId(null);
+    // Clear any existing timer
+    if (undoTimer) {
+      clearTimeout(undoTimer);
     }
+
+    setPendingDeleteId(id);
+    
+    const timer = setTimeout(() => {
+      deleteOffer.mutate({ id });
+      setPendingDeleteId(null);
+      setUndoTimer(null);
+    }, 5000);
+
+    setUndoTimer(timer);
+
+    showToast('Offer deleted', 'success', {
+      label: 'Undo',
+      onClick: () => {
+        clearTimeout(timer);
+        setPendingDeleteId(null);
+        setUndoTimer(null);
+        setToast(null);
+      }
+    });
   };
 
-  const handleCancelDelete = () => {
-    setConfirmDeleteId(null);
-  };
+  // Filter out pending deletions for optimistic UI
+  const visibleOffers = pendingDeleteId 
+    ? offers.filter((o: any) => o._id !== pendingDeleteId)
+    : offers;
 
   if (offersLoading) {
     return <div className="container"><p>Loading offers...</p></div>;
@@ -156,31 +173,25 @@ export function OffersPage() {
         </div>
         <div style={{ padding: 'var(--spacing-lg)' }}>
           <OfferTable
-            offers={offers}
+            offers={visibleOffers}
             associationNames={associationNames}
             seasonYears={seasonYears}
             onView={handleViewOffer}
             onDelete={handleDeleteOffer}
-            isLoading={offersLoading || deleteOffer.isPending}
+            isLoading={offersLoading}
           />
         </div>
       </div>
 
       {/* Toast Notifications */}
-      {toastMessage && (
-        <Toast message={toastMessage} type={toastType} />
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          action={toast.action} 
+          onClose={handleCloseToast} 
+        />
       )}
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={confirmDeleteId !== null}
-        title="Delete Offer"
-        message="Are you sure you want to delete this offer? This action cannot be undone."
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-      />
     </div>
   );
 }

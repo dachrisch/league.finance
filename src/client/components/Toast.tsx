@@ -5,6 +5,10 @@ interface ToastProps {
   type?: 'success' | 'error' | 'info';
   duration?: number;
   onClose?: () => void;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 const getToastStyles = (type: 'success' | 'error' | 'info'): React.CSSProperties => {
@@ -15,20 +19,21 @@ const getToastStyles = (type: 'success' | 'error' | 'info'): React.CSSProperties
     padding: 'var(--spacing-lg)',
     borderRadius: 'var(--border-radius-md)',
     minWidth: '280px',
-    maxWidth: '400px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    maxWidth: '450px',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
     zIndex: 9999,
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
     animation: 'slideIn 0.3s ease-out',
+    justifyContent: 'space-between',
   };
 
   const typeStyles: Record<'success' | 'error' | 'info', React.CSSProperties> = {
     success: {
-      backgroundColor: '#ecfdf5',
-      color: 'var(--success-color)',
-      border: `1px solid var(--success-color)`,
+      backgroundColor: 'var(--primary-color)',
+      color: 'white',
+      border: `1px solid var(--primary-color)`,
     },
     error: {
       backgroundColor: '#fef2f2',
@@ -36,9 +41,9 @@ const getToastStyles = (type: 'success' | 'error' | 'info'): React.CSSProperties
       border: `1px solid var(--danger-color)`,
     },
     info: {
-      backgroundColor: '#eff6ff',
-      color: '#0369a1',
-      border: `1px solid #bae6fd`,
+      backgroundColor: 'var(--primary-color)',
+      color: 'white',
+      border: `1px solid var(--primary-color)`,
     },
   };
 
@@ -66,6 +71,7 @@ export function Toast({
   type = 'info',
   duration = 5000,
   onClose,
+  action,
 }: ToastProps) {
   useEffect(() => {
     if (duration && duration > 0) {
@@ -92,19 +98,45 @@ export function Toast({
         }
       `}</style>
       <div style={getToastStyles(type)}>
-        <span
-          style={{
-            fontSize: '18px',
-            fontWeight: 'bold',
-            minWidth: '20px',
-            textAlign: 'center',
-          }}
-        >
-          {getIconEmoji(type)}
-        </span>
-        <span style={{ fontSize: 'var(--font-size-md)', fontWeight: '500' }}>
-          {message}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span
+            style={{
+              fontSize: '18px',
+              fontWeight: 'bold',
+              minWidth: '20px',
+              textAlign: 'center',
+            }}
+          >
+            {getIconEmoji(type)}
+          </span>
+          <span style={{ fontSize: 'var(--font-size-md)', fontWeight: '500' }}>
+            {message}
+          </span>
+        </div>
+        
+        {action && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              action.onClick();
+              onClose?.();
+            }}
+            className="btn btn-sm"
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              color: 'white',
+              border: '1px solid rgba(255,255,255,0.3)',
+              marginLeft: 'var(--spacing-md)',
+              minHeight: '28px',
+              padding: '0 var(--spacing-md)',
+              fontSize: 'var(--font-size-xs)',
+              textTransform: 'uppercase',
+              fontWeight: 'bold'
+            }}
+          >
+            {action.label}
+          </button>
+        )}
       </div>
     </>
   );

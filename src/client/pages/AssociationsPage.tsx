@@ -4,39 +4,50 @@ import { AssociationContactForm } from '../components/AssociationContactForm';
 import { AssociationForm } from '../components/AssociationForm';
 import { AssociationList } from '../components/AssociationList';
 import { AssociationInput } from '../lib/schemas';
+import { Toast } from '../components/Toast';
 
 interface Modal {
-  type: 'create' | 'edit' | 'view';
+  type: 'create' | 'edit';
   id?: string;
 }
 
 export function AssociationsPage() {
   const [modal, setModal] = useState<Modal | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; action?: { label: string; onClick: () => void } } | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [undoTimer, setUndoTimer] = useState<NodeJS.Timeout | null>(null);
+
   const { data: associations = [], isLoading, refetch } = trpc.finance.associations.list.useQuery();
+  
   const createAssociation = trpc.finance.associations.create.useMutation({
     onSuccess: () => {
       refetch();
     },
   });
+  
   const createContact = trpc.finance.contacts.create.useMutation({
     onSuccess: () => {
       // Potentially refetch contacts if they were displayed here
     },
   });
+  
   const updateAssociation = trpc.finance.associations.update.useMutation({
     onSuccess: () => {
       setModal(null);
       refetch();
     },
   });
+  
   const deleteAssociation = trpc.finance.associations.delete.useMutation({
     onSuccess: () => {
-      setModal(null);
       refetch();
     },
+    onError: (error) => {
+      showToast(error.message || 'Failed to delete association', 'error');
+    }
   });
 
-  const activeAssociation = (modal?.type === 'edit' || modal?.type === 'view') && modal?.id
+  const activeAssociation = modal?.type === 'edit' && modal?.id
     ? associations.find((a: any) => a._id === modal.id)
     : undefined;
 
@@ -52,23 +63,47 @@ export function AssociationsPage() {
     }
   }
 
-  function handleView(id: string) {
-    setModal({ type: 'view', id });
-  }
-
   function handleEdit(id: string) {
     setModal({ type: 'edit', id });
   }
 
   function handleDelete(id: string) {
-    if (window.confirm('Are you sure you want to delete this association?')) {
-      deleteAssociation.mutate({ id });
+    if (undoTimer) {
+      clearTimeout(undoTimer);
     }
+
+    setPendingDeleteId(id);
+    
+    const timer = setTimeout(() => {
+      deleteAssociation.mutate({ id });
+      setPendingDeleteId(null);
+      setUndoTimer(null);
+    }, 5000);
+
+    setUndoTimer(timer);
+
+    showToast('Association deleted', 'success', {
+      label: 'Undo',
+      onClick: () => {
+        clearTimeout(timer);
+        setPendingDeleteId(null);
+        setUndoTimer(null);
+        setToast(null);
+      }
+    });
   }
 
   function handleCloseModal() {
     setModal(null);
   }
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success', action?: { label: string; onClick: () => void }) => {
+    setToast({ message, type, action });
+  };
+
+  const visibleAssociations = pendingDeleteId 
+    ? associations.filter((a: any) => a._id !== pendingDeleteId)
+    : associations;
 
   return (
     <div className="container" style={{ paddingBottom: 'var(--spacing-xl)' }}>
@@ -115,15 +150,8 @@ export function AssociationsPage() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
               <h2 style={{ margin: 0, fontSize: 'var(--font-size-xl)' }}>
-                {modal.type === 'create' ? 'Create Association & Contact' : 
-                 modal.type === 'view' ? 'Association Details' : 'Edit Association'}
+                {modal.type === 'create' ? 'Create Association & Contact' : 'Edit Association'}
               </h2>
-              {modal.type === 'view' && (
-                <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
-                  <button className="btn btn-outline btn-sm" onClick={() => handleEdit(modal.id!)}>Edit</button>
-                  <button className="btn btn-outline btn-sm" style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }} onClick={() => handleDelete(modal.id!)}>Delete</button>
-                </div>
-              )}
             </div>
 
             {modal.type === 'create' ? (
@@ -152,28 +180,6 @@ export function AssociationsPage() {
                 isLoading={createAssociation.isPending || createContact.isPending}
                 onCancel={handleCloseModal}
               />
-            ) : modal.type === 'view' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: '4px' }}>Name</label>
-                  <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 'bold' }}>{activeAssociation?.name}</div>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: '4px' }}>Address</label>
-                  <div>
-                    {activeAssociation?.address ? (
-                      <>
-                        {activeAssociation.address.street}<br />
-                        {activeAssociation.address.postalCode} {activeAssociation.address.city}<br />
-                        {activeAssociation.address.country}
-                      </>
-                    ) : 'No address provided'}
-                  </div>
-                </div>
-                <div style={{ marginTop: 'var(--spacing-lg)', display: 'flex', justifyContent: 'flex-end' }}>
-                  <button className="btn btn-primary" onClick={handleCloseModal}>Close</button>
-                </div>
-              </div>
             ) : (
               <AssociationForm
                 initialData={activeAssociation}
@@ -186,12 +192,25 @@ export function AssociationsPage() {
         </div>
       )}
 
-      <AssociationList
-        associations={associations}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        isLoading={isLoading || deleteAssociation.isPending}
-      />
+      {isLoading ? (
+        <p>Loading associations...</p>
+      ) : (
+        <AssociationList
+          associations={visibleAssociations}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          isLoading={isLoading}
+        />
+      )}
+
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          action={toast.action} 
+          onClose={() => setToast(null)} 
+        />
+      )}
     </div>
   );
 }

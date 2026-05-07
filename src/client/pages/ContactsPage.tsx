@@ -2,11 +2,16 @@ import { useState } from 'react';
 import { trpc } from '../lib/trpc';
 import { ContactGrid } from '../components/ContactGrid';
 import { ContactForm } from '../components/ContactForm';
+import { Toast } from '../components/Toast';
 
-type ModalState = { type: 'create' } | { type: 'edit'; id: string } | { type: 'view'; id: string } | null;
+type ModalState = { type: 'create' } | { type: 'edit'; id: string } | null;
 
 export function ContactsPage() {
   const [modal, setModal] = useState<ModalState>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; action?: { label: string; onClick: () => void } } | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [undoTimer, setUndoTimer] = useState<NodeJS.Timeout | null>(null);
+
   const { data: contacts = [], isLoading, refetch } = trpc.finance.contacts.list.useQuery();
 
   const createContact = trpc.finance.contacts.create.useMutation({
@@ -25,12 +30,14 @@ export function ContactsPage() {
 
   const deleteContact = trpc.finance.contacts.delete.useMutation({
     onSuccess: () => {
-      setModal(null);
       refetch();
     },
+    onError: (error) => {
+      showToast(error.message || 'Failed to delete contact', 'error');
+    }
   });
 
-  const activeContact = (modal?.type === 'edit' || modal?.type === 'view') && modal?.id
+  const activeContact = modal?.type === 'edit' && modal?.id
     ? contacts.find((c: any) => c._id === modal.id)
     : undefined;
 
@@ -46,11 +53,39 @@ export function ContactsPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this contact?')) {
-      await deleteContact.mutateAsync({ id });
+  const handleDelete = (id: string) => {
+    if (undoTimer) {
+      clearTimeout(undoTimer);
     }
+
+    setPendingDeleteId(id);
+    
+    const timer = setTimeout(() => {
+      deleteContact.mutate({ id });
+      setPendingDeleteId(null);
+      setUndoTimer(null);
+    }, 5000);
+
+    setUndoTimer(timer);
+
+    showToast('Person deleted', 'success', {
+      label: 'Undo',
+      onClick: () => {
+        clearTimeout(timer);
+        setPendingDeleteId(null);
+        setUndoTimer(null);
+        setToast(null);
+      }
+    });
   };
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success', action?: { label: string; onClick: () => void }) => {
+    setToast({ message, type, action });
+  };
+
+  const visibleContacts = pendingDeleteId 
+    ? contacts.filter((c: any) => c._id !== pendingDeleteId)
+    : contacts;
 
   return (
     <div className="container">
@@ -71,10 +106,10 @@ export function ContactsPage() {
         <p>Loading contacts...</p>
       ) : (
         <ContactGrid
-          contacts={contacts}
+          contacts={visibleContacts}
           onEdit={(id) => setModal({ type: 'edit', id })}
           onDelete={handleDelete}
-          isLoading={isLoading || deleteContact.isPending}
+          isLoading={isLoading}
         />
       )}
 
@@ -96,52 +131,28 @@ export function ContactsPage() {
           <div className="card" style={{ width: '100%', maxWidth: '500px', maxHeight: '90vh', overflow: 'auto', padding: 'var(--spacing-xl)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
               <h2 style={{ margin: 0, fontSize: 'var(--font-size-xl)' }}>
-                {modal.type === 'create' ? 'Add Person' : 
-                 modal.type === 'view' ? 'Person Details' : 'Edit Person'}
+                {modal.type === 'create' ? 'Add Person' : 'Edit Person'}
               </h2>
-              <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
-                {modal.type === 'view' && (
-                  <>
-                    <button className="btn btn-outline btn-sm" onClick={() => setModal({ type: 'edit', id: modal.id })}>Edit</button>
-                    <button className="btn btn-outline btn-sm" style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }} onClick={() => handleDelete(modal.id)}>Delete</button>
-                  </>
-                )}
-                <button className="btn-ghost btn-sm" onClick={() => setModal(null)}>✕</button>
-              </div>
+              <button className="btn btn-ghost btn-sm" onClick={() => setModal(null)}>✕</button>
             </div>
             
-            {modal.type === 'view' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: '4px' }}>Name</label>
-                  <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 'bold' }}>{activeContact?.name}</div>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: '4px' }}>Address</label>
-                  <div>
-                    {activeContact?.address ? (
-                      <>
-                        {activeContact.address.street}<br />
-                        {activeContact.address.postalCode} {activeContact.address.city}<br />
-                        {activeContact.address.country}
-                      </>
-                    ) : 'No address provided'}
-                  </div>
-                </div>
-                <div style={{ marginTop: 'var(--spacing-lg)', display: 'flex', justifyContent: 'flex-end' }}>
-                  <button className="btn btn-primary" onClick={() => setModal(null)}>Close</button>
-                </div>
-              </div>
-            ) : (
-              <ContactForm
-                initialData={activeContact}
-                onSubmit={handleFormSubmit}
-                onCancel={() => setModal(null)}
-                isLoading={createContact.isPending || updateContact.isPending}
-              />
-            )}
+            <ContactForm
+              initialData={activeContact}
+              onSubmit={handleFormSubmit}
+              onCancel={() => setModal(null)}
+              isLoading={createContact.isPending || updateContact.isPending}
+            />
           </div>
         </div>
+      )}
+
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          action={toast.action} 
+          onClose={() => setToast(null)} 
+        />
       )}
     </div>
   );
