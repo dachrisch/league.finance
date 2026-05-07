@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.20](https://github.com/dachrisch/league.finance/compare/v0.1.18...v0.1.20) (2026-05-07)
+
+
+### Features
+
+* refactor offers list for better UX (remove actions dropdown) ([524603d](https://github.com/dachrisch/league.finance/commit/524603d1b0ba0fbdf5e42307192a56184a6ad894))
+
+
+### Bug Fixes
+
+* **deps:** update dependency html-to-text to v10 ([#58](https://github.com/dachrisch/league.finance/issues/58)) ([9a05c45](https://github.com/dachrisch/league.finance/commit/9a05c452a03ed10edac1b8695870b871c5f0c694))
+
 ### [0.1.19](https://github.com/dachrisch/league.finance/compare/v0.1.18...v0.1.19) (2026-05-07)
 
 
