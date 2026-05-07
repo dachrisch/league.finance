@@ -188,7 +188,8 @@ export function AssociationsPage() {
 
       <AssociationList
         associations={associations}
-        onView={handleView}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
         isLoading={isLoading || deleteAssociation.isPending}
       />
     </div>

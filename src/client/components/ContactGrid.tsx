@@ -9,21 +9,21 @@ export interface Contact {
     postalCode: string;
     country: string;
   };
+  email?: string;
 }
 
 export interface ContactGridProps {
   contacts: Contact[];
-  selectedId?: string;
-  onSelect?: (contactId: string) => void;
-  onView?: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
   isLoading?: boolean;
 }
 
-export function ContactGrid({ contacts, selectedId, onSelect, onView, isLoading = false }: ContactGridProps) {
+export function ContactGrid({ contacts, onEdit, onDelete, isLoading = false }: ContactGridProps) {
   if (contacts.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '2rem', color: '#999' }}>
-        No contacts created yet. Create your first contact below.
+      <div style={{ textAlign: 'center', padding: 'var(--spacing-xl)', color: 'var(--text-muted)', background: 'var(--bg-secondary)', borderRadius: 'var(--border-radius-lg)', border: '1px solid var(--border-color)' }}>
+        No contacts created yet.
       </div>
     );
   }
@@ -32,57 +32,63 @@ export function ContactGrid({ contacts, selectedId, onSelect, onView, isLoading 
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        gap: '1rem',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+        gap: 'var(--spacing-lg)',
+        opacity: isLoading ? 0.6 : 1,
+        pointerEvents: isLoading ? 'none' : 'auto',
       }}
     >
       {contacts.map((contact) => (
         <div
           key={contact._id}
-          onClick={() => {
-            if (isLoading) return;
-            if (onSelect) onSelect(contact._id);
-            else if (onView) onView(contact._id);
-          }}
+          onClick={() => onEdit(contact._id)}
+          className="hoverable-row"
           style={{
-            padding: '1rem',
-            border: selectedId === contact._id ? '2px solid #0d6efd' : '1px solid #dee2e6',
-            borderRadius: '8px',
-            cursor: (isLoading || (!onSelect && !onView)) ? 'default' : 'pointer',
-            backgroundColor: selectedId === contact._id ? '#f0f8ff' : '#fff',
-            transition: 'all 0.2s',
-            opacity: isLoading ? 0.6 : 1,
+            padding: 'var(--spacing-lg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: 'var(--border-radius-lg)',
+            cursor: 'pointer',
+            backgroundColor: 'var(--bg-primary)',
+            transition: 'all var(--transition-normal)',
             position: 'relative',
-          }}
-          onMouseEnter={(e) => {
-            if (!isLoading && (onSelect || onView) && selectedId !== contact._id) {
-              (e.currentTarget as HTMLDivElement).style.borderColor = '#0d6efd';
-              (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(13,110,253,0.15)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isLoading && (onSelect || onView) && selectedId !== contact._id) {
-              (e.currentTarget as HTMLDivElement).style.borderColor = '#dee2e6';
-              (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
-            }
+            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }}
         >
-          <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>{contact.name}</div>
-          <div style={{ fontSize: '0.875rem', color: '#666', lineHeight: '1.4' }}>
-            {contact.address.street}
-            <br />
-            {contact.address.city}, {contact.address.postalCode}
-            <br />
-            {contact.address.country}
-          </div>
-
-          {selectedId === contact._id && (
-            <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
-              <span style={{ color: '#0d6efd', fontWeight: '600', fontSize: '0.875rem' }}>
-                ✓ Selected
-              </span>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--spacing-sm)' }}>
+              <div style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--primary-color)', fontSize: 'var(--font-size-lg)' }}>
+                {contact.name}
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(contact._id);
+                }}
+                className="btn btn-ghost btn-sm"
+                style={{ color: 'var(--danger-color)', padding: '4px', minWidth: 'auto', minHeight: 'auto' }}
+                title="Delete Contact"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
             </div>
-          )}
+            <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+              {contact.address.street}<br />
+              {contact.address.city}, {contact.address.postalCode}<br />
+              {contact.address.country}
+            </div>
+          </div>
+          <div style={{ marginTop: 'var(--spacing-md)', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+            Click to edit
+          </div>
         </div>
       ))}
     </div>

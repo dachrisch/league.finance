@@ -1,17 +1,14 @@
+// src/client/components/AssociationList.tsx
 import { Association } from '../lib/schemas';
 
 interface AssociationListProps {
   associations: Association[];
-  onView: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
   isLoading?: boolean;
 }
 
-const statusStyle = (isLoading?: boolean): React.CSSProperties => ({
-  opacity: isLoading ? 0.6 : 1,
-  pointerEvents: isLoading ? 'none' : 'auto',
-});
-
-export function AssociationList({ associations, onView, isLoading = false }: AssociationListProps) {
+export function AssociationList({ associations, onEdit, onDelete, isLoading = false }: AssociationListProps) {
   if (associations.length === 0) {
     return (
       <div className="card" style={{
@@ -19,6 +16,8 @@ export function AssociationList({ associations, onView, isLoading = false }: Ass
         textAlign: 'center',
         background: 'var(--bg-secondary)',
         color: 'var(--text-muted)',
+        borderRadius: 'var(--border-radius-lg)',
+        border: '1px solid var(--border-color)'
       }}>
         <p>No associations found. Create one to get started.</p>
       </div>
@@ -26,45 +25,74 @@ export function AssociationList({ associations, onView, isLoading = false }: Ass
   }
 
   return (
-    <div style={{ ...statusStyle(isLoading) }}>
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table className="mobile-cards-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
-              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Name</th>
-              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)' }}>Address</th>
-            </tr>
-          </thead>
-          <tbody>
-            {associations.map((association) => (
-              <tr 
-                key={association._id} 
-                onClick={() => onView(association._id)}
-                style={{ 
-                  borderBottom: '1px solid var(--border-color)',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s'
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+        gap: 'var(--spacing-lg)',
+        opacity: isLoading ? 0.6 : 1,
+        pointerEvents: isLoading ? 'none' : 'auto',
+      }}
+    >
+      {associations.map((association) => (
+        <div
+          key={association._id}
+          onClick={() => onEdit(association._id)}
+          className="hoverable-row"
+          style={{
+            padding: 'var(--spacing-lg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: 'var(--border-radius-lg)',
+            cursor: 'pointer',
+            backgroundColor: 'var(--bg-primary)',
+            transition: 'all var(--transition-normal)',
+            position: 'relative',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
+          }}
+        >
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--spacing-sm)' }}>
+              <div style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--primary-color)', fontSize: 'var(--font-size-lg)' }}>
+                {association.name}
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(association._id);
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-secondary)')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                className="btn btn-ghost btn-sm"
+                style={{ color: 'var(--danger-color)', padding: '4px', minWidth: 'auto', minHeight: 'auto' }}
+                title="Delete Association"
               >
-                <td data-label="Name" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>
-                  <strong style={{ color: 'var(--primary-color)' }}>{association.name}</strong>
-                </td>
-                <td data-label="Address" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', color: 'var(--text-main)' }}>
-                  {association.address ? (
-                    <span style={{ fontSize: 'var(--font-size-sm)' }}>
-                      {association.address.street}, {association.address.postalCode} {association.address.city}, {association.address.country}
-                    </span>
-                  ) : (
-                    <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>No address</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
+            </div>
+            {association.address ? (
+              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                {association.address.street}<br />
+                {association.address.city}, {association.address.postalCode}<br />
+                {association.address.country}
+              </div>
+            ) : (
+              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                No address provided
+              </div>
+            )}
+          </div>
+          <div style={{ marginTop: 'var(--spacing-md)', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+            Click to edit
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

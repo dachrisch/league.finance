@@ -31,41 +31,44 @@ describe('AssociationList', () => {
     },
   ];
 
-  const mockOnView = vi.fn();
+  const mockOnEdit = vi.fn();
+  const mockOnDelete = vi.fn();
 
   beforeEach(() => {
-    mockOnView.mockClear();
+    mockOnEdit.mockClear();
+    mockOnDelete.mockClear();
   });
 
   it('renders empty state when no associations', () => {
-    render(<AssociationList associations={[]} onView={mockOnView} />);
+    render(<AssociationList associations={[]} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
     expect(screen.getByText(/No associations found/i)).toBeInTheDocument();
   });
 
-  it('renders table with associations', () => {
-    render(<AssociationList associations={mockAssociations} onView={mockOnView} />);
+  it('renders cards with associations', () => {
+    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
 
     expect(screen.getByText('Association 1')).toBeInTheDocument();
     expect(screen.getByText('Association 2')).toBeInTheDocument();
-    expect(screen.getByText(/Street 1, 12345 City 1, Germany/i)).toBeInTheDocument();
-    expect(screen.getByText(/Street 2, 67890 City 2, Germany/i)).toBeInTheDocument();
+    expect(screen.getByText(/Street 1/i)).toBeInTheDocument();
+    expect(screen.getByText(/City 1/i)).toBeInTheDocument();
   });
 
-  it('calls onView when a row is clicked', () => {
-    render(<AssociationList associations={mockAssociations} onView={mockOnView} />);
+  it('calls onEdit when a card is clicked', () => {
+    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
 
-    const rows = screen.getAllByRole('row');
-    // rows[0] is the header
-    fireEvent.click(rows[1]);
+    const card = screen.getByText('Association 1');
+    fireEvent.click(card);
 
-    expect(mockOnView).toHaveBeenCalledWith('1');
+    expect(mockOnEdit).toHaveBeenCalledWith('1');
   });
 
-  it('renders table headers correctly', () => {
-    render(<AssociationList associations={mockAssociations} onView={mockOnView} />);
+  it('calls onDelete when delete button is clicked', () => {
+    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
 
-    expect(screen.getByText('Name')).toBeInTheDocument();
-    expect(screen.getByText('Address')).toBeInTheDocument();
-    expect(screen.queryByText('Actions')).not.toBeInTheDocument();
+    const deleteButtons = screen.getAllByTitle('Delete Association');
+    fireEvent.click(deleteButtons[0]);
+
+    expect(mockOnDelete).toHaveBeenCalledWith('1');
+    expect(mockOnEdit).not.toHaveBeenCalled();
   });
 });

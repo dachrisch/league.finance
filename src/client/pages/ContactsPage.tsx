@@ -72,7 +72,9 @@ export function ContactsPage() {
       ) : (
         <ContactGrid
           contacts={contacts}
-          onView={(id) => setModal({ type: 'view', id })}
+          onEdit={(id) => setModal({ type: 'edit', id })}
+          onDelete={handleDelete}
+          isLoading={isLoading || deleteContact.isPending}
         />
       )}
 
