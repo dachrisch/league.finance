@@ -146,6 +146,10 @@ body {
   border-collapse: collapse;
 }
 
+.hoverable-row:hover {
+  background-color: var(--bg-secondary) !important;
+}
+
 @media (max-width: 767px) {
   .mobile-cards-table thead {
     display: none; /* Hide headers on mobile */
