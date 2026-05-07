@@ -91,14 +91,9 @@ export function Navigation() {
         <Link to="/settings" style={navItemStyle(isActive('/settings'))}>
           <span style={{ marginRight: '10px' }}>⚡</span> Settings
         </Link>
-      </div>
-      
-      <div style={{ padding: '1rem', borderTop: '1px solid var(--border-color)', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
-        v0.1.11
-      </div>
-    </div>
-  );
-
+        </div>
+        </div>
+        );
   const bottomNavPaths = ['/dashboard', '/offers', '/config', '/associations', '/contacts'];
 
   return (
