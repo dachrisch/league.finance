@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.23](https://github.com/dachrisch/league.finance/compare/v0.1.22...v0.1.23) (2026-05-07)
+
+
+### Features
+
+* rework people and associations to use cards instead of tables ([2edd420](https://github.com/dachrisch/league.finance/commit/2edd420d07e49cb94dce6c5a0a3ea420154dbd8b))
+
 ### [0.1.22](https://github.com/dachrisch/league.finance/compare/v0.1.21...v0.1.22) (2026-05-07)
 
 ### [0.1.21](https://github.com/dachrisch/league.finance/compare/v0.1.20...v0.1.21) (2026-05-07)
