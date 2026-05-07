@@ -1,19 +1,12 @@
 import { useState } from 'react';
 import { Offer } from '../lib/schemas';
-import { SendOfferDialog } from './Offer/SendOfferDialog';
-import { useSendOfferJob } from '../hooks/useSendOfferJob';
-import { KebabMenu, MenuItem } from './KebabMenu';
 
 interface OfferTableProps {
   offers: Offer[];
   associationNames: Record<string, string>;
   seasonYears?: Record<string | number, string>;
   onView: (id: string) => void;
-  onSend?: (id: string) => void;
-  onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
-  onSendSuccess?: (driveLink: string) => void;
-  onSendError?: (message: string) => void;
   isLoading?: boolean;
 }
 
@@ -52,37 +45,11 @@ export function OfferTable({
   associationNames,
   seasonYears = {},
   onView,
-  onSend,
-  onEdit,
   onDelete,
-  onSendSuccess,
-  onSendError,
   isLoading = false,
 }: OfferTableProps) {
   const [sortBy, setSortBy] = useState<'createdAt' | 'seasonId' | 'status'>('createdAt');
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
-  const [sendDialogOpen, setSendDialogOpen] = useState(false);
-  const [selectedOffer, setSelectedOffer] = useState<any>(null);
-  const { status: jobStatus } = useSendOfferJob(selectedOffer?._id || null);
-
-  const openSendDialog = (offer: any) => {
-    setSelectedOffer(offer);
-    setSendDialogOpen(true);
-  };
-
-  const handleSendSuccess = (driveLink: string) => {
-    // Show success message with the drive link
-    const message = `Offer sent! View it here: ${driveLink}`;
-    console.log(message);
-    setSendDialogOpen(false);
-    onSendSuccess?.(driveLink);
-    // Could trigger a refetch of offers here if needed
-  };
-
-  const handleSendError = (message: string) => {
-    console.error('Send error:', message);
-    onSendError?.(message);
-  };
 
   const filteredOffers = filterStatus
     ? offers.filter((o) => o.status === filterStatus)
@@ -196,12 +163,17 @@ export function OfferTable({
               >
                 Status {sortBy === 'status' ? '↓' : ''}
               </th>
-              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)' }}>Actions</th>
+              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)' }}>Delete</th>
             </tr>
           </thead>
           <tbody>
             {sortedOffers.map((offer) => (
-              <tr key={offer._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+              <tr 
+                key={offer._id} 
+                onClick={() => onView(offer._id)}
+                className="hoverable-row"
+                style={{ borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}
+              >
                 <td data-label="Created" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)', color: 'var(--text-main)' }}>{formatDate(offer.createdAt)}</td>
                 <td data-label="Association" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>
                   <strong style={{ color: 'var(--primary-color)' }}>{associationNames[offer.associationId] || 'Unknown'}</strong>
@@ -215,59 +187,32 @@ export function OfferTable({
                 <td data-label="Status" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>
                   <div style={statusBadgeStyle(offer.status)}>{offer.status}</div>
                 </td>
-                <td data-label="Actions" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
-                  <KebabMenu
-                    disabled={isLoading}
-                    items={[
-                      {
-                        label: 'View',
-                        onClick: () => onView(offer._id),
-                      },
-                      ...(offer.status === 'draft' && onEdit
-                        ? [
-                            {
-                              label: 'Edit',
-                              onClick: () => onEdit(offer._id),
-                            } as MenuItem,
-                          ]
-                        : []),
-                      ...(offer.status === 'draft'
-                        ? [
-                            {
-                              label: 'Send',
-                              onClick: () => openSendDialog(offer),
-                            } as MenuItem,
-                          ]
-                        : []),
-                      ...(offer.status === 'draft' && onDelete
-                        ? [
-                            {
-                              label: 'Delete',
-                              onClick: () => onDelete(offer._id),
-                              danger: true,
-                            } as MenuItem,
-                          ]
-                        : []),
-                    ]}
-                  />
+                <td data-label="Delete" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
+                  {offer.status === 'draft' && onDelete && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(offer._id);
+                      }}
+                      className="btn btn-ghost btn-sm"
+                      style={{ color: 'var(--danger-color)', padding: '4px', minWidth: 'auto', minHeight: 'auto' }}
+                      title="Delete Offer"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 6h18"></path>
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                      </svg>
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      {/* Send Offer Dialog */}
-      <SendOfferDialog
-        open={sendDialogOpen}
-        offerId={selectedOffer?._id || ''}
-        recipientEmail={selectedOffer?.contactId?.email || ''}
-        recipientName={selectedOffer?.contactId?.name || ''}
-        totalPrice={selectedOffer?.finalPrice || 0}
-        onClose={() => setSendDialogOpen(false)}
-        onSuccess={handleSendSuccess}
-        onError={handleSendError}
-      />
     </div>
   );
 }

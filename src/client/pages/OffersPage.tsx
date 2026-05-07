@@ -30,7 +30,13 @@ export function OffersPage() {
 
   // Mutations
   const deleteOffer = trpc.finance.offers.delete.useMutation({
-    onSuccess: () => refetch(),
+    onSuccess: () => {
+      refetch();
+      showToast('Offer deleted successfully');
+    },
+    onError: (error) => {
+      showToast(error.message || 'Failed to delete offer', 'error');
+    }
   });
 
   // Create association name map
@@ -67,14 +73,6 @@ export function OffersPage() {
 
   const handleViewOffer = (id: string) => {
     navigate(`/offers/${id}`);
-  };
-
-  const handleSendOffer = (id: string) => {
-    navigate(`/offers/${id}`);
-  };
-
-  const handleEditOffer = (id: string) => {
-    navigate(`/offers/${id}/edit`);
   };
 
   const handleDeleteOffer = (id: string) => {
@@ -162,11 +160,7 @@ export function OffersPage() {
             associationNames={associationNames}
             seasonYears={seasonYears}
             onView={handleViewOffer}
-            onSend={handleSendOffer}
-            onEdit={handleEditOffer}
             onDelete={handleDeleteOffer}
-            onSendSuccess={() => showToast('Offer sent successfully!')}
-            onSendError={(message) => showToast(message, 'error')}
             isLoading={offersLoading || deleteOffer.isPending}
           />
         </div>
