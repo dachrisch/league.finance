@@ -8,3 +8,5 @@ client_secret_*.json
 ci_logs.txt
 test_output*.json
 .worktrees/
+playwright-report/
+test-results/
