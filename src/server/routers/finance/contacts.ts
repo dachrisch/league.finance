@@ -23,7 +23,7 @@ export const contactsRouter = router({
       return normalizeContact(contact);
     }),
 
-  create: adminProcedure
+  create: protectedProcedure
     .input(CreateContactSchema)
     .mutation(async ({ input }) => {
       const contact = await Contact.create(input);

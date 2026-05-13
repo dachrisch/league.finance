@@ -100,7 +100,7 @@ export const offersRouter = router({
       };
     }),
 
-  extractContact: adminProcedure
+  extractContact: protectedProcedure
     .input(z.object({ text: z.string() }))
     .mutation(async ({ input }) => {
       const result = extractContactInfo(input.text);
@@ -127,7 +127,7 @@ export const offersRouter = router({
       };
     }),
 
-  create: adminProcedure
+  create: protectedProcedure
     .input(z.object({
       associationId: z.string().min(1),
       contactId: z.string().min(1),
