@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/dachrisch/league.finance/compare/v0.1.28...v0.2.0) (2026-05-17)
+
+
+### Features
+
+* **offer:** allow multiple offers per association-season with different league selections ([#88](https://github.com/dachrisch/league.finance/issues/88)) ([ff13958](https://github.com/dachrisch/league.finance/commit/ff13958592d9f5da24f312d165e12833edda07e6))
+
 ## [0.1.28](https://github.com/dachrisch/league.finance/compare/v0.1.27...v0.1.28) (2026-05-17)
 
 
