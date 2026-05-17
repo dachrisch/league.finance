@@ -27,7 +27,7 @@ export class PdfService {
     try {
       const page = await browser.newPage();
       const html = this.generateHtml(data);
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
       const pdfData = await page.pdf({
         format: 'A4',
         margin: {
