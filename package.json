@@ -15,11 +15,7 @@
     "test:e2e:ui": "playwright test --ui",
     "typecheck": "tsc --noEmit",
     "typecheck:server": "tsc -p tsconfig.server.json --noEmit",
-    "lint": "echo 'Add eslint config to enable linting'",
-    "release": "standard-version && git push --follow-tags origin HEAD",
-    "release:patch": "standard-version --release-as patch && git push --follow-tags origin HEAD",
-    "release:minor": "standard-version --release-as minor && git push --follow-tags origin HEAD",
-    "release:major": "standard-version --release-as major && git push --follow-tags origin HEAD"
+    "lint": "echo 'Add eslint config to enable linting'"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -73,7 +69,6 @@
     "concurrently": "^9.2.1",
     "jsdom": "^29.0.2",
     "mongodb-memory-server": "^11.0.1",
-    "standard-version": "^9.5.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.4",
