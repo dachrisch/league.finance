@@ -62,8 +62,8 @@ describe('Offer Model', () => {
     expect(offer.acceptedAt).toEqual(acceptedDate);
   });
 
-  it('should prevent duplicate draft offers for same association-season', async () => {
-    await Offer.create({
+  it('should allow multiple draft offers for same association-season with different leagues', async () => {
+    const offer1 = await Offer.create({
       status: 'draft',
       associationId: 3,
       seasonId: 1,
@@ -71,15 +71,26 @@ describe('Offer Model', () => {
       contactId: contact._id,
     });
 
-    await expect(
-      Offer.create({
-        status: 'draft',
-        associationId: 3,
-        seasonId: 1,
-        leagueIds: [2],
-        contactId: contact._id,
-      })
-    ).rejects.toThrow();
+    const offer2 = await Offer.create({
+      status: 'draft',
+      associationId: 3,
+      seasonId: 1,
+      leagueIds: [2],
+      contactId: contact._id,
+    });
+
+    expect(offer2.leagueIds).toEqual([2]);
+
+    // Allow multiple offers with same or different league selections
+    const offer3 = await Offer.create({
+      status: 'draft',
+      associationId: 3,
+      seasonId: 1,
+      leagueIds: [1],
+      contactId: contact._id,
+    });
+
+    expect(offer3.leagueIds).toEqual([1]);
   });
 
   it('should require at least one league', async () => {
