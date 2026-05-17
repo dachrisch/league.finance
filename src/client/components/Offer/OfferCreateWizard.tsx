@@ -21,6 +21,7 @@ export function OfferCreateWizard({ editId }: Props) {
   const wizard = useOfferCreation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Queries
   const { data: associations = [] } = trpc.finance.associations.list.useQuery();
@@ -92,6 +93,7 @@ export function OfferCreateWizard({ editId }: Props) {
 
   const handleSaveOffer = async () => {
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       let associationId = wizard.step1.selectedAssociationId;
       let contactId = wizard.step1.selectedContactId;
@@ -146,8 +148,19 @@ export function OfferCreateWizard({ editId }: Props) {
         const result = await createMutation.mutateAsync(payload);
         navigate(`/offers/${result._id}`);
       }
-    } catch (err) {
-      console.error('Failed to save offer:', err);
+    } catch (err: any) {
+      let errorMessage = 'Failed to save offer. Please check your information and try again.';
+
+      // Extract error message from TRPC error
+      if (err?.message && !err.message.includes('TRPCClientError')) {
+        errorMessage = err.message;
+      } else if (err?.data?.message) {
+        errorMessage = err.data.message;
+      } else if (err?.shape?.message) {
+        errorMessage = err.shape.message;
+      }
+
+      setSubmitError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -183,6 +196,7 @@ export function OfferCreateWizard({ editId }: Props) {
     return (
       <Step1
         {...wizard.step1}
+        submitError={submitError}
         associations={associations}
         contacts={contacts}
         seasons={seasons.map(s => ({ ...s, _id: s._id.toString() }))}
@@ -219,6 +233,7 @@ export function OfferCreateWizard({ editId }: Props) {
       selectedLeagueIds={wizard.step2.selectedLeagueIds}
       leagueSearchTerm={wizard.step2.leagueSearchTerm}
       leagueFilterType={wizard.step2.leagueFilterType || 'All'}
+      submitError={submitError}
       onBack={wizard.previousStep}
       onCancel={() => navigate('/offers')}
       onCreate={handleSaveOffer}

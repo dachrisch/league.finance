@@ -14,6 +14,8 @@ interface PasteExtractBlockProps {
   onExtract: (text: string) => void;
   onEmailChange?: (email: string) => void;
   onPhoneChange?: (phone: string) => void;
+  onCityChange?: (city: string) => void;
+  onPostalCodeChange?: (postalCode: string) => void;
 }
 
 export function PasteExtractBlock({
@@ -25,6 +27,8 @@ export function PasteExtractBlock({
   onExtract,
   onEmailChange,
   onPhoneChange,
+  onCityChange,
+  onPostalCodeChange,
 }: PasteExtractBlockProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -139,8 +143,8 @@ export function PasteExtractBlock({
                     <input
                       type="text"
                       className={styles.fieldInput}
-                      disabled
                       value={extractedData.city}
+                      onChange={(e) => onCityChange?.(e.target.value)}
                     />
                   </div>
                   <div className={styles.field}>
@@ -148,8 +152,8 @@ export function PasteExtractBlock({
                     <input
                       type="text"
                       className={styles.fieldInput}
-                      disabled
                       value={extractedData.postalCode}
+                      onChange={(e) => onPostalCodeChange?.(e.target.value)}
                     />
                   </div>
                 </div>

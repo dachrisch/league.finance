@@ -4,6 +4,7 @@ import { PasteExtractBlock } from './PasteExtractBlock';
 import { UseExistingBlock } from './UseExistingBlock';
 import { SeasonBlock } from './SeasonBlock';
 import type { ExtractedData, PathChoice } from '../types';
+import { isValidExtraction } from '../../../hooks/useExtraction';
 import styles from '../../../styles/OfferWizard.module.css';
 
 interface Association {
@@ -31,6 +32,7 @@ interface Step1Props {
   isExtracting: boolean;
   extractedData?: ExtractedData;
   extractionError?: string;
+  submitError?: string | null;
   associations: Association[];
   contacts: Contact[];
   seasons: Season[];
@@ -55,6 +57,7 @@ export function Step1({
   isExtracting,
   extractedData,
   extractionError,
+  submitError,
   associations,
   contacts,
   seasons,
@@ -70,11 +73,11 @@ export function Step1({
   isEdit = false,
 }: Step1Props) {
   // Check if user has filled in all required fields for either path
-  const hasExtractedData = extractedData && selectedSeasonId;
+  const hasValidExtractedData = extractedData && selectedSeasonId && isValidExtraction(extractedData);
   const hasExistingData = selectedAssociationId && selectedContactId && selectedSeasonId;
 
   // Allow proceeding if either path has complete data
-  const canProceed = hasExtractedData || hasExistingData;
+  const canProceed = hasValidExtractedData || hasExistingData;
 
   // Map seasons for UseExistingBlock (which expects { _id, name, year: string })
   const existingSeasons = seasons.map(s => ({
@@ -101,6 +104,19 @@ export function Step1({
       </div>
 
       <div style={{ padding: '0 20px' }}>
+        {submitError && (
+          <div style={{
+            padding: '12px 16px',
+            marginBottom: '16px',
+            backgroundColor: '#fee2e2',
+            border: '1px solid #fecaca',
+            borderRadius: '6px',
+            color: '#dc2626',
+            fontSize: '14px'
+          }}>
+            ✕ {submitError}
+          </div>
+        )}
         <PasteExtractBlock
           pasteInput={pasteInput}
           isExtracting={isExtracting}
@@ -113,6 +129,8 @@ export function Step1({
           }}
           onEmailChange={(email) => onUpdateExtractedData({ email })}
           onPhoneChange={(phone) => onUpdateExtractedData({ phone })}
+          onCityChange={(city) => onUpdateExtractedData({ city })}
+          onPostalCodeChange={(postalCode) => onUpdateExtractedData({ postalCode })}
         />
 
         <div className={styles.divider}>or use existing records</div>

@@ -17,6 +17,7 @@ interface Step2Props {
   selectedLeagueIds: string[];
   leagueSearchTerm: string;
   leagueFilterType: 'All' | 'Youth' | 'Regional' | 'Division' | 'Other';
+  submitError?: string | null;
   onBack: () => void;
   onCancel: () => void;
   onCreate: () => void;
@@ -38,6 +39,7 @@ export function Step2({
   selectedLeagueIds,
   leagueSearchTerm,
   leagueFilterType,
+  submitError,
   onBack,
   onCancel,
   onCreate,
@@ -71,6 +73,19 @@ export function Step2({
       </div>
 
       <div style={{ padding: '20px', overflowY: 'auto', maxHeight: 'calc(90vh - 120px)' }}>
+        {submitError && (
+          <div style={{
+            padding: '12px 16px',
+            marginBottom: '16px',
+            backgroundColor: '#fee2e2',
+            border: '1px solid #fecaca',
+            borderRadius: '6px',
+            color: '#dc2626',
+            fontSize: '14px'
+          }}>
+            ✕ {submitError}
+          </div>
+        )}
         <SummarySection
           associationName={summary.associationName}
           contactName={summary.contactName}
