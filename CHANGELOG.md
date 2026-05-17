@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.1.26](https://github.com/dachrisch/league.finance/compare/v0.1.25...v0.1.26) (2026-05-17)
+
+
+### Bug Fixes
+
+* **offer:** improve error handling and UX in offer creation wizard ([70c4697](https://github.com/dachrisch/league.finance/commit/70c4697db8535bcdfd04618bdf42d54c66731db4))
+* test release-please with token ([7165af8](https://github.com/dachrisch/league.finance/commit/7165af84e74b93624ca203ebfcf068aeb862fb85))
+* trigger release-please test ([8a06a04](https://github.com/dachrisch/league.finance/commit/8a06a042ca7fdbd6496ad2928bfd0d2a89a39d8e))
+
 ### [0.1.25](https://github.com/dachrisch/league.finance/compare/v0.1.24...v0.1.25) (2026-05-13)
 
 ### [0.1.24](https://github.com/dachrisch/league.finance/compare/v0.1.23...v0.1.24) (2026-05-07)
