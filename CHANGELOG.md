@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.1.27](https://github.com/dachrisch/league.finance/compare/v0.1.26...v0.1.27) (2026-05-17)
+
+
+### Bug Fixes
+
+* **deps:** update dependency puppeteer to v24.43.1 ([#74](https://github.com/dachrisch/league.finance/issues/74)) ([d15a22d](https://github.com/dachrisch/league.finance/commit/d15a22d57abe712adad914e4278a052e49de5729))
+
 ## [0.1.26](https://github.com/dachrisch/league.finance/compare/v0.1.25...v0.1.26) (2026-05-17)
 
 
