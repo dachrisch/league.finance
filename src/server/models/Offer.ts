@@ -70,19 +70,9 @@ const OfferSchema = new Schema<IOffer>(
   { timestamps: true }
 );
 
-// Unique partial index: prevents duplicate draft/sending/sent offers for same association-season
-// but allows new draft offers after acceptance
-OfferSchema.index(
-  { associationId: 1, seasonId: 1, status: 1 },
-  {
-    partialFilterExpression: { status: { $in: ['draft', 'sending', 'sent'] } },
-    unique: true,
-  }
-);
-
 // Index for common queries
 OfferSchema.index({ status: 1 });
 OfferSchema.index({ contactId: 1 });
-OfferSchema.index({ associationId: 1 });
+OfferSchema.index({ associationId: 1, seasonId: 1, status: 1 });
 
 export const Offer = model<IOffer>('Offer', OfferSchema);

@@ -65,7 +65,7 @@ describe('Offer Workflow Integration', () => {
     expect(linkedConfigs.every((c) => c.offerId?.equals(offer._id))).toBe(true);
   });
 
-  it('should prevent duplicate draft offers', async () => {
+  it('should allow multiple draft offers for same association-season with different leagues', async () => {
     const contact = await Contact.create({
       name: 'Duplicate Test',
       email: 'duplicate@example.com',
@@ -78,7 +78,7 @@ describe('Offer Workflow Integration', () => {
     });
 
     // Create first offer
-    await Offer.create({
+    const offer1 = await Offer.create({
       status: 'draft',
       associationId: 88,
       seasonId: 2024,
@@ -86,19 +86,19 @@ describe('Offer Workflow Integration', () => {
       contactId: contact._id,
     });
 
-    // Try to create duplicate
-    try {
-      await Offer.create({
-        status: 'draft',
-        associationId: 88,
-        seasonId: 2024,
-        leagueIds: [2],
-        contactId: contact._id,
-      });
-      expect.fail('Should have thrown duplicate key error');
-    } catch (err: any) {
-      expect(err.code).toBe(11000);
-    }
+    // Create second offer with different leagues - should succeed
+    const offer2 = await Offer.create({
+      status: 'draft',
+      associationId: 88,
+      seasonId: 2024,
+      leagueIds: [2],
+      contactId: contact._id,
+    });
+
+    expect(offer1.leagueIds).toEqual([1]);
+    expect(offer2.leagueIds).toEqual([2]);
+    expect(offer1.associationId).toBe(offer2.associationId);
+    expect(offer1.seasonId).toBe(offer2.seasonId);
   });
 
   it('should allow accepted offers and new draft offers for same association-season', async () => {
