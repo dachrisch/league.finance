@@ -1,6 +1,9 @@
 #!/bin/sh
-set -e
 echo "Running database migrations..."
-node dist/src/server/db/run-migrations.js
-echo "Migrations completed. Starting server..."
-node dist/src/server/index.js
+if node dist/src/server/db/run-migrations.js; then
+    echo "Migrations completed successfully."
+else
+    echo "⚠️ Migrations failed or skipped. Continuing to start server..."
+fi
+echo "Starting server..."
+exec node dist/src/server/index.js
