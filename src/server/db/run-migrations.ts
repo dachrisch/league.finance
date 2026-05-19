@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 
 async function runMigrations() {
-  const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/leagues-finance';
+  const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/leagues-finance';
   
   await mongoose.connect(mongoUri);
   console.log('Connected to MongoDB');
