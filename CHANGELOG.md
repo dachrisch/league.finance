@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.3](https://github.com/dachrisch/league.finance/compare/v0.3.2...v0.3.3) (2026-05-19)
+
+
+### Bug Fixes
+
+* correct migration function signature to receive database connection ([66173ab](https://github.com/dachrisch/league.finance/commit/66173abdcf81c7b5fb6c6210be99b0b31fe832a7))
+
 ## [0.3.2](https://github.com/dachrisch/league.finance/compare/v0.3.1...v0.3.2) (2026-05-19)
 
 
