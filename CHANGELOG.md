@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.1](https://github.com/dachrisch/league.finance/compare/v0.3.0...v0.3.1) (2026-05-19)
+
+
+### Bug Fixes
+
+* include migration files in Docker build to enable database migrations ([94297da](https://github.com/dachrisch/league.finance/commit/94297dafc3e9bf9572329e138b20146aa4be2f43))
+
 ## [0.3.0](https://github.com/dachrisch/league.finance/compare/v0.2.6...v0.3.0) (2026-05-19)
 
 
