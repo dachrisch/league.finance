@@ -17,7 +17,7 @@ COPY --from=builder /app/package.json ./package.json
 RUN ln -s . dist/client
 
 # Create entrypoint script to run migrations before starting the server
-RUN echo '#!/bin/sh\nset -e\necho "Running database migrations..."\nnode dist/src/server/db/run-migrations.js\necho "Migrations completed. Starting server..."\nnode dist/src/server/index.js' > /app/entrypoint.sh && \
+RUN printf '#!/bin/sh\nset -e\necho "Running database migrations..."\nnode dist/src/server/db/run-migrations.js\necho "Migrations completed. Starting server..."\nnode dist/src/server/index.js\n' > /app/entrypoint.sh && \
     chmod +x /app/entrypoint.sh
 
 EXPOSE 3000
