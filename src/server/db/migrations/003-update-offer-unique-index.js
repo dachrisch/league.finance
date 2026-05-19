@@ -1,8 +1,11 @@
 // Migration: Update offer indexes to support multiple offers per association-season
 // The unique constraint has been moved from the database level to the application layer
 
+const mongoose = require('mongoose');
+
 module.exports = {
-  async up(db) {
+  async up() {
+    const db = mongoose.connection.db;
     const collection = db.collection('offers');
 
     // Drop the old unique index
@@ -18,7 +21,8 @@ module.exports = {
     );
   },
 
-  async down(db) {
+  async down() {
+    const db = mongoose.connection.db;
     const collection = db.collection('offers');
 
     // Drop the new index
