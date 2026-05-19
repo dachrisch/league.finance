@@ -14,8 +14,10 @@ WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
-RUN ln -s . dist/client
+COPY entrypoint.sh ./
+RUN ln -s . dist/client && chmod +x entrypoint.sh
+
 EXPOSE 3000
 HEALTHCHECK --interval=10s --timeout=5s --retries=3 --start-period=30s \
   CMD wget --spider -q http://localhost:3000/health || exit 1
-CMD ["node", "dist/src/server/index.js"]
+ENTRYPOINT ["./entrypoint.sh"]

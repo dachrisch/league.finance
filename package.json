@@ -7,6 +7,7 @@
     "dev:server": "NODE_ENV=development tsx watch src/server/index.ts",
     "dev:client": "vite",
     "build": "vite build && tsc -p tsconfig.server.json",
+    "migrate": "node dist/src/server/db/run-migrations.js",
     "start": "node dist/src/server/index.js",
     "test": "NODE_ENV=development vitest run",
     "test:watch": "NODE_ENV=development vitest",
