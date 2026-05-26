@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.13](https://github.com/dachrisch/league.finance/compare/v0.3.12...v0.3.13) (2026-05-26)
+
+
+### Bug Fixes
+
+* **deps:** update dependency ioredis to v5.11.0 ([#127](https://github.com/dachrisch/league.finance/issues/127)) ([fb2450e](https://github.com/dachrisch/league.finance/commit/fb2450e360045f99277dd3374880226814759ec6))
+
 ## [0.3.12](https://github.com/dachrisch/league.finance/compare/v0.3.11...v0.3.12) (2026-05-26)
 
 
