@@ -46,6 +46,7 @@ interface Step1Props {
   onNext: () => void;
   onCancel: () => void;
   isEdit?: boolean;
+  isUnified?: boolean;
 }
 
 export function Step1({
@@ -71,6 +72,7 @@ export function Step1({
   onNext,
   onCancel,
   isEdit = false,
+  isUnified = false,
 }: Step1Props) {
   // Check if user has filled in all required fields for either path
   const hasValidExtractedData = extractedData && selectedSeasonId && isValidExtraction(extractedData);
@@ -87,23 +89,25 @@ export function Step1({
   }));
 
   return (
-    <div className={styles.wizard}>
-      <div className={styles.wizardHeader}>
-        <h1 className={styles.wizardTitle}>{isEdit ? 'Edit Offer' : 'Create New Offer'}</h1>
-        <div className={styles.progressIndicator} role="progressbar" aria-valuenow={1} aria-valuemin={1} aria-valuemax={2}>
-          <div className={styles.progressStep}>
-            <div className={`${styles.progressDot} ${styles.active}`} aria-current="step" aria-label="Step 1: Association, Contact & Season">1</div>
-            <span className={styles.progressLabel}>Association, Contact & Season</span>
-          </div>
-          <span className={styles.progressSeparator} aria-hidden="true">›</span>
-          <div className={styles.progressStep}>
-            <div className={styles.progressDot} aria-label="Step 2: Pricing & Leagues">2</div>
-            <span className={styles.progressLabel}>Pricing & Leagues</span>
+    <div className={isUnified ? undefined : styles.wizard}>
+      {!isUnified && (
+        <div className={styles.wizardHeader}>
+          <h1 className={styles.wizardTitle}>{isEdit ? 'Edit Offer' : 'Create New Offer'}</h1>
+          <div className={styles.progressIndicator} role="progressbar" aria-valuenow={1} aria-valuemin={1} aria-valuemax={2}>
+            <div className={styles.progressStep}>
+              <div className={`${styles.progressDot} ${styles.active}`} aria-current="step" aria-label="Step 1: Association, Contact & Season">1</div>
+              <span className={styles.progressLabel}>Association, Contact & Season</span>
+            </div>
+            <span className={styles.progressSeparator} aria-hidden="true">›</span>
+            <div className={styles.progressStep}>
+              <div className={styles.progressDot} aria-label="Step 2: Pricing & Leagues">2</div>
+              <span className={styles.progressLabel}>Pricing & Leagues</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div style={{ padding: '0 20px' }}>
+      <div style={isUnified ? undefined : { padding: '0 20px' }}>
         {submitError && (
           <div style={{
             padding: '12px 16px',
@@ -117,39 +121,46 @@ export function Step1({
             ✕ {submitError}
           </div>
         )}
-        <PasteExtractBlock
-          pasteInput={pasteInput}
-          isExtracting={isExtracting}
-          extractionError={extractionError}
-          extractedData={extractedData}
-          onInputChange={onUpdatePasteInput}
-          onExtract={(text) => {
-            onSelectPath('paste');
-            onExtract(text);
-          }}
-          onEmailChange={(email) => onUpdateExtractedData({ email })}
-          onPhoneChange={(phone) => onUpdateExtractedData({ phone })}
-          onCityChange={(city) => onUpdateExtractedData({ city })}
-          onPostalCodeChange={(postalCode) => onUpdateExtractedData({ postalCode })}
-        />
+        
+        {(!isUnified || !isEdit) && (
+          <PasteExtractBlock
+            pasteInput={pasteInput}
+            isExtracting={isExtracting}
+            extractionError={extractionError}
+            extractedData={extractedData}
+            onInputChange={onUpdatePasteInput}
+            onExtract={(text) => {
+              onSelectPath('paste');
+              onExtract(text);
+            }}
+            onEmailChange={(email) => onUpdateExtractedData({ email })}
+            onPhoneChange={(phone) => onUpdateExtractedData({ phone })}
+            onCityChange={(city) => onUpdateExtractedData({ city })}
+            onPostalCodeChange={(postalCode) => onUpdateExtractedData({ postalCode })}
+          />
+        )}
 
-        <div className={styles.divider}>or use existing records</div>
+        {(!isUnified || isEdit) && (
+          <>
+            {(!isUnified && !isEdit) && <div className={styles.divider}>or use existing records</div>}
 
-        <UseExistingBlock
-          associations={associations}
-          contacts={contacts}
-          seasons={existingSeasons}
-          selectedAssociationId={selectedAssociationId}
-          selectedContactId={selectedContactId}
-          selectedSeasonId={selectedSeasonId}
-          onAssociationChange={onSelectAssociation}
-          onContactChange={onSelectContact}
-          onSeasonChange={onSelectSeason}
-          isActive={pathChoice === 'existing'}
-          onToggle={() => onSelectPath(pathChoice === 'existing' ? 'paste' : 'existing')}
-        />
+            <UseExistingBlock
+              associations={associations}
+              contacts={contacts}
+              seasons={existingSeasons}
+              selectedAssociationId={selectedAssociationId}
+              selectedContactId={selectedContactId}
+              selectedSeasonId={selectedSeasonId}
+              onAssociationChange={onSelectAssociation}
+              onContactChange={onSelectContact}
+              onSeasonChange={onSelectSeason}
+              isActive={isUnified || pathChoice === 'existing'}
+              onToggle={() => !isUnified && onSelectPath(pathChoice === 'existing' ? 'paste' : 'existing')}
+            />
+          </>
+        )}
 
-        {pathChoice === 'paste' && (
+        {(pathChoice === 'paste' || (isUnified && !isEdit)) && (
           <SeasonBlock
             seasons={seasons}
             selectedSeasonId={selectedSeasonId}
@@ -159,21 +170,23 @@ export function Step1({
         )}
       </div>
 
-      <div className={styles.wizardFooter}>
-        <span className={styles.footerHint}>Step 1 of 2</span>
-        <div className={styles.footerActions}>
-          <button className={`${styles.button} ${styles.buttonGhost}`} onClick={onCancel}>
-            Cancel
-          </button>
-          <button
-            className={`${styles.button} ${styles.buttonPrimary}`}
-            onClick={onNext}
-            disabled={!canProceed}
-          >
-            Next: Pricing & Leagues →
-          </button>
+      {!isUnified && (
+        <div className={styles.wizardFooter}>
+          <span className={styles.footerHint}>Step 1 of 2</span>
+          <div className={styles.footerActions}>
+            <button className={`${styles.button} ${styles.buttonGhost}`} onClick={onCancel}>
+              Cancel
+            </button>
+            <button
+              className={`${styles.button} ${styles.buttonPrimary}`}
+              onClick={onNext}
+              disabled={!canProceed}
+            >
+              Next: Pricing & Leagues →
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

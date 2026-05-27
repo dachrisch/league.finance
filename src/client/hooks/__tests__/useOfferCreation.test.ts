@@ -110,4 +110,27 @@ describe('useOfferCreation', () => {
     expect(result.current.step2.pricing.baseRateOverride).toBe(100);
     expect(result.current.step2.selectedLeagueIds).toEqual(['1', '2']);
   });
+
+  it('should correctly map backend configs to selectedLeagueIds', () => {
+    const { result } = renderHook(() => useOfferCreation());
+    const mockOfferResponse = {
+      offer: {
+        associationId: 'assoc-1',
+        contactId: 'cont-1',
+        seasonId: 1,
+        leagueIds: [10, 11]
+      },
+      configs: [
+        { leagueId: 10, costModel: 'SEASON', baseRateOverride: 50, expectedTeamsCount: 5 },
+        { leagueId: 11, costModel: 'SEASON', baseRateOverride: 50, expectedTeamsCount: 5 }
+      ]
+    };
+    
+    act(() => {
+      result.current.resetWithData(mockOfferResponse);
+    });
+    
+    expect(result.current.step2.selectedLeagueIds).toEqual(['10', '11']);
+    expect(result.current.step2.pricing.baseRateOverride).toBe(50);
+  });
 });

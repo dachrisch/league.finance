@@ -45,4 +45,21 @@ describe('Step2', () => {
     expect(screen.getByText(/Pricing Configuration/i)).toBeInTheDocument();
     expect(screen.getByText(/League Selection/i)).toBeInTheDocument();
   });
+
+  it('should not render header and footer when isUnified is true', () => {
+    render(<Step2 {...mockProps} isUnified={true} />);
+
+    // Header elements should not be present
+    expect(screen.queryByText(/Create New Offer/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Pricing & Leagues/i)).not.toBeInTheDocument();
+
+    // Footer elements should not be present
+    expect(screen.queryByText(/Back to Step 1/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Create Offer & Finish/i)).not.toBeInTheDocument();
+
+    // Content should still be present (except Summary which is hidden in unified)
+    expect(screen.queryByText(/Review Details/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/Pricing Configuration/i)).toBeInTheDocument();
+    expect(screen.getByText(/League Selection/i)).toBeInTheDocument();
+  });
 });
