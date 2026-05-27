@@ -198,9 +198,11 @@ export function useOfferCreation() {
     setState(initialState);
   }, []);
 
-  const resetWithData = useCallback((offer: any) => {
-    // Map existing offer to wizard state
-    const firstConfig = offer.financialConfigs?.[0];
+  const resetWithData = useCallback((data: any) => {
+    // Handle both new format { offer, configs } and legacy format
+    const offer = data.offer || data;
+    const configs = data.configs || data.financialConfigs;
+    const firstConfig = configs?.[0];
     
     setState({
       currentStep: 'step1',
@@ -218,7 +220,7 @@ export function useOfferCreation() {
           baseRateOverride: firstConfig?.baseRateOverride || undefined,
           expectedTeamsCount: firstConfig?.expectedTeamsCount || 0,
         },
-        selectedLeagueIds: offer.leagueIds.map(String),
+        selectedLeagueIds: (offer.leagueIds || []).map(String),
         leagueSearchTerm: '',
         leagueFilterType: 'All',
       },
