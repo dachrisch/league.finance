@@ -121,25 +121,28 @@ export function Step1({
             ✕ {submitError}
           </div>
         )}
-        <PasteExtractBlock
-          pasteInput={pasteInput}
-          isExtracting={isExtracting}
-          extractionError={extractionError}
-          extractedData={extractedData}
-          onInputChange={onUpdatePasteInput}
-          onExtract={(text) => {
-            onSelectPath('paste');
-            onExtract(text);
-          }}
-          onEmailChange={(email) => onUpdateExtractedData({ email })}
-          onPhoneChange={(phone) => onUpdateExtractedData({ phone })}
-          onCityChange={(city) => onUpdateExtractedData({ city })}
-          onPostalCodeChange={(postalCode) => onUpdateExtractedData({ postalCode })}
-        />
+        
+        {(!isUnified || !isEdit) && (
+          <PasteExtractBlock
+            pasteInput={pasteInput}
+            isExtracting={isExtracting}
+            extractionError={extractionError}
+            extractedData={extractedData}
+            onInputChange={onUpdatePasteInput}
+            onExtract={(text) => {
+              onSelectPath('paste');
+              onExtract(text);
+            }}
+            onEmailChange={(email) => onUpdateExtractedData({ email })}
+            onPhoneChange={(phone) => onUpdateExtractedData({ phone })}
+            onCityChange={(city) => onUpdateExtractedData({ city })}
+            onPostalCodeChange={(postalCode) => onUpdateExtractedData({ postalCode })}
+          />
+        )}
 
-        {!isUnified && (
+        {(!isUnified || isEdit) && (
           <>
-            <div className={styles.divider}>or use existing records</div>
+            {(!isUnified && !isEdit) && <div className={styles.divider}>or use existing records</div>}
 
             <UseExistingBlock
               associations={associations}
@@ -151,13 +154,13 @@ export function Step1({
               onAssociationChange={onSelectAssociation}
               onContactChange={onSelectContact}
               onSeasonChange={onSelectSeason}
-              isActive={pathChoice === 'existing'}
-              onToggle={() => onSelectPath(pathChoice === 'existing' ? 'paste' : 'existing')}
+              isActive={isUnified || pathChoice === 'existing'}
+              onToggle={() => !isUnified && onSelectPath(pathChoice === 'existing' ? 'paste' : 'existing')}
             />
           </>
         )}
 
-        {(pathChoice === 'paste' || isUnified) && (
+        {(pathChoice === 'paste' || (isUnified && !isEdit)) && (
           <SeasonBlock
             seasons={seasons}
             selectedSeasonId={selectedSeasonId}

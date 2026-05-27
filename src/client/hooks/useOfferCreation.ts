@@ -31,6 +31,7 @@ const initialState: WizardState = {
     selectedLeagueIds: [],
     leagueSearchTerm: '',
     leagueFilterType: 'All',
+    leaguePrices: {},
   },
 };
 
@@ -223,6 +224,10 @@ export function useOfferCreation() {
         selectedLeagueIds: (offer.leagueIds || []).map(String),
         leagueSearchTerm: '',
         leagueFilterType: 'All',
+        leaguePrices: configs?.reduce((acc: any, c: any) => {
+          acc[String(c.leagueId)] = c.customPrice;
+          return acc;
+        }, {}) || {},
       },
     });
   }, []);

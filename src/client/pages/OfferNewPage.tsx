@@ -2,6 +2,7 @@
 
 import { useParams } from 'react-router-dom';
 import { OfferCreateWizard } from '../components/Offer/OfferCreateWizard';
+import { OfferEditWizard } from '../components/Offer/OfferEditWizard';
 
 export default function OfferNewPage() {
   const { id } = useParams<{ id: string }>();
@@ -9,7 +10,7 @@ export default function OfferNewPage() {
   return (
     <div style={{ padding: '20px', background: '#f9fafb', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ width: '100%', maxWidth: '800px' }}>
-        <OfferCreateWizard editId={id} />
+        {id ? <OfferEditWizard editId={id} /> : <OfferCreateWizard />}
       </div>
     </div>
   );

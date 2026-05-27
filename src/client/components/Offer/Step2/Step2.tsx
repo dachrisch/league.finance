@@ -90,12 +90,14 @@ export function Step2({
             ✕ {submitError}
           </div>
         )}
-        <SummarySection
-          associationName={summary.associationName}
-          contactName={summary.contactName}
-          seasonYear={summary.seasonYear}
-          onEdit={onEditStep1}
-        />
+        {!isUnified && (
+          <SummarySection
+            associationName={summary.associationName}
+            contactName={summary.contactName}
+            seasonYear={summary.seasonYear}
+            onEdit={onEditStep1}
+          />
+        )}
 
         <PricingSection
           costModel={pricing.costModel}

@@ -43,6 +43,7 @@ export interface Step2State {
   selectedLeagueIds: string[];
   leagueSearchTerm: string;
   leagueFilterType?: 'All' | 'Youth' | 'Regional' | 'Division' | 'Other';
+  leaguePrices: Record<string, number | null>;
 }
 
 export interface WizardState {
