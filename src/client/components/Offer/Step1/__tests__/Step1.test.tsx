@@ -23,6 +23,7 @@ describe('Step1', () => {
     onSelectAssociation: vi.fn(),
     onSelectContact: vi.fn(),
     onSelectSeason: vi.fn(),
+    onUpdateExtractedData: vi.fn(),
     onNext: vi.fn(),
     onCancel: vi.fn(),
   };
@@ -98,5 +99,28 @@ describe('Step1', () => {
     // 2. Paste subtitle (maybe)
     // 3. SeasonBlock Title
     expect(seasonBlocks.length).toBeGreaterThan(1);
+  });
+
+  it('should render unified mode correctly', () => {
+    const unifiedProps = {
+      ...mockProps,
+      isUnified: true,
+    };
+    render(<Step1 {...unifiedProps} />);
+
+    // Header should be hidden
+    expect(screen.queryByText(/Association, Contact & Season/i)).not.toBeInTheDocument();
+
+    // Divider/Path selection should be hidden
+    expect(screen.queryByText(/or use existing records/i)).not.toBeInTheDocument();
+
+    // Next button should be hidden
+    expect(screen.queryByRole('button', { name: /Next/i })).not.toBeInTheDocument();
+
+    // Paste extract block should still be there
+    expect(screen.getByText(/Paste & extract/i)).toBeInTheDocument();
+
+    // Season block should still be there
+    expect(screen.getByText(/Required to complete the offer/i)).toBeInTheDocument();
   });
 });
