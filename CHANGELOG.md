@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/dachrisch/league.finance/compare/v0.3.16...v0.4.0) (2026-05-27)
+
+
+### Features
+
+* add isUnified mode to Step1 ([7a13c80](https://github.com/dachrisch/league.finance/commit/7a13c802f8378a7f673b0a9df93b2e1366885c3b))
+* add isUnified mode to Step2 ([8dcd587](https://github.com/dachrisch/league.finance/commit/8dcd5877b64d0175a4d353610bc2dfc52e65b3f6))
+* implement unified offer edit experience ([ecba2fb](https://github.com/dachrisch/league.finance/commit/ecba2fb9b58eb2b432701b055f360292245e3087))
+* unified offer edit experience ([4829009](https://github.com/dachrisch/league.finance/commit/4829009885134f1fcf08a3c902abae10a9147334))
+
+
+### Bug Fixes
+
+* pre-fill logic in useOfferCreation hook ([18f4ea3](https://github.com/dachrisch/league.finance/commit/18f4ea311eae6af9b61190c8e15b80fde6657dc0))
+* update Step2 tests for unified mode ([82badfa](https://github.com/dachrisch/league.finance/commit/82badfa78dff1d7a5fd299a0edd2717f2f22c764))
+
 ## [0.3.16](https://github.com/dachrisch/league.finance/compare/v0.3.15...v0.3.16) (2026-05-27)
 
 
