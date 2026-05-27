@@ -57,8 +57,8 @@ describe('Step2', () => {
     expect(screen.queryByText(/Back to Step 1/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Create Offer & Finish/i)).not.toBeInTheDocument();
 
-    // Content should still be present
-    expect(screen.getByText(/Review Details/i)).toBeInTheDocument();
+    // Content should still be present (except Summary which is hidden in unified)
+    expect(screen.queryByText(/Review Details/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Pricing Configuration/i)).toBeInTheDocument();
     expect(screen.getByText(/League Selection/i)).toBeInTheDocument();
   });
