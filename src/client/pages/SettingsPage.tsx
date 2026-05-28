@@ -6,15 +6,18 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const { data: me } = trpc.auth.me.useQuery();
   const { data: settings, refetch } = trpc.finance.settings.get.useQuery();
+  const { data: folders = [] } = trpc.google.listFolders.useQuery();
   const updateSettings = trpc.finance.settings.update.useMutation({ onSuccess: () => refetch() });
 
   const [ratePerSeason, setRatePerSeason] = useState('');
   const [ratePerGameday, setRatePerGameday] = useState('');
+  const [defaultFolderId, setDefaultFolderId] = useState('');
 
   useEffect(() => {
     if (settings) {
       setRatePerSeason(String(settings.defaultRatePerTeamSeason));
       setRatePerGameday(String(settings.defaultRatePerTeamGameday));
+      setDefaultFolderId(settings.defaultDriveFolderId || '');
     }
   }, [settings]);
 
@@ -35,6 +38,7 @@ export function SettingsPage() {
     updateSettings.mutate({
       defaultRatePerTeamSeason: Number(ratePerSeason),
       defaultRatePerTeamGameday: Number(ratePerGameday),
+      defaultDriveFolderId: defaultFolderId || undefined,
     });
   }
 
@@ -49,7 +53,7 @@ export function SettingsPage() {
       </button>
       <h1 style={{ marginBottom: 'var(--spacing-xl)', fontSize: '1.5rem', color: 'var(--primary-color)' }}>Global Settings</h1>
 
-      <section className="card" style={{ background: 'var(--bg-secondary)' }}>
+      <section className="card" style={{ background: 'var(--bg-secondary)', marginBottom: 'var(--spacing-lg)' }}>
         <h2 style={{ margin: '0 0 var(--spacing-lg) 0', fontSize: 'var(--font-size-lg)' }}>Default Rates</h2>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
           <label className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xs)' }}>
@@ -62,7 +66,6 @@ export function SettingsPage() {
               onChange={(e) => setRatePerSeason(e.target.value)}
               className="form-control"
             />
-            <small style={{ color: 'var(--text-muted)' }}>Used for FLAT fee calculations when no override is present.</small>
           </label>
 
           <label className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xs)' }}>
@@ -75,7 +78,22 @@ export function SettingsPage() {
               onChange={(e) => setRatePerGameday(e.target.value)}
               className="form-control"
             />
-            <small style={{ color: 'var(--text-muted)' }}>Used for usage-based calculations when no override is present.</small>
+          </label>
+
+          <h2 style={{ margin: 'var(--spacing-md) 0 var(--spacing-sm) 0', fontSize: 'var(--font-size-lg)' }}>Google Drive</h2>
+          <label className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xs)' }}>
+            <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)' }}>Default Offer Folder</span>
+            <select
+              value={defaultFolderId}
+              onChange={(e) => setDefaultFolderId(e.target.value)}
+              className="form-control"
+            >
+              <option value="">Select a folder...</option>
+              {folders.map(f => (
+                <option key={f.id} value={f.id}>{f.name}</option>
+              ))}
+            </select>
+            <small style={{ color: 'var(--text-muted)' }}>Offers will be uploaded to this folder by default.</small>
           </label>
 
           <button

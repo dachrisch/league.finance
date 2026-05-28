@@ -72,4 +72,21 @@ export class DriveService {
       throw new Error(`Failed to validate folder: ${err.message}`);
     }
   }
+
+  async listFolders(): Promise<Array<{ id: string; name: string }>> {
+    try {
+      const response = await this.drive.files.list({
+        q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
+        fields: 'files(id, name)',
+        orderBy: 'name',
+      });
+
+      return (response.data.files || []).map((f) => ({
+        id: f.id || '',
+        name: f.name || 'Untitled Folder',
+      }));
+    } catch (err: any) {
+      throw new Error(`Failed to list folders: ${err.message}`);
+    }
+  }
 }
