@@ -3,6 +3,7 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 import jwt from 'jsonwebtoken';
 import type { JwtPayload } from '../../shared/types';
 import { JwtPayloadSchema } from '../../shared/schemas/user';
+import { User } from './models/User';
 
 export interface Context {
   user: JwtPayload | null;
@@ -16,7 +17,7 @@ export function createInnerTRPCContext(partial: Partial<Context> = {}): Context 
   };
 }
 
-export function createContext({ req }: trpcExpress.CreateExpressContextOptions): Context {
+export async function createContext({ req }: trpcExpress.CreateExpressContextOptions): Promise<Context> {
   // Try to get token from Authorization header first (for backwards compatibility)
   let token: string | undefined;
 
@@ -34,9 +35,9 @@ export function createContext({ req }: trpcExpress.CreateExpressContextOptions):
     const verifiedPayload = jwt.verify(token, process.env.JWT_SECRET!, { algorithms: ['HS256'] });
     const payload = JwtPayloadSchema.parse(verifiedPayload);
 
-    // Extract access token from cookies or Authorization header
-    const accessToken = (req.cookies as Record<string, string>)?.access_token ||
-                       req.headers.authorization?.replace('Bearer ', '');
+    // Fetch user from DB to get the Google access token
+    const userDoc = await User.findById(payload.userId).lean();
+    const accessToken = userDoc?.googleAccessToken;
 
     return { user: payload, accessToken };
   } catch {

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { trpc } from '../../lib/trpc';
 
 interface SendOfferDialogProps {
   open: boolean;
@@ -28,10 +29,21 @@ export function SendOfferDialog({
   onSuccess,
   onError,
 }: SendOfferDialogProps) {
+  const { data: settings } = trpc.finance.settings.get.useQuery(undefined, { enabled: open });
+  const { data: folders = [] } = trpc.google.listFolders.useQuery(undefined, { enabled: open });
+
   const [selectedFolderId, setSelectedFolderId] = useState<string>('');
+  const [showFolderPicker, setShowFolderPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState<JobProgress | null>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize selectedFolderId with default from settings
+  useEffect(() => {
+    if (settings?.defaultDriveFolderId && !selectedFolderId) {
+      setSelectedFolderId(settings.defaultDriveFolderId);
+    }
+  }, [settings, selectedFolderId]);
 
   // Cleanup polling interval on component unmount
   useEffect(() => {
@@ -40,13 +52,6 @@ export function SendOfferDialog({
         clearInterval(pollIntervalRef.current);
       }
     };
-  }, []);
-
-  const handleSelectFolder = useCallback(async () => {
-    // This would integrate with Google Drive Picker API
-    // For now, show a placeholder
-    console.log('Opening Drive folder picker...');
-    // In production, initialize Google Drive Picker here
   }, []);
 
   const handleSend = useCallback(async () => {
@@ -60,7 +65,7 @@ export function SendOfferDialog({
 
     try {
       // Call tRPC sendOffer mutation
-      const response = await fetch('/trpc/offersSend.sendOffer', {
+      const response = await fetch('/trpc/finance.offersSend.sendOffer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -89,7 +94,7 @@ export function SendOfferDialog({
         attempts++;
 
         try {
-          const statusResponse = await fetch('/trpc/offersSend.getOfferSendStatus', {
+          const statusResponse = await fetch('/trpc/finance.offersSend.getOfferSendStatus', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ offerId }),
@@ -159,6 +164,8 @@ export function SendOfferDialog({
     'failed': 'Failed',
   };
 
+  const selectedFolderName = folders.find(f => f.id === selectedFolderId)?.name || 'None selected';
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
@@ -175,20 +182,41 @@ export function SendOfferDialog({
 
         {!progress ? (
           <>
-            <button
-              onClick={handleSelectFolder}
-              disabled={isLoading}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded mb-4 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
-            >
-              {selectedFolderId ? '✓ Folder Selected' : 'Select Drive Folder'}
-            </button>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Target Drive Folder
+              </label>
+              {showFolderPicker ? (
+                <select
+                  value={selectedFolderId}
+                  onChange={(e) => {
+                    setSelectedFolderId(e.target.value);
+                    setShowFolderPicker(false);
+                  }}
+                  className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select a folder...</option>
+                  {folders.map((f) => (
+                    <option key={f.id} value={f.id}>{f.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <div 
+                  onClick={() => !isLoading && setShowFolderPicker(true)}
+                  className={`flex justify-between items-center p-2 border rounded cursor-pointer hover:bg-gray-50 ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}
+                >
+                  <span className="text-sm truncate mr-2">{selectedFolderName}</span>
+                  <span className="text-blue-600 text-xs font-medium">Change</span>
+                </div>
+              )}
+            </div>
 
             <button
               onClick={handleSend}
               disabled={!selectedFolderId || isLoading}
               className="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
             >
-              Send
+              Send Offer
             </button>
           </>
         ) : (
@@ -213,7 +241,7 @@ export function SendOfferDialog({
           disabled={isLoading}
           className="w-full mt-4 text-gray-600 hover:text-gray-800 disabled:text-gray-400 transition py-2"
         >
-          {isLoading ? 'Sending...' : 'Close'}
+          {isLoading ? 'Processing...' : 'Close'}
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { router } from '../trpc';
 import { authRouter } from './auth';
 import { teamsRouter } from './teams';
+import { googleRouter } from './google';
 import { settingsRouter } from './finance/settings';
 import { configsRouter } from './finance/configs';
 import { discountsRouter } from './finance/discounts';
@@ -18,6 +19,7 @@ export const appRouter = router({
   health: healthRouter,
   auth: authRouter,
   teams: teamsRouter,
+  google: googleRouter,
   finance: router({
     settings: settingsRouter,
     configs: configsRouter,

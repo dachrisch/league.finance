@@ -8,6 +8,7 @@ export const settingsRouter = router({
     return {
       defaultRatePerTeamSeason: settings.defaultRatePerTeamSeason,
       defaultRatePerTeamGameday: settings.defaultRatePerTeamGameday,
+      defaultDriveFolderId: settings.defaultDriveFolderId,
     };
   }),
 
@@ -20,6 +21,7 @@ export const settingsRouter = router({
           $set: {
             defaultRatePerTeamSeason: input.defaultRatePerTeamSeason,
             defaultRatePerTeamGameday: input.defaultRatePerTeamGameday,
+            defaultDriveFolderId: input.defaultDriveFolderId,
           },
         },
         { upsert: true }
@@ -27,6 +29,7 @@ export const settingsRouter = router({
       return {
         defaultRatePerTeamSeason: input.defaultRatePerTeamSeason,
         defaultRatePerTeamGameday: input.defaultRatePerTeamGameday,
+        defaultDriveFolderId: input.defaultDriveFolderId,
       };
     }),
 });
