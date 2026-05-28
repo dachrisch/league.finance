@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.6](https://github.com/dachrisch/league.finance/compare/v0.4.5...v0.4.6) (2026-05-28)
+
+
+### Bug Fixes
+
+* resolve contact and league preselection in unified offer edit ([#146](https://github.com/dachrisch/league.finance/issues/146)) ([96d579f](https://github.com/dachrisch/league.finance/commit/96d579fad1d99664f6f38a4d7b7e388d42d589a6))
+
 ## [0.4.5](https://github.com/dachrisch/league.finance/compare/v0.4.4...v0.4.5) (2026-05-28)
 
 
