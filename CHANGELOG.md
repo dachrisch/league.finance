@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.2](https://github.com/dachrisch/league.finance/compare/v0.4.1...v0.4.2) (2026-05-28)
+
+
+### Bug Fixes
+
+* **deps:** update dependency concurrently to v10 ([#138](https://github.com/dachrisch/league.finance/issues/138)) ([a7c95d8](https://github.com/dachrisch/league.finance/commit/a7c95d887d86b3ee58ae5027777b7e172d38ed3d))
+
 ## [0.4.1](https://github.com/dachrisch/league.finance/compare/v0.4.0...v0.4.1) (2026-05-27)
 
 
