@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.3](https://github.com/dachrisch/league.finance/compare/v0.4.2...v0.4.3) (2026-05-28)
+
+
+### Bug Fixes
+
+* **deps:** update dependency mongodb-memory-server to v11.2.0 ([#140](https://github.com/dachrisch/league.finance/issues/140)) ([8b0c5c1](https://github.com/dachrisch/league.finance/commit/8b0c5c1b00cae1e962770a7334eeaa56db119c95))
+
 ## [0.4.2](https://github.com/dachrisch/league.finance/compare/v0.4.1...v0.4.2) (2026-05-28)
 
 
