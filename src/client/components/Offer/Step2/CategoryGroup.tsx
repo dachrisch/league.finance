@@ -39,24 +39,29 @@ export function CategoryGroup({
 
       <div className={`${styles.leagueCategoryContent} ${isOpen ? styles.open : ''}`}>
         <div className={styles.leagueCategoryList}>
-          {leagues.map((league) => (
-            <div
-              key={league._id}
-              className={styles.leagueItem}
-              onClick={() => onToggle(league._id)}
-            >
-              <input
-                type="checkbox"
-                className={styles.leagueCheckbox}
-                checked={selectedIds.includes(league._id)}
-                onChange={() => {}} // Controlled by parent
-              />
-              <span className={styles.leagueName}>{league.name}</span>
-              {selectedIds.includes(league._id) && (
-                <span className={styles.leagueCheckmark}>✓</span>
-              )}
-            </div>
-          ))}
+          {leagues.map((league) => {
+            const leagueId = String(league._id);
+            const isSelected = selectedIds.includes(leagueId);
+            
+            return (
+              <div
+                key={leagueId}
+                className={styles.leagueItem}
+                onClick={() => onToggle(leagueId)}
+              >
+                <input
+                  type="checkbox"
+                  className={styles.leagueCheckbox}
+                  checked={isSelected}
+                  onChange={() => {}} // Controlled by parent
+                />
+                <span className={styles.leagueName}>{league.name}</span>
+                {isSelected && (
+                  <span className={styles.leagueCheckmark}>✓</span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
