@@ -155,25 +155,26 @@ export function useOfferCreation() {
   }, []);
 
   // Step 2: League selection
-  const toggleLeague = useCallback((leagueId: string) => {
+  const toggleLeague = useCallback((leagueId: string | number) => {
     setState((prev) => {
       const { selectedLeagueIds } = prev.step2;
+      const idStr = String(leagueId);
       return {
         ...prev,
         step2: {
           ...prev.step2,
-          selectedLeagueIds: selectedLeagueIds.includes(leagueId)
-            ? selectedLeagueIds.filter((id) => id !== leagueId)
-            : [...selectedLeagueIds, leagueId],
+          selectedLeagueIds: selectedLeagueIds.includes(idStr)
+            ? selectedLeagueIds.filter((id) => id !== idStr)
+            : [...selectedLeagueIds, idStr],
         },
       };
     });
   }, []);
 
-  const setSelectedLeagues = useCallback((leagueIds: string[]) => {
+  const setSelectedLeagues = useCallback((leagueIds: Array<string | number>) => {
     setState((prev) => ({
       ...prev,
-      step2: { ...prev.step2, selectedLeagueIds: leagueIds },
+      step2: { ...prev.step2, selectedLeagueIds: leagueIds.map(String) },
     }));
   }, []);
 

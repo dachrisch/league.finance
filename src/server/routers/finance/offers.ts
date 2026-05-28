@@ -14,12 +14,23 @@ import { offerSendQueue } from '../../jobs/queue';
 
 const DEFAULT_BASE_RATE = 50;
 
-const normalizeOffer = (doc: any) => ({
-  ...doc.toObject?.() || doc,
-  _id: doc._id?.toString(),
-  associationId: doc.associationId?.toString() || doc.associationId,
-  contactId: doc.contactId?.toString?.() || doc.contactId,
-});
+const normalizeOffer = (doc: any) => {
+  const obj = doc.toObject?.() || doc;
+  
+  // Handle potentially populated fields
+  const normalizeId = (val: any) => {
+    if (!val) return val;
+    if (typeof val === 'object' && val._id) return val._id.toString();
+    return val.toString();
+  };
+
+  return {
+    ...obj,
+    _id: obj._id?.toString(),
+    associationId: normalizeId(obj.associationId),
+    contactId: normalizeId(obj.contactId),
+  };
+};
 
 const normalizeConfig = (doc: any) => ({
   ...(doc.toObject?.() || doc),
