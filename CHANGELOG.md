@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.8](https://github.com/dachrisch/league.finance/compare/v0.4.7...v0.4.8) (2026-05-28)
+
+
+### Bug Fixes
+
+* resolve scrolling issues in league selection table ([#151](https://github.com/dachrisch/league.finance/issues/151)) ([876eb76](https://github.com/dachrisch/league.finance/commit/876eb76cd14e4903f91053fa13c48558e3e4a420))
+
 ## [0.4.7](https://github.com/dachrisch/league.finance/compare/v0.4.6...v0.4.7) (2026-05-28)
 
 
