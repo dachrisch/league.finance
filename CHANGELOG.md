@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.7](https://github.com/dachrisch/league.finance/compare/v0.4.6...v0.4.7) (2026-05-28)
+
+
+### Bug Fixes
+
+* restore google drive folder integration and add global settings ([#149](https://github.com/dachrisch/league.finance/issues/149)) ([fdb13f2](https://github.com/dachrisch/league.finance/commit/fdb13f273f24dc64119358cfa3217be230f88924))
+
 ## [0.4.6](https://github.com/dachrisch/league.finance/compare/v0.4.5...v0.4.6) (2026-05-28)
 
 
