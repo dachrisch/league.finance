@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.10](https://github.com/dachrisch/league.finance/compare/v0.4.9...v0.4.10) (2026-05-28)
+
+
+### Bug Fixes
+
+* update SendOfferDialog tests to handle tRPC and resolved text ambiguity ([#154](https://github.com/dachrisch/league.finance/issues/154)) ([89daf8e](https://github.com/dachrisch/league.finance/commit/89daf8e4c4ba506400bb1ece2caac43812203b76))
+
 ## [0.4.9](https://github.com/dachrisch/league.finance/compare/v0.4.8...v0.4.9) (2026-05-28)
 
 
