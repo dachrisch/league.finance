@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.11](https://github.com/dachrisch/league.finance/compare/v0.4.10...v0.4.11) (2026-05-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency nodemailer to v8.0.10 ([#156](https://github.com/dachrisch/league.finance/issues/156)) ([68224d3](https://github.com/dachrisch/league.finance/commit/68224d356d23f98dd3897a3e281152a29eb244ca))
+
 ## [0.4.10](https://github.com/dachrisch/league.finance/compare/v0.4.9...v0.4.10) (2026-05-28)
 
 
