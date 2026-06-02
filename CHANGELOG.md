@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.17](https://github.com/dachrisch/league.finance/compare/v0.4.16...v0.4.17) (2026-06-02)
+
+
+### Bug Fixes
+
+* **deps:** update tanstack-query monorepo to v5.101.0 ([#171](https://github.com/dachrisch/league.finance/issues/171)) ([4cafff8](https://github.com/dachrisch/league.finance/commit/4cafff8a14acd7124fa1d7d543c5de021f0e9341))
+
 ## [0.4.16](https://github.com/dachrisch/league.finance/compare/v0.4.15...v0.4.16) (2026-06-02)
 
 
