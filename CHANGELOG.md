@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.19](https://github.com/dachrisch/league.finance/compare/v0.4.18...v0.4.19) (2026-06-04)
+
+
+### Bug Fixes
+
+* **deps:** update react-router monorepo to v7.17.0 ([#174](https://github.com/dachrisch/league.finance/issues/174)) ([b94fd06](https://github.com/dachrisch/league.finance/commit/b94fd067c334ac4c9071e1ddfafe9432902b6ec2))
+
 ## [0.4.18](https://github.com/dachrisch/league.finance/compare/v0.4.17...v0.4.18) (2026-06-04)
 
 
