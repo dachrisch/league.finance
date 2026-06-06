@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.22](https://github.com/dachrisch/league.finance/compare/v0.4.21...v0.4.22) (2026-06-06)
+
+
+### Bug Fixes
+
+* **deps:** update dependency mysql2 to v3.22.5 ([#181](https://github.com/dachrisch/league.finance/issues/181)) ([94c6538](https://github.com/dachrisch/league.finance/commit/94c653848352d57db79b6a98bb378944515b9e0a))
+
 ## [0.4.21](https://github.com/dachrisch/league.finance/compare/v0.4.20...v0.4.21) (2026-06-05)
 
 
