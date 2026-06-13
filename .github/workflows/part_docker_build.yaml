@@ -50,7 +50,7 @@ jobs:
           tags: ${{ inputs.image_name }}:latest
           outputs: type=docker,dest=/tmp/${{ inputs.image_name }}.tar
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
           build-args: |
             VITE_BUILD_VERSION=${{ inputs.version }}
             VITE_GIT_COMMIT_HASH=${{ inputs.git_hash }}
