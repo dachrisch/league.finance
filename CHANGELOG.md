@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.27](https://github.com/dachrisch/league.finance/compare/v0.4.26...v0.4.27) (2026-06-14)
+
+
+### Bug Fixes
+
+* **ci:** use lighter docker cache mode to respect dependency changes ([af948c8](https://github.com/dachrisch/league.finance/commit/af948c8265d5687dcd5d2b25a92eff4be8f80761))
+* **deps:** lock file maintenance ([#192](https://github.com/dachrisch/league.finance/issues/192)) ([f2c231f](https://github.com/dachrisch/league.finance/commit/f2c231f907071725eac317d5be83aee85edcd245))
+
 ## [0.4.26](https://github.com/dachrisch/league.finance/compare/v0.4.25...v0.4.26) (2026-06-13)
 
 
