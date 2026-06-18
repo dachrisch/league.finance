@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.36](https://github.com/dachrisch/league.finance/compare/v0.4.35...v0.4.36) (2026-06-18)
+
+
+### Bug Fixes
+
+* **deps:** update actions/checkout action to v7 ([#211](https://github.com/dachrisch/league.finance/issues/211)) ([0f813e0](https://github.com/dachrisch/league.finance/commit/0f813e01db3f9fa4e032cf23c34fb27f2b581e27))
+
 ## [0.4.35](https://github.com/dachrisch/league.finance/compare/v0.4.34...v0.4.35) (2026-06-18)
 
 
