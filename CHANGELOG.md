@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.40](https://github.com/dachrisch/league.finance/compare/v0.4.39...v0.4.40) (2026-06-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @vitejs/plugin-react to v6.0.3 ([#220](https://github.com/dachrisch/league.finance/issues/220)) ([813d2ff](https://github.com/dachrisch/league.finance/commit/813d2ff8d79f22539477e3e0832b69d2ef8e687b))
+* **deps:** update tanstack-query monorepo ([#221](https://github.com/dachrisch/league.finance/issues/221)) ([739d656](https://github.com/dachrisch/league.finance/commit/739d656159a4e5031e074d2e7d9c716a73bfe3d8))
+
 ## [0.4.39](https://github.com/dachrisch/league.finance/compare/v0.4.38...v0.4.39) (2026-06-22)
 
 
