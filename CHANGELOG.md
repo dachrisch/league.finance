@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.42](https://github.com/dachrisch/league.finance/compare/v0.4.41...v0.4.42) (2026-06-23)
+
+
+### Bug Fixes
+
+* **deps:** update playwright monorepo ([#225](https://github.com/dachrisch/league.finance/issues/225)) ([e505759](https://github.com/dachrisch/league.finance/commit/e505759f6d6f8f477b98c5b4b7c781538d8e2907))
+
 ## [0.4.41](https://github.com/dachrisch/league.finance/compare/v0.4.40...v0.4.41) (2026-06-23)
 
 
