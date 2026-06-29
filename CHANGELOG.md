@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.49](https://github.com/dachrisch/league.finance/compare/v0.4.48...v0.4.49) (2026-06-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency react-router-dom to v7.18.1 ([#239](https://github.com/dachrisch/league.finance/issues/239)) ([6d7747e](https://github.com/dachrisch/league.finance/commit/6d7747e27b2a642f5440a0c7a8c70b7e7a989076))
+
 ## [0.4.48](https://github.com/dachrisch/league.finance/compare/v0.4.47...v0.4.48) (2026-06-29)
 
 
