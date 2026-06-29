@@ -1,6 +1,6 @@
 {
   "name": "leagues-finance",
-  "version": "0.4.47",
+  "version": "0.4.48",
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
