@@ -45,6 +45,19 @@ entangled with this flow):
 - **Status:** keep the `Offer.status` enum; `sent` is **relabeled in the UI** to
   mean "filed in Drive". No new enum value.
 
+## Validated prerequisites (2026-06-30)
+
+The Drive dependency was validated on prod against the real OAuth token before
+planning implementation:
+
+- **Drive API must be enabled** on GCP project `391372270100`. It was disabled
+  (every Drive call failed); now enabled. This is an environment prerequisite,
+  not code.
+- `google.listFolders` returns folders (read OK via `drive.readonly`).
+- `files.create` with `parents=[<existing folder the app did not create>]`
+  **succeeds** with the `drive.file` scope (verified by write-then-delete). So
+  the current scopes are sufficient; no `drive` scope upgrade needed.
+
 ## Design
 
 ### Server
