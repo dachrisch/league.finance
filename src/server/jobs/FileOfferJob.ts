@@ -74,14 +74,14 @@ export class FileOfferJobHandler {
       // Done
       offer.status = 'sent';
       offer.sentAt = new Date();
-      (offer as any).driveMetadata = {
+      offer.driveMetadata = {
         driveFileId: fileId,
         driveFolderId,
         driveLink: webViewLink,
         filedAt: new Date(),
       };
-      (offer as any).sendJobId = undefined;
-      (offer as any).sendJobAttempts = 0;
+      offer.sendJobId = undefined;
+      offer.sendJobAttempts = 0;
       await offer.save();
 
       job.progress(100);
@@ -92,14 +92,15 @@ export class FileOfferJobHandler {
       try {
         const offer = await Offer.findById(offerId);
         if (offer) {
-          (offer as any).driveMetadata = {
-            ...(offer as any).driveMetadata,
+          offer.driveMetadata = {
+            ...offer.driveMetadata,
             driveFolderId,
             failureReason: err.message,
             lastAttempt: new Date(),
           };
-          (offer as any).sendJobAttempts = ((offer as any).sendJobAttempts || 0) + 1;
-          (offer as any).sendJobId = undefined;
+          offer.sendJobAttempts = (offer.sendJobAttempts || 0) + 1;
+          offer.sendJobId = undefined;
+          offer.status = 'draft';
           await offer.save();
         }
       } catch (updateErr) {

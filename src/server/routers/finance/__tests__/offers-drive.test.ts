@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TRPCError } from '@trpc/server';
 import { Offer } from '../../../models/Offer';
 import { offerDriveQueue } from '../../../jobs/queue';
 import { offersDriveRouter } from '../offers-drive';
@@ -36,5 +35,36 @@ describe('offersDrive.fileOfferInDrive', () => {
       expect.any(Object)
     );
     expect(res.status).toBe('queued');
+  });
+});
+
+describe('offersDrive.getOfferDriveStatus', () => {
+  it('returns status:completed, progress:100 and driveLink when offer.status is sent', async () => {
+    const sentAt = new Date('2024-01-15T10:00:00Z');
+    vi.mocked(Offer.findById).mockResolvedValue({
+      status: 'sent',
+      sentAt,
+      sendJobId: 'j99',
+      driveMetadata: { driveLink: 'https://drive/x' },
+    } as any);
+    const res = await caller().getOfferDriveStatus({ offerId: 'o1' });
+    expect(res.status).toBe('completed');
+    expect(res.progress).toBe(100);
+    expect(res.driveLink).toBe('https://drive/x');
+    expect(res.completedAt).toEqual(sentAt);
+  });
+
+  it('returns status:completed even when sendJobId is undefined on a sent offer', async () => {
+    const sentAt = new Date('2024-01-15T10:00:00Z');
+    vi.mocked(Offer.findById).mockResolvedValue({
+      status: 'sent',
+      sentAt,
+      sendJobId: undefined,
+      driveMetadata: { driveLink: 'https://drive/y' },
+    } as any);
+    const res = await caller().getOfferDriveStatus({ offerId: 'o1' });
+    expect(res.status).toBe('completed');
+    expect(res.progress).toBe(100);
+    expect(res.driveLink).toBe('https://drive/y');
   });
 });

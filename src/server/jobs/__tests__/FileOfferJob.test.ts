@@ -66,10 +66,11 @@ describe('FileOfferJobHandler', () => {
 
   it('on upload failure records driveMetadata.failureReason and rethrows', async () => {
     const save = vi.fn();
-    const offer: any = { _id: 'o1', contactId: 'c1', associationId: 'a1', save };
+    const offer: any = { _id: 'o1', contactId: 'c1', associationId: 'a1', status: 'sending', save };
     vi.mocked(Offer.findById).mockResolvedValue(offer);
     mockUpload.mockRejectedValueOnce(new Error('boom'));
     await expect(FileOfferJobHandler.process(makeJob() as any)).rejects.toThrow('boom');
     expect(offer.driveMetadata.failureReason).toBe('boom');
+    expect(offer.status).toBe('draft');
   });
 });

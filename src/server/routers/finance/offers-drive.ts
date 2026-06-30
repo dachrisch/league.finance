@@ -41,6 +41,15 @@ export const offersDriveRouter = router({
     .query(async ({ input }) => {
       const offer = await Offer.findById(input.offerId);
       if (!offer) throw new TRPCError({ code: 'NOT_FOUND', message: 'Offer not found' });
+      if (offer.status === 'sent') {
+        return {
+          jobId: undefined,
+          status: 'completed' as const,
+          progress: 100,
+          driveLink: offer.driveMetadata?.driveLink,
+          completedAt: offer.sentAt,
+        };
+      }
       if (!offer.sendJobId) return { jobId: undefined, status: 'none' as const, progress: 0 };
 
       const job = await offerDriveQueue.getJob(offer.sendJobId);
@@ -48,7 +57,7 @@ export const offersDriveRouter = router({
 
       const state = await job.getState();
       const progress = (job.progress() as number) || 0;
-      let status: 'pending' | 'generating-pdf' | 'uploading' | 'completed' | 'failed' = 'pending';
+      let status: 'none' | 'pending' | 'generating-pdf' | 'uploading' | 'completed' | 'failed' = 'pending';
       if (state === 'completed') status = 'completed';
       else if (state === 'failed') status = 'failed';
       else if (progress > 40) status = 'uploading';
@@ -59,7 +68,7 @@ export const offersDriveRouter = router({
         status,
         progress: Math.min(progress, 100),
         error: job.failedReason,
-        driveLink: (offer as any).driveMetadata?.driveLink,
+        driveLink: offer.driveMetadata?.driveLink,
         completedAt: offer.sentAt,
       };
     }),
@@ -78,7 +87,7 @@ export const offersDriveRouter = router({
       if (!ctx.accessToken) {
         throw new TRPCError({ code: 'UNAUTHORIZED', message: 'No Google OAuth access token found' });
       }
-      const driveFolderId = (offer as any).driveMetadata?.driveFolderId;
+      const driveFolderId = offer.driveMetadata?.driveFolderId;
       if (!driveFolderId) {
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'No Drive folder information found' });
       }
