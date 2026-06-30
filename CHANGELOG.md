@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.1](https://github.com/dachrisch/league.finance/compare/v0.6.0...v0.6.1) (2026-06-30)
+
+
+### Bug Fixes
+
+* **drive:** upload PDF as a readable stream, not a Buffer ([#251](https://github.com/dachrisch/league.finance/issues/251)) ([d92614b](https://github.com/dachrisch/league.finance/commit/d92614bface90842098e79790efd8d47dc6abbee))
+
 ## [0.6.0](https://github.com/dachrisch/league.finance/compare/v0.5.0...v0.6.0) (2026-06-30)
 
 
