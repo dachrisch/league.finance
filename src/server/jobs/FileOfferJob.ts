@@ -5,27 +5,23 @@ import { FinancialConfig } from '../models/FinancialConfig';
 import { Association } from '../models/Association';
 import { PdfService, PdfGenerationData } from '../services/PdfService';
 import { DriveService } from '../services/DriveService';
-import { GmailService, SendEmailParams } from '../services/GmailService';
 import { getMysqlPool } from '../db/mysql';
 
-export interface SendOfferJobData {
+export interface FileOfferJobData {
   offerId: string;
   userId: string;
   driveFolderId: string;
-  recipientEmail: string;
   accessToken: string;
 }
 
-export class SendOfferJobHandler {
-  static async process(job: Job<SendOfferJobData>) {
-    const { offerId, userId, driveFolderId, recipientEmail, accessToken } =
-      job.data;
+export class FileOfferJobHandler {
+  static async process(job: Job<FileOfferJobData>) {
+    const { offerId, driveFolderId, accessToken } = job.data;
 
     try {
       job.progress(10);
-      job.log(`Starting job for offer ${offerId}`);
+      job.log(`Filing offer ${offerId}`);
 
-      // Fetch offer and related data
       const offer = await Offer.findById(offerId);
       if (!offer) throw new Error('Offer not found');
 
@@ -35,10 +31,8 @@ export class SendOfferJobHandler {
       const association = await Association.findById(offer.associationId);
       const associationName = association?.name || 'Unknown Association';
 
-      // Fetch configs
       const configs = await FinancialConfig.find({ offerId }).lean();
 
-      // Fetch league names from MySQL
       let leaguesMap: Record<number, string> = {};
       try {
         const pool = getMysqlPool();
@@ -57,7 +51,6 @@ export class SendOfferJobHandler {
       // Step 1: Generate PDF
       job.progress(20);
       job.log('Generating PDF...');
-
       const pdfData: PdfGenerationData = {
         offer,
         contact,
@@ -66,100 +59,44 @@ export class SendOfferJobHandler {
         associationName,
         seasonName: `${offer.seasonId}`,
       };
-
       const pdfBuffer = await PdfService.generateOfferPdf(pdfData);
-      const filename = PdfService.generateFilename(
-        offer._id.toString(),
-        associationName
-      );
-
-      job.progress(40);
+      const filename = PdfService.generateFilename(offer._id.toString(), associationName);
 
       // Step 2: Upload to Drive
+      job.progress(40);
       job.log('Uploading to Google Drive...');
-
       const driveService = new DriveService(accessToken);
-
-      // Validate folder exists
       const folderValid = await driveService.validateFolder(driveFolderId);
-      if (!folderValid) {
-        throw new Error('Invalid or inaccessible Drive folder');
-      }
+      if (!folderValid) throw new Error('Invalid or inaccessible Drive folder');
 
-      const { fileId, webViewLink } = await driveService.uploadFile(
-        pdfBuffer,
-        filename,
-        driveFolderId
-      );
+      const { fileId, webViewLink } = await driveService.uploadFile(pdfBuffer, filename, driveFolderId);
 
-      job.progress(65);
-
-      // Step 3: Send email
-      job.log('Sending email...');
-
-      const gmailService = new GmailService(accessToken);
-      const leagueNames = configs.map((c) => leaguesMap[c.leagueId] || 'Unknown');
-
-      // Compute prices for each config
-      const computePrice = (config: any) => {
-        const baseRate = config.baseRateOverride ?? 50; // DEFAULT_BASE_RATE
-        const basePrice = config.costModel === 'SEASON'
-          ? baseRate * config.expectedTeamsCount
-          : baseRate * config.expectedGamedaysCount * config.expectedTeamsPerGameday;
-        return config.customPrice != null ? config.customPrice : Math.round(basePrice * 100) / 100;
-      };
-
-      const totalPrice = configs.reduce((sum, c) => sum + computePrice(c), 0);
-
-      const emailParams: SendEmailParams = {
-        to: recipientEmail,
-        associationName,
-        seasonName: `${offer.seasonId}`,
-        leagueNames,
-        totalPrice,
-        driveLink: webViewLink,
-      };
-
-      const { messageId } = await gmailService.sendEmail(emailParams);
-
-      job.progress(85);
-
-      // Update offer with metadata
+      // Done
       offer.status = 'sent';
       offer.sentAt = new Date();
-      (offer as any).emailMetadata = {
-        sentVia: 'gmail',
-        messageId,
+      (offer as any).driveMetadata = {
         driveFileId: fileId,
         driveFolderId,
         driveLink: webViewLink,
-        recipientEmail,
-        sentAt: new Date(),
+        filedAt: new Date(),
       };
       (offer as any).sendJobId = undefined;
       (offer as any).sendJobAttempts = 0;
-
       await offer.save();
 
       job.progress(100);
-      job.log('Offer sent successfully');
-
-      return {
-        success: true,
-        driveLink: webViewLink,
-        messageId,
-      };
+      job.log('Offer filed in Drive');
+      return { success: true as const, driveLink: webViewLink };
     } catch (err: any) {
       job.log(`Error: ${err.message}`);
-
-      // Update offer with failure metadata
       try {
         const offer = await Offer.findById(offerId);
         if (offer) {
-          (offer as any).emailMetadata = {
-            ...(offer as any).emailMetadata,
+          (offer as any).driveMetadata = {
+            ...(offer as any).driveMetadata,
+            driveFolderId,
             failureReason: err.message,
-            lastSendAttempt: new Date(),
+            lastAttempt: new Date(),
           };
           (offer as any).sendJobAttempts = ((offer as any).sendJobAttempts || 0) + 1;
           (offer as any).sendJobId = undefined;
@@ -168,7 +105,6 @@ export class SendOfferJobHandler {
       } catch (updateErr) {
         console.error('Failed to update offer with error:', updateErr);
       }
-
       throw err;
     }
   }
