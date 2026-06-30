@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.0](https://github.com/dachrisch/league.finance/compare/v0.5.0...v0.6.0) (2026-06-30)
+
+
+### Features
+
+* **pdf:** render offer PDF with pdfkit (drop puppeteer/chrome) ([#249](https://github.com/dachrisch/league.finance/issues/249)) ([bfc3cc9](https://github.com/dachrisch/league.finance/commit/bfc3cc965f550aa644599e82d680f4d491695051))
+
 ## [0.5.0](https://github.com/dachrisch/league.finance/compare/v0.4.52...v0.5.0) (2026-06-30)
 
 
