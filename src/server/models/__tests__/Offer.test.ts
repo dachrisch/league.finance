@@ -221,4 +221,17 @@ describe('Offer Model', () => {
     const foundDoc1 = found.find(d => d._id.toString() === doc1._id.toString());
     expect(foundDoc1).toBeDefined();
   });
+
+  it('accepts driveMetadata and has no emailMetadata path', () => {
+    const o = new Offer({
+      associationId: 'a1',
+      seasonId: 2026,
+      leagueIds: [16],
+      contactId: '6a43eddbd3cc34a8205e53f0',
+      driveMetadata: { driveFileId: 'f1', driveFolderId: 'fold1', driveLink: 'http://x', filedAt: new Date() },
+    });
+    expect(o.driveMetadata?.driveFileId).toBe('f1');
+    expect(Offer.schema.path('emailMetadata')).toBeUndefined();
+    expect(Offer.schema.path('driveMetadata.driveLink')).toBeDefined();
+  });
 });
