@@ -1,10 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { trpc } from '../../lib/trpc';
 
-interface SendOfferDialogProps {
+interface FileOfferDialogProps {
   open: boolean;
   offerId: string;
-  recipientEmail: string;
   recipientName: string;
   totalPrice: number;
   onClose: () => void;
@@ -12,23 +11,22 @@ interface SendOfferDialogProps {
   onError: (message: string) => void;
 }
 
-type JobStatus = 'pending' | 'generating-pdf' | 'uploading' | 'sending-email' | 'completed' | 'failed';
+type JobStatus = 'pending' | 'generating-pdf' | 'uploading' | 'completed' | 'failed';
 
 interface JobProgress {
   stage: JobStatus;
   percentage: number;
 }
 
-export function SendOfferDialog({
+export function FileOfferDialog({
   open,
   offerId,
-  recipientEmail,
   recipientName,
   totalPrice,
   onClose,
   onSuccess,
   onError,
-}: SendOfferDialogProps) {
+}: FileOfferDialogProps) {
   const { data: settings } = trpc.finance.settings.get.useQuery(undefined, { enabled: open });
   const { data: folders = [] } = trpc.google.listFolders.useQuery(undefined, { enabled: open });
 
@@ -64,8 +62,8 @@ export function SendOfferDialog({
     setProgress({ stage: 'pending', percentage: 0 });
 
     try {
-      // Call tRPC sendOffer mutation
-      const response = await fetch('/trpc/finance.offersSend.sendOffer', {
+      // Call tRPC fileOfferInDrive mutation
+      const response = await fetch('/trpc/finance.offersDrive.fileOfferInDrive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -94,7 +92,7 @@ export function SendOfferDialog({
         attempts++;
 
         try {
-          const statusResponse = await fetch('/trpc/finance.offersSend.getOfferSendStatus', {
+          const statusResponse = await fetch('/trpc/finance.offersDrive.getOfferDriveStatus', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ offerId }),
@@ -149,7 +147,7 @@ export function SendOfferDialog({
       }, 1000);
     } catch (err: any) {
       setIsLoading(false);
-      onError(err.message || 'Failed to send offer');
+      onError(err.message || 'Failed to file offer');
     }
   }, [offerId, selectedFolderId, onError, onSuccess, onClose]);
 
@@ -159,8 +157,7 @@ export function SendOfferDialog({
     pending: 'Pending...',
     'generating-pdf': 'Generating PDF...',
     'uploading': 'Uploading to Drive...',
-    'sending-email': 'Sending email...',
-    'completed': 'Complete!',
+    'completed': 'Filed in Drive!',
     'failed': 'Failed',
   };
 
@@ -169,11 +166,11 @@ export function SendOfferDialog({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
-        <h2 className="text-xl font-bold mb-4">Send Offer</h2>
+        <h2 className="text-xl font-bold mb-4">Create offer in Drive</h2>
 
         <div className="bg-gray-50 p-4 rounded mb-4 space-y-2">
           <p>
-            <span className="font-semibold">To:</span> {recipientName} ({recipientEmail})
+            <span className="font-semibold">For:</span> {recipientName}
           </p>
           <p>
             <span className="font-semibold">Total:</span> €{totalPrice.toFixed(2)}
@@ -201,7 +198,7 @@ export function SendOfferDialog({
                   ))}
                 </select>
               ) : (
-                <div 
+                <div
                   onClick={() => !isLoading && setShowFolderPicker(true)}
                   className={`flex justify-between items-center p-2 border rounded cursor-pointer hover:bg-gray-50 ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}
                 >
@@ -216,7 +213,7 @@ export function SendOfferDialog({
               disabled={!selectedFolderId || isLoading}
               className="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
             >
-              Send Offer
+              Create in Drive
             </button>
           </>
         ) : (
