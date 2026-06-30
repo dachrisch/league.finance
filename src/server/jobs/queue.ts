@@ -41,7 +41,7 @@ class MockQueue {
 }
 
 // Create queue - use mock in development, Redis in production
-export const offerSendQueue =
+export const offerDriveQueue =
   process.env.NODE_ENV === 'development'
     ? new MockQueue()
     : (() => {
@@ -49,28 +49,28 @@ export const offerSendQueue =
         let queue: Bull.Queue;
 
         if (REDIS_URL) {
-          queue = new Bull('offer-send', REDIS_URL);
+          queue = new Bull('offer-drive', REDIS_URL);
         } else {
           const port = parseInt(process.env.REDIS_PORT || '6379', 10);
           const redisConfig: RedisOptions = {
             host: process.env.REDIS_HOST || 'localhost',
             port: isNaN(port) ? 6379 : port,
           };
-          queue = new Bull('offer-send', { redis: redisConfig });
+          queue = new Bull('offer-drive', { redis: redisConfig });
         }
 
         // Global error handlers
         queue.on('error', (err) => {
-          console.error('[offer-send-queue] Queue error:', err.message || err);
+          console.error('[offer-drive-queue] Queue error:', err.message || err);
         });
 
         queue.on('failed', (job, err) => {
-          console.error(`[offer-send-queue] Job ${job.id} failed: ${err.message}`);
+          console.error(`[offer-drive-queue] Job ${job.id} failed: ${err.message}`);
         });
 
         return queue;
       })();
 
 export async function closeQueues() {
-  await (offerSendQueue as any).close();
+  await (offerDriveQueue as any).close();
 }
