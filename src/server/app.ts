@@ -10,8 +10,8 @@ import { appRouter } from './routers/index';
 import { createContext } from './trpc';
 import path from 'path';
 import { healthHandler } from './health';
-import { offerSendQueue } from './jobs/queue';
-import { SendOfferJobHandler } from './jobs/SendOfferJob';
+import { offerDriveQueue } from './jobs/queue';
+import { FileOfferJobHandler } from './jobs/FileOfferJob';
 import rateLimit from 'express-rate-limit';
 
 export function createApp() {
@@ -19,7 +19,7 @@ export function createApp() {
   const CLIENT_URL = process.env.CLIENT_URL ?? 'http://localhost:5173';
 
   // Register job processor
-  offerSendQueue.process(SendOfferJobHandler.process.bind(SendOfferJobHandler));
+  offerDriveQueue.process(FileOfferJobHandler.process.bind(FileOfferJobHandler));
 
   app.use(cors({ origin: CLIENT_URL, credentials: true }));
   app.use(express.json());
