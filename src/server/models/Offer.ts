@@ -9,15 +9,12 @@ export interface IOffer extends Document {
   financialConfigId?: Types.ObjectId;
   sentAt?: Date;
   acceptedAt?: Date;
-  emailMetadata?: {
-    sentVia?: 'gmail' | null;
-    messageId?: string;
+  driveMetadata?: {
     driveFileId?: string;
     driveFolderId?: string;
     driveLink?: string;
-    recipientEmail?: string;
-    sentAt?: Date;
-    lastSendAttempt?: Date;
+    filedAt?: Date;
+    lastAttempt?: Date;
     failureReason?: string;
   };
   sendJobId?: string;
@@ -47,18 +44,12 @@ const OfferSchema = new Schema<IOffer>(
     financialConfigId: { type: Schema.Types.ObjectId, ref: 'FinancialConfig' },
     sentAt: { type: Date },
     acceptedAt: { type: Date },
-    emailMetadata: {
-      sentVia: {
-        type: String,
-        enum: ['gmail'],
-      },
-      messageId: String,
+    driveMetadata: {
       driveFileId: String,
       driveFolderId: String,
       driveLink: String,
-      recipientEmail: String,
-      sentAt: Date,
-      lastSendAttempt: Date,
+      filedAt: Date,
+      lastAttempt: Date,
       failureReason: String,
     },
     sendJobId: String,

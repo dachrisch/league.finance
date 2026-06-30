@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
-import { SendOfferDialog } from '../components/Offer/SendOfferDialog';
+import { FileOfferDialog } from '../components/Offer/FileOfferDialog';
 
 const statusBadgeStyle = (status: string): React.CSSProperties => {
   const colors: Record<string, { bg: string; color: string; border: string }> = {
@@ -247,7 +247,7 @@ export function OfferDetailPage() {
             onClick={() => setShowSendDialog(true)}
             disabled={offer.status === 'sending'}
           >
-            {offer.status === 'sending' ? '🚀 Sending…' : '🚀 Send Offer'}
+            {offer.status === 'sending' ? '🚀 Filing…' : '🚀 File in Drive'}
           </button>
         )}
         {offer.status === 'sent' && (
@@ -260,23 +260,22 @@ export function OfferDetailPage() {
             {markAccepted.isPending ? '…' : '✓ Mark as Accepted'}
           </button>
         )}
-        {offer.status === 'sent' && offer.emailMetadata?.driveFileId && (
+        {offer.status === 'sent' && offer.driveMetadata?.driveFileId && (
           <a
-            href={`https://drive.google.com/file/d/${offer.emailMetadata.driveFileId}/view`}
+            href={`https://drive.google.com/file/d/${offer.driveMetadata.driveFileId}/view`}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-primary"
           >
-            View PDF in Drive
+            Open in Drive
           </a>
         )}
       </div>
 
       {showSendDialog && (
-        <SendOfferDialog
+        <FileOfferDialog
           open={showSendDialog}
           offerId={id}
-          recipientEmail={data?.contact?.email || ''}
           recipientName={data?.contact?.name || 'Unknown Contact'}
           totalPrice={data?.offer?.pricing?.expectedPrice || 0}
           onClose={() => setShowSendDialog(false)}
