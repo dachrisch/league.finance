@@ -73,7 +73,7 @@ describe('DriveService', () => {
       });
     });
 
-    it('uploads file with correct parameters', async () => {
+    it('uploads file with correct parameters and a readable stream body', async () => {
       const mockFileBuffer = Buffer.from('PDF content');
       const mockResponse = {
         data: {
@@ -86,18 +86,17 @@ describe('DriveService', () => {
 
       await driveService.uploadFile(mockFileBuffer, 'test.pdf', 'folder-123');
 
-      expect(mockCreate).toHaveBeenCalledWith({
-        requestBody: {
-          name: 'test.pdf',
-          mimeType: 'application/pdf',
-          parents: ['folder-123'],
-        },
-        media: {
-          mimeType: 'application/pdf',
-          body: mockFileBuffer,
-        },
-        fields: 'id, webViewLink',
+      const arg = mockCreate.mock.calls[0][0];
+      expect(arg.requestBody).toEqual({
+        name: 'test.pdf',
+        mimeType: 'application/pdf',
+        parents: ['folder-123'],
       });
+      expect(arg.media.mimeType).toBe('application/pdf');
+      expect(arg.fields).toBe('id, webViewLink');
+      // googleapis requires a readable stream for media.body, not a Buffer
+      expect(typeof arg.media.body.pipe).toBe('function');
+      expect(Buffer.isBuffer(arg.media.body)).toBe(false);
     });
 
     it('throws error if fileId is missing from response', async () => {

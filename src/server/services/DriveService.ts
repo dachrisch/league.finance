@@ -1,4 +1,5 @@
 import { google, drive_v3 } from 'googleapis';
+import { Readable } from 'stream';
 
 export interface UploadResult {
   fileId: string;
@@ -28,7 +29,7 @@ export class DriveService {
         },
         media: {
           mimeType: 'application/pdf',
-          body: fileBuffer as any,
+          body: Readable.from(fileBuffer),
         },
         fields: 'id, webViewLink',
       });
