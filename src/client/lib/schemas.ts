@@ -29,19 +29,16 @@ export type Association = z.infer<typeof AssociationSchema>;
 export const OfferStatusSchema = z.enum(['draft', 'sending', 'sent', 'accepted']);
 export type OfferStatus = z.infer<typeof OfferStatusSchema>;
 
-export const EmailMetadataSchema = z.object({
-  sentVia: z.literal('gmail'),
-  messageId: z.string().optional(),
+export const DriveMetadataSchema = z.object({
   driveFileId: z.string().optional(),
   driveFolderId: z.string().optional(),
   driveLink: z.string().optional(),
-  recipientEmail: z.string().email(),
-  sentAt: z.date().or(z.string()),
-  lastSendAttempt: z.date().or(z.string()).optional(),
+  filedAt: z.date().or(z.string()).optional(),
+  lastAttempt: z.date().or(z.string()).optional(),
   failureReason: z.string().optional(),
 });
 
-export type EmailMetadata = z.infer<typeof EmailMetadataSchema>;
+export type DriveMetadata = z.infer<typeof DriveMetadataSchema>;
 
 export const OfferLineItemSchema = z.object({
   _id: z.string(),
@@ -69,7 +66,7 @@ export const OfferSchema = z.object({
   acceptedAt: z.date().or(z.string()).nullable().optional(),
   sendJobId: z.string().optional(),
   sendJobAttempts: z.number().optional(),
-  emailMetadata: EmailMetadataSchema.optional(),
+  driveMetadata: DriveMetadataSchema.optional(),
 });
 
 export type Offer = z.infer<typeof OfferSchema>;
