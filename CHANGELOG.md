@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/dachrisch/league.finance/compare/v0.4.52...v0.5.0) (2026-06-30)
+
+
+### Features
+
+* **offers:** file offers in Drive instead of emailing ([#247](https://github.com/dachrisch/league.finance/issues/247)) ([60c761e](https://github.com/dachrisch/league.finance/commit/60c761e8567a6293f3cbe97545d162277fab730d))
+
 ## [0.4.52](https://github.com/dachrisch/league.finance/compare/v0.4.51...v0.4.52) (2026-06-30)
 
 
