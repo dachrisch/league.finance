@@ -1,8 +1,4 @@
-import puppeteer from 'puppeteer';
-import { Offer } from '../models/Offer';
-import { Contact } from '../models/Contact';
-import { FinancialConfig } from '../models/FinancialConfig';
-import { getMysqlPool } from '../db/mysql';
+import PDFDocument from 'pdfkit';
 
 export interface PdfGenerationData {
   offer: any;
@@ -13,248 +9,141 @@ export interface PdfGenerationData {
   seasonName: string;
 }
 
+const BLUE = '#2c5aa0';
+const GREY = '#666666';
+const DARK = '#333333';
+
+const euro = (n: number) =>
+  new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
+const deDate = (d: Date) => d.toLocaleDateString('de-DE');
+
 export class PdfService {
-  private static async launchBrowser() {
-    return puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
-  }
-
-  static async generateOfferPdf(data: PdfGenerationData): Promise<Buffer> {
-    const browser = await this.launchBrowser();
-
-    try {
-      const page = await browser.newPage();
-      const html = this.generateHtml(data);
-      await page.setContent(html, { waitUntil: 'domcontentloaded' });
-      const pdfData = await page.pdf({
-        format: 'A4',
-        margin: {
-          top: '20mm',
-          right: '15mm',
-          bottom: '20mm',
-          left: '15mm',
-        },
-      });
-      // Convert Uint8Array to Buffer
-      return Buffer.from(pdfData);
-    } finally {
-      await browser.close();
-    }
-  }
-
-  private static generateHtml(data: PdfGenerationData): string {
-    const {
-      offer,
-      contact,
-      configs,
-      leaguesMap,
-      associationName,
-      seasonName,
-    } = data;
-
-    const leaguePricingRows = configs
-      .map(
-        (config) =>
-          `
-      <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #eee;">${leaguesMap[config.leagueId] || 'Unknown'}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${config.expectedTeamsCount} Teams</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">€${config.finalPrice.toFixed(2)}</td>
-      </tr>
-    `
-      )
-      .join('');
-
+  static generateOfferPdf(data: PdfGenerationData): Promise<Buffer> {
+    const { offer, contact, configs, leaguesMap, associationName, seasonName } = data;
+    const offerId8 = offer._id.toString().substring(0, 8);
     const totalPrice = configs.reduce((sum, c) => sum + (c.finalPrice || 0), 0);
+    // Contact address may be nested (real Contact doc) or flat (legacy) — support both.
+    const addr = contact.address ?? contact;
 
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      color: #333;
-      line-height: 1.6;
-    }
-    .header {
-      margin-bottom: 40px;
-      border-bottom: 3px solid #2c5aa0;
-      padding-bottom: 20px;
-    }
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #2c5aa0;
-      margin-bottom: 10px;
-    }
-    .company-info {
-      font-size: 11px;
-      color: #666;
-    }
-    .recipient-section {
-      margin-bottom: 30px;
-    }
-    .recipient-section h3 {
-      margin: 0 0 10px 0;
-      font-size: 12px;
-      font-weight: bold;
-      color: #666;
-    }
-    .recipient-info {
-      font-size: 13px;
-      line-height: 1.6;
-    }
-    .title {
-      font-size: 18px;
-      font-weight: bold;
-      margin: 30px 0 10px 0;
-      color: #2c5aa0;
-    }
-    .offer-meta {
-      font-size: 11px;
-      color: #666;
-      margin-bottom: 20px;
-    }
-    .section-title {
-      font-size: 14px;
-      font-weight: bold;
-      color: #2c5aa0;
-      margin: 20px 0 10px 0;
-      border-bottom: 2px solid #f0ad4e;
-      padding-bottom: 5px;
-    }
-    .section-content {
-      font-size: 13px;
-      margin-bottom: 15px;
-    }
-    .pricing-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 15px 0;
-      font-size: 13px;
-    }
-    .pricing-table th {
-      background-color: #f5f5f5;
-      padding: 10px 8px;
-      text-align: left;
-      border-bottom: 2px solid #2c5aa0;
-      font-weight: bold;
-    }
-    .total-row {
-      font-weight: bold;
-      background-color: #f9f9f9;
-    }
-    .footer {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid #ddd;
-      font-size: 11px;
-      color: #666;
-    }
-    .footer-section {
-      margin-bottom: 15px;
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div class="logo">bumbleflies</div>
-    <div class="company-info">
-      bumbleflies UG (haftungsbeschränkt) · Gleiwitzer Str. 6d · 81929 München
-    </div>
-  </div>
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const chunks: Buffer[] = [];
+    doc.on('data', (c: Buffer) => chunks.push(c));
+    const done = new Promise<Buffer>((resolve, reject) => {
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+    });
 
-  <div class="recipient-section">
-    <h3>OFFER TO:</h3>
-    <div class="recipient-info">
-      <strong>${contact.name}</strong><br/>
-      ${contact.street}<br/>
-      ${contact.postalCode} ${contact.city}<br/>
-      ${contact.country}<br/>
-      ${contact.email}
-    </div>
-  </div>
+    const left = doc.page.margins.left;
+    const right = doc.page.width - doc.page.margins.right;
+    const contentWidth = right - left;
 
-  <div class="title">
-    Angebot: ${offer._id.toString().substring(0, 8)} - Nutzung der LeagueSphere App für die Saison ${seasonName}
-  </div>
+    // Header
+    doc.font('Helvetica-Bold').fontSize(24).fillColor(BLUE).text('bumbleflies', left);
+    doc.font('Helvetica').fontSize(9).fillColor(GREY)
+      .text('bumbleflies UG (haftungsbeschränkt) · Gleiwitzer Str. 6d · 81929 München', left);
+    doc.moveDown(0.5);
+    doc.moveTo(left, doc.y).lineTo(right, doc.y).strokeColor(BLUE).lineWidth(2).stroke();
+    doc.moveDown(1.5);
 
-  <div class="offer-meta">
-    <strong>Offer ID:</strong> ${offer._id.toString().substring(0, 8)}<br/>
-    <strong>Date:</strong> ${new Date().toLocaleDateString('de-DE')}<br/>
-    <strong>Organization:</strong> ${associationName}
-  </div>
+    // Recipient
+    doc.font('Helvetica-Bold').fontSize(9).fillColor(GREY).text('ANGEBOT AN:', left);
+    doc.moveDown(0.3);
+    doc.fillColor(DARK).font('Helvetica-Bold').fontSize(11).text(contact.name ?? '', left);
+    doc.font('Helvetica').fontSize(10)
+      .text(addr.street ?? '', left)
+      .text(`${addr.postalCode ?? ''} ${addr.city ?? ''}`.trim(), left)
+      .text(addr.country ?? '', left)
+      .text(contact.email ?? '', left);
+    doc.moveDown(1.5);
 
-  <div class="section-title">Unser Angebot</div>
-  <div class="section-content">
-    Wir freuen uns, dir unser Angebot für die Nutzung der LeagueSphere App zur effizienten
-    Organisation und Verwaltung der Saison ${seasonName} zu unterbreiten.
-  </div>
+    // Title + meta
+    doc.font('Helvetica-Bold').fontSize(15).fillColor(BLUE)
+      .text(`Angebot: ${offerId8} – Nutzung der LeagueSphere App für die Saison ${seasonName}`,
+        left, doc.y, { width: contentWidth });
+    doc.moveDown(0.5);
+    doc.font('Helvetica').fontSize(9).fillColor(GREY)
+      .text(`Angebots-ID: ${offerId8}`, left)
+      .text(`Datum: ${deDate(new Date())}`, left)
+      .text(`Organisation: ${associationName}`, left);
 
-  <div class="section-title">Leistungsumfang</div>
-  <div class="section-content">
-    Die Anwendung kann unter https://leaguesphere.app von allen Spieler:innen und
-    Zuschauer:innen genutzt werden, mit folgenden Funktionen:
-    <ul style="margin: 10px 0; padding-left: 20px;">
-      <li>Einfache Spielplanerstellung und Einteilung der Offiziellen</li>
-      <li>Live-Ergebnisse für die Fans und Teams</li>
-      <li>Liveticker für die Fans</li>
-      <li>Tracking der Schiedsrichtereinsätze</li>
-      <li>Digitalen Passcheck der Teams ohne Listen zu drucken</li>
-      <li>Automatischer digitaler Passtransfer innerhalb der App</li>
-    </ul>
-  </div>
+    const section = (title: string) => {
+      doc.moveDown(0.8);
+      doc.font('Helvetica-Bold').fontSize(13).fillColor(BLUE).text(title, left);
+      doc.moveDown(0.3);
+      doc.font('Helvetica').fontSize(10.5).fillColor(DARK);
+    };
 
-  <div class="section-title">Preise und Konditionen</div>
-  <table class="pricing-table">
-    <thead>
-      <tr>
-        <th>Liga/League</th>
-        <th style="text-align: right;">Teams</th>
-        <th style="text-align: right;">Price (€)</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${leaguePricingRows}
-      <tr class="total-row">
-        <td colspan="2" style="padding: 10px 8px;">TOTAL (excl. VAT)</td>
-        <td style="padding: 10px 8px; text-align: right;">€${totalPrice.toFixed(2)}</td>
-      </tr>
-    </tbody>
-  </table>
+    // Unser Angebot
+    section('Unser Angebot');
+    doc.text(`Wir freuen uns, dir unser Angebot für die Nutzung der LeagueSphere App zur effizienten ` +
+      `Organisation und Verwaltung der Saison ${seasonName} zu unterbreiten.`,
+      left, doc.y, { width: contentWidth });
 
-  <div class="section-content">
-    Alle oben genannten Preise verstehen sich zzgl. der gesetzlichen MwSt.
-    <br/><br/>
-    Wir binden uns an dieses Angebot bis zum ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('de-DE')}.
-  </div>
+    // Leistungsumfang
+    section('Leistungsumfang');
+    doc.text('Die Anwendung kann unter https://leaguesphere.app von allen Spieler:innen und ' +
+      'Zuschauer:innen genutzt werden, mit folgenden Funktionen:', left, doc.y, { width: contentWidth });
+    doc.moveDown(0.3);
+    doc.list([
+      'Einfache Spielplanerstellung und Einteilung der Offiziellen',
+      'Live-Ergebnisse für die Fans und Teams',
+      'Liveticker für die Fans',
+      'Tracking der Schiedsrichtereinsätze',
+      'Digitaler Passcheck der Teams ohne Listen zu drucken',
+      'Automatischer digitaler Passtransfer innerhalb der App',
+    ], left, doc.y, { width: contentWidth, bulletRadius: 1.5, textIndent: 12 });
 
-  <div style="margin-top: 40px;">
-    <strong>Viele Grüße</strong>
-    <br/><br/>
-    bumbleflies (i.V. Christian Dähn)
-  </div>
+    // Preise und Konditionen (table)
+    section('Preise und Konditionen');
+    const colTeams = left + contentWidth * 0.55;
+    const colPrice = left + contentWidth * 0.78;
+    const priceW = right - colPrice;
+    const teamsW = contentWidth * 0.2;
+    const rowH = 18;
+    let y = doc.y + 4;
+    doc.font('Helvetica-Bold').fontSize(10).fillColor(DARK);
+    doc.text('Liga/League', left, y);
+    doc.text('Teams', colTeams, y, { width: teamsW, align: 'right' });
+    doc.text('Preis', colPrice, y, { width: priceW, align: 'right' });
+    y += rowH;
+    doc.moveTo(left, y - 4).lineTo(right, y - 4).strokeColor(BLUE).lineWidth(1).stroke();
+    doc.font('Helvetica').fontSize(10).fillColor(DARK);
+    for (const c of configs) {
+      doc.text(leaguesMap[c.leagueId] || 'Unknown', left, y, { width: contentWidth * 0.5 });
+      doc.text(String(c.expectedTeamsCount ?? 0), colTeams, y, { width: teamsW, align: 'right' });
+      doc.text(euro(c.finalPrice || 0), colPrice, y, { width: priceW, align: 'right' });
+      y += rowH;
+    }
+    doc.moveTo(left, y - 4).lineTo(right, y - 4).strokeColor('#cccccc').lineWidth(0.5).stroke();
+    doc.font('Helvetica-Bold').fontSize(10).fillColor(DARK);
+    doc.text('Gesamt (zzgl. MwSt.)', left, y, { width: contentWidth * 0.7 });
+    doc.text(euro(totalPrice), colPrice, y, { width: priceW, align: 'right' });
+    doc.x = left;
+    doc.y = y + rowH;
 
-  <div class="footer">
-    <div class="footer-section">
-      bumbleflies UG (haftungsbeschränkt)<br/>
-      Geschäftsführer: Christoph Kämpfe, Christian Dähn, Sebastian Keller<br/>
-      Gleiwitzer Str. 6d, 81929 München
-    </div>
-    <div class="footer-section">
-      Bank: GLS Bank<br/>
-      IBAN: DE96430609671106170600<br/>
-      E-mail: info@bumbleflies.de<br/>
-      Web: bumbleflies.de
-    </div>
-  </div>
-</body>
-</html>
-    `;
+    // Note
+    doc.moveDown(0.6);
+    doc.font('Helvetica').fontSize(10).fillColor(DARK)
+      .text('Alle oben genannten Preise verstehen sich zzgl. der gesetzlichen MwSt.', left, doc.y, { width: contentWidth });
+    const until = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    doc.text(`Wir binden uns an dieses Angebot bis zum ${deDate(until)}.`, left, doc.y, { width: contentWidth });
+
+    // Sign-off
+    doc.moveDown(1.2);
+    doc.font('Helvetica-Bold').fontSize(10.5).fillColor(DARK).text('Viele Grüße', left);
+    doc.font('Helvetica').text('bumbleflies (i.V. Christian Dähn)', left);
+
+    // Footer
+    doc.moveDown(2);
+    doc.moveTo(left, doc.y).lineTo(right, doc.y).strokeColor('#dddddd').lineWidth(0.5).stroke();
+    doc.moveDown(0.5);
+    doc.font('Helvetica').fontSize(8).fillColor(GREY)
+      .text('bumbleflies UG (haftungsbeschränkt) · Geschäftsführer: Christoph Kämpfe, Christian Dähn, Sebastian Keller', left, doc.y, { width: contentWidth })
+      .text('Gleiwitzer Str. 6d, 81929 München · GLS Bank · IBAN: DE96430609671106170600', left, doc.y, { width: contentWidth })
+      .text('info@bumbleflies.de · bumbleflies.de', left, doc.y, { width: contentWidth });
+
+    doc.end();
+    return done;
   }
 
   static generateFilename(offerId: string, associationName: string): string {
