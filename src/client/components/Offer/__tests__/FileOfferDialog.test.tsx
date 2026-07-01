@@ -1,6 +1,6 @@
 // src/client/components/Offer/__tests__/FileOfferDialog.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { FileOfferDialog } from '../FileOfferDialog';
 
 vi.mock('../../../lib/trpc', () => ({
@@ -28,5 +28,37 @@ describe('FileOfferDialog', () => {
     render(<FileOfferDialog {...baseProps} />);
     expect(screen.getByText('Invoices 2026')).toBeTruthy();
     expect(screen.getByRole('button', { name: /Create in Drive/i })).toBeTruthy();
+  });
+
+  it('reads the jobId from the tRPC { result: { data } } envelope and completes on success', async () => {
+    // tRPC (non-batched) wraps procedure output as { result: { data: <output> } }.
+    const fetchMock = vi.fn((url: string) => {
+      if (url.includes('fileOfferInDrive')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ result: { data: { jobId: 'job-1', status: 'queued' } } }),
+        });
+      }
+      if (url.includes('getOfferDriveStatus')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            result: { data: { status: 'completed', progress: 100, driveLink: 'https://drive.google.com/file/d/abc/view' } },
+          }),
+        });
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const props = { ...baseProps, onSuccess: vi.fn(), onError: vi.fn() };
+    render(<FileOfferDialog {...props} />);
+    fireEvent.click(screen.getByRole('button', { name: /Create in Drive/i }));
+
+    await waitFor(
+      () => expect(props.onSuccess).toHaveBeenCalledWith('https://drive.google.com/file/d/abc/view'),
+      { timeout: 4000 }
+    );
+    expect(props.onError).not.toHaveBeenCalled();
   });
 });
