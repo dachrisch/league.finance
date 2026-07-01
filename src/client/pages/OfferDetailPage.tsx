@@ -277,7 +277,7 @@ export function OfferDetailPage() {
           open={showSendDialog}
           offerId={id}
           recipientName={data?.contact?.name || 'Unknown Contact'}
-          totalPrice={data?.offer?.pricing?.expectedPrice || 0}
+          totalPrice={totalPrice}
           onClose={() => setShowSendDialog(false)}
           onSuccess={() => {
             setShowSendDialog(false);
