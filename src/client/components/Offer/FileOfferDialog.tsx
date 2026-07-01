@@ -164,25 +164,45 @@ export function FileOfferDialog({
   const selectedFolderName = folders.find(f => f.id === selectedFolderId)?.name || 'None selected';
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
-        <h2 className="text-xl font-bold mb-4">Create offer in Drive</h2>
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1100,
+      padding: '1rem',
+      backdropFilter: 'blur(2px)',
+    }}>
+      <div className="card" style={{ width: '100%', maxWidth: '500px', maxHeight: '90vh', overflow: 'auto', padding: 'var(--spacing-xl)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
+          <h2 style={{ margin: 0, fontSize: 'var(--font-size-xl)' }}>Create offer in Drive</h2>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} disabled={isLoading}>✕</button>
+        </div>
 
-        <div className="bg-gray-50 p-4 rounded mb-4 space-y-2">
-          <p>
-            <span className="font-semibold">For:</span> {recipientName}
+        <div style={{
+          background: 'var(--bg-secondary)',
+          padding: 'var(--spacing-md)',
+          borderRadius: 'var(--border-radius-md)',
+          marginBottom: 'var(--spacing-lg)',
+          border: '1px solid var(--border-color)',
+        }}>
+          <p style={{ margin: '0 0 var(--spacing-xs) 0', fontSize: 'var(--font-size-md)' }}>
+            <span style={{ fontWeight: 'var(--font-weight-semibold)' }}>For:</span> {recipientName}
           </p>
-          <p>
-            <span className="font-semibold">Total:</span> €{totalPrice.toFixed(2)}
+          <p style={{ margin: 0, fontSize: 'var(--font-size-md)' }}>
+            <span style={{ fontWeight: 'var(--font-weight-semibold)' }}>Total:</span> €{totalPrice.toFixed(2)}
           </p>
         </div>
 
         {!progress ? (
           <>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Target Drive Folder
-              </label>
+            <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+              <label className="form-label">Target Drive Folder</label>
               {showFolderPicker ? (
                 <select
                   value={selectedFolderId}
@@ -190,7 +210,7 @@ export function FileOfferDialog({
                     setSelectedFolderId(e.target.value);
                     setShowFolderPicker(false);
                   }}
-                  className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="form-control"
                 >
                   <option value="">Select a folder...</option>
                   {folders.map((f) => (
@@ -200,10 +220,24 @@ export function FileOfferDialog({
               ) : (
                 <div
                   onClick={() => !isLoading && setShowFolderPicker(true)}
-                  className={`flex justify-between items-center p-2 border rounded cursor-pointer hover:bg-gray-50 ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '10px 12px',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--border-radius-md)',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    background: isLoading ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+                    opacity: isLoading ? 0.5 : 1,
+                  }}
                 >
-                  <span className="text-sm truncate mr-2">{selectedFolderName}</span>
-                  <span className="text-blue-600 text-xs font-medium">Change</span>
+                  <span style={{ fontSize: 'var(--font-size-md)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 'var(--spacing-sm)' }}>
+                    {selectedFolderName}
+                  </span>
+                  <span style={{ color: 'var(--primary-color)', fontSize: 'var(--font-size-xs)', fontWeight: 'var(--font-weight-medium)', whiteSpace: 'nowrap' }}>
+                    Change
+                  </span>
                 </div>
               )}
             </div>
@@ -211,23 +245,35 @@ export function FileOfferDialog({
             <button
               onClick={handleSend}
               disabled={!selectedFolderId || isLoading}
-              className="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+              className="btn btn-primary"
+              style={{ width: '100%', background: 'var(--success-color)' }}
             >
               Create in Drive
             </button>
           </>
         ) : (
-          <div className="space-y-3">
-            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+            <div style={{
+              width: '100%',
+              background: 'var(--bg-secondary)',
+              borderRadius: '999px',
+              height: '8px',
+              overflow: 'hidden',
+              border: '1px solid var(--border-color)',
+            }}>
               <div
-                className="bg-green-600 h-full transition-all duration-300"
-                style={{ width: `${progress.percentage}%` }}
+                style={{
+                  width: `${progress.percentage}%`,
+                  height: '100%',
+                  background: progress.stage === 'failed' ? 'var(--danger-color)' : 'var(--success-color)',
+                  transition: 'width 300ms ease',
+                }}
               />
             </div>
-            <p className="text-center text-sm font-medium text-gray-700">
+            <p style={{ textAlign: 'center', fontSize: 'var(--font-size-md)', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-main)', margin: 0 }}>
               {stageText[progress.stage]}
             </p>
-            <p className="text-center text-xs text-gray-500">
+            <p style={{ textAlign: 'center', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', margin: 0 }}>
               {progress.percentage}%
             </p>
           </div>
@@ -236,7 +282,8 @@ export function FileOfferDialog({
         <button
           onClick={onClose}
           disabled={isLoading}
-          className="w-full mt-4 text-gray-600 hover:text-gray-800 disabled:text-gray-400 transition py-2"
+          className="btn btn-ghost"
+          style={{ width: '100%', marginTop: 'var(--spacing-lg)' }}
         >
           {isLoading ? 'Processing...' : 'Close'}
         </button>
