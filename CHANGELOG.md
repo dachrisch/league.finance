@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.2](https://github.com/dachrisch/league.finance/compare/v0.6.1...v0.6.2) (2026-07-01)
+
+
+### Bug Fixes
+
+* **ui:** render FileOfferDialog as a styled modal, fix total wiring ([#253](https://github.com/dachrisch/league.finance/issues/253)) ([aa1b0f5](https://github.com/dachrisch/league.finance/commit/aa1b0f58b447f262237266a522ffdac1493de59e))
+
 ## [0.6.1](https://github.com/dachrisch/league.finance/compare/v0.6.0...v0.6.1) (2026-06-30)
 
 
