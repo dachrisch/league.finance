@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.4](https://github.com/dachrisch/league.finance/compare/v0.6.3...v0.6.4) (2026-07-01)
+
+
+### Bug Fixes
+
+* **offer:** make File-in-Drive dialog reflect the real job result ([c7784d0](https://github.com/dachrisch/league.finance/commit/c7784d059f16f579b1266003ea478c405ad976f2))
+
 ## [0.6.3](https://github.com/dachrisch/league.finance/compare/v0.6.2...v0.6.3) (2026-07-01)
 
 
