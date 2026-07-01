@@ -78,7 +78,8 @@ export function FileOfferDialog({
       }
 
       const data = await response.json();
-      const { result } = data;
+      // tRPC wraps procedure output as { result: { data: <output> } }
+      const result = data?.result?.data;
 
       if (!result?.jobId) {
         throw new Error('No job ID returned');
@@ -107,7 +108,7 @@ export function FileOfferDialog({
           }
 
           const statusData = await statusResponse.json();
-          const { result: statusResult } = statusData;
+          const statusResult = statusData?.result?.data;
 
           if (!statusResult) {
             throw new Error('No status returned');
