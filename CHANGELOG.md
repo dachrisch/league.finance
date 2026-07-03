@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.10](https://github.com/dachrisch/league.finance/compare/v0.6.9...v0.6.10) (2026-07-03)
+
+
+### Bug Fixes
+
+* **deps:** update dependency tsx to v4.23.0 ([#267](https://github.com/dachrisch/league.finance/issues/267)) ([8d610a4](https://github.com/dachrisch/league.finance/commit/8d610a4194a395ee99bdae72aebc54deeab885fe))
+
 ## [0.6.9](https://github.com/dachrisch/league.finance/compare/v0.6.8...v0.6.9) (2026-07-03)
 
 
