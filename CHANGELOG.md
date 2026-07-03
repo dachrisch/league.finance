@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.11](https://github.com/dachrisch/league.finance/compare/v0.6.10...v0.6.11) (2026-07-03)
+
+
+### Bug Fixes
+
+* **dashboard:** resolve current season and use per-league offer pricing ([51edce0](https://github.com/dachrisch/league.finance/commit/51edce0b27895440748acb7e8c351d02ee5722c3))
+* **dashboard:** resolve current season and use per-league offer pricing ([a72ff07](https://github.com/dachrisch/league.finance/commit/a72ff075751c66d0d3bd941bdf382423d7232203))
+
 ## [0.6.10](https://github.com/dachrisch/league.finance/compare/v0.6.9...v0.6.10) (2026-07-03)
 
 
