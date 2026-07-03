@@ -13,6 +13,19 @@ export const googleRouter = router({
     }
 
     const driveService = new DriveService(ctx.accessToken);
-    return await driveService.listFolders();
+    try {
+      return await driveService.listFolders();
+    } catch (err: any) {
+      // An expired/invalid Google token surfaces as a 401 from the Drive API.
+      // Map it to UNAUTHORIZED so the client can prompt a re-login instead of
+      // treating it as a 500 server error.
+      if (err?.status === 401 || err?.status === 403) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'Google session expired. Please re-login to reconnect Google Drive.',
+        });
+      }
+      throw err;
+    }
   }),
 });

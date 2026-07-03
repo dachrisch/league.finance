@@ -6,7 +6,10 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const { data: me } = trpc.auth.me.useQuery();
   const { data: settings, refetch } = trpc.finance.settings.get.useQuery();
-  const { data: folders = [] } = trpc.google.listFolders.useQuery();
+  const { data: folders = [], isError: foldersError } = trpc.google.listFolders.useQuery(
+    undefined,
+    { retry: false }
+  );
   const updateSettings = trpc.finance.settings.update.useMutation({ onSuccess: () => refetch() });
 
   const [ratePerSeason, setRatePerSeason] = useState('');
@@ -87,13 +90,20 @@ export function SettingsPage() {
               value={defaultFolderId}
               onChange={(e) => setDefaultFolderId(e.target.value)}
               className="form-control"
+              disabled={foldersError}
             >
               <option value="">Select a folder...</option>
               {folders.map(f => (
                 <option key={f.id} value={f.id}>{f.name}</option>
               ))}
             </select>
-            <small style={{ color: 'var(--text-muted)' }}>Offers will be uploaded to this folder by default.</small>
+            {foldersError ? (
+              <small style={{ color: 'var(--danger-color)' }}>
+                Couldn’t load Google Drive folders — your Google session may have expired. Please re-login to reconnect Drive.
+              </small>
+            ) : (
+              <small style={{ color: 'var(--text-muted)' }}>Offers will be uploaded to this folder by default.</small>
+            )}
           </label>
 
           <button

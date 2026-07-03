@@ -90,6 +90,40 @@ describe('Offer Redesign Integration', () => {
     expect(configs[0].leagueId).toBe(101);
   });
 
+  it('exposes per-league prices and a matching total from offers.list', async () => {
+    const contact = await Contact.create({
+      name: 'Fabian Pawlowski',
+      email: 'f.pawlowski@afcvnrw.de',
+      address: { street: 'Teststrasse 1', city: 'Marl', postalCode: '45770', country: 'Germany' },
+    });
+
+    // baseRate 75 × 12 teams = 900 per league (SEASON model), no custom price.
+    await caller.finance.offers.create({
+      associationId: 'assoc-123',
+      contactId: contact._id.toString(),
+      seasonId: 2025,
+      leagueIds: [101, 102],
+      costModel: 'flatFee' as const,
+      baseRateOverride: 75,
+      expectedTeamsCount: 12,
+    });
+
+    const offers = await caller.finance.offers.list();
+    expect(offers).toHaveLength(1);
+
+    const [offer] = offers as any[];
+    expect(offer.totalPrice).toBe(1800);
+    expect(offer.leaguePrices).toHaveLength(2);
+
+    const byLeague = Object.fromEntries(
+      offer.leaguePrices.map((lp: any) => [lp.leagueId, lp.finalPrice])
+    );
+    expect(byLeague).toEqual({ 101: 900, 102: 900 });
+    // Per-league prices sum to the offer total.
+    const sum = offer.leaguePrices.reduce((acc: number, lp: any) => acc + lp.finalPrice, 0);
+    expect(sum).toBe(offer.totalPrice);
+  });
+
   afterAll(async () => {
     await disconnectMongo();
   });
