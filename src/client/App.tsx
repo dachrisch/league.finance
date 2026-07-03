@@ -69,7 +69,7 @@ export function App() {
                     <Route path="/associations" element={<AssociationsPage />} />
                     <Route path="/contacts" element={<ContactsPage />} />
                   </Route>
-                  <Route path="/config*" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/config/*" element={<Navigate to="/dashboard" replace />} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </div>

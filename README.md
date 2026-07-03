@@ -2,6 +2,8 @@
 
 A standalone financial dashboard for managing league revenues, discounts, and configurations.
 
+**Production**: https://finance.leaguesphere.app/
+
 ## Tech Stack
 
 - **Frontend**: React 19, Vite, tRPC Client, TanStack Query.

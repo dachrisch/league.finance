@@ -2,6 +2,12 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 import { SummaryCards } from '../components/SummaryCards';
+import {
+  selectCurrentSeason,
+  computeGrossRevenue,
+  buildActiveContracts,
+  buildMissingContracts,
+} from '../lib/dashboardUtils';
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -28,83 +34,27 @@ export function DashboardPage() {
   const leagueMap = useMemo(() => Object.fromEntries(leagues.map(l => [l.id, l])), [leagues]);
   const assocMap = useMemo(() => Object.fromEntries(associations.map(a => [a._id, a])), [associations]);
 
-  // Current season (latest by year)
-  const currentSeason = useMemo(() => {
-    if (!seasons.length) return null;
-    return [...seasons].sort((a, b) => b.year - a.year)[0];
-  }, [seasons]);
+  // Current season (latest by year). Seasons are { id, name, slug } where name is the year.
+  const currentSeason = useMemo(() => selectCurrentSeason(seasons), [seasons]);
 
   // Financial Stats Calculation (Current Season, Sent/Accepted/Sending)
   const stats = useMemo(() => {
-    const relevantOffers = offers.filter(o => 
-      o.seasonId === currentSeason?._id && (o.status === 'sent' || o.status === 'accepted' || o.status === 'sending')
-    );
-
-    let gross = 0;
-    let discount = 0;
-
-    relevantOffers.forEach(offer => {
-      offer.financialConfigs?.forEach((config: any) => {
-        gross += config.finalPrice || 0;
-      });
-    });
-
-    return {
-      gross,
-      discount,
-      net: gross - discount
-    };
+    const gross = computeGrossRevenue(offers, currentSeason?.id);
+    const discount = 0;
+    return { gross, discount, net: gross - discount };
   }, [offers, currentSeason]);
 
-  // Active Contracts: Leagues in current season that have ANY offer (draft, sending, sent, or accepted)
-  const activeContracts = useMemo(() => {
-    if (!currentSeason) return [];
+  // Active Contracts: Leagues in current season that have ANY offer.
+  const activeContracts = useMemo(
+    () => buildActiveContracts(offers, currentSeason?.id, leagueMap, assocMap),
+    [offers, currentSeason, leagueMap, assocMap]
+  );
 
-    const results: any[] = [];
-    const processedLeagueIds = new Set<number>();
-
-    offers
-      .filter(o => o.seasonId === currentSeason._id)
-      .forEach(offer => {
-        offer.leagueIds.forEach((lId: number) => {
-          if (!processedLeagueIds.has(lId)) {
-            const league = leagueMap[lId];
-            const assoc = assocMap[offer.associationId];
-            const config = offer.financialConfigs?.find((c: any) => c.leagueId === lId);
-            
-            results.push({
-              leagueId: lId,
-              leagueName: league?.name || `League ${lId}`,
-              assocName: assoc?.name || 'Unknown',
-              status: offer.status,
-              offerId: offer._id,
-              revenue: config?.finalPrice || 0
-            });
-            processedLeagueIds.add(lId);
-          }
-        });
-      });
-    
-    return results.sort((a, b) => a.leagueName.localeCompare(b.leagueName));
-  }, [offers, currentSeason, leagueMap, assocMap]);
-
-  // Missing Contracts: Leagues in current season that have NO offer at all
-  const missingContracts = useMemo(() => {
-    if (!currentSeason || !leagues.length) return [];
-    
-    const contractedLeagueIds = new Set<number>();
-    offers
-      .filter(o => o.seasonId === currentSeason._id)
-      .forEach(o => o.leagueIds.forEach((id: number) => contractedLeagueIds.add(id)));
-
-    return leagues
-      .filter(l => !contractedLeagueIds.has(l.id))
-      .map(l => ({
-        id: l.id,
-        name: l.name
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [offers, currentSeason, leagues]);
+  // Missing Contracts: Leagues in current season that have NO offer at all.
+  const missingContracts = useMemo(
+    () => buildMissingContracts(offers, currentSeason?.id, leagues),
+    [offers, currentSeason, leagues]
+  );
 
   const toggleLeagueSelection = (id: number) => {
     setSelectedMissingLeagues(prev => 
@@ -115,7 +65,7 @@ export function DashboardPage() {
   const handleCreateOfferForSelected = () => {
     if (selectedMissingLeagues.length === 0) return;
     const leagueIdsStr = selectedMissingLeagues.join(',');
-    navigate(`/offers/new?leagues=${leagueIdsStr}&season=${currentSeason?._id}`);
+    navigate(`/offers/new?leagues=${leagueIdsStr}&season=${currentSeason?.id}`);
   };
 
   if (offersLoading) return <div className="container"><p>Loading dashboard...</p></div>;
@@ -156,7 +106,7 @@ export function DashboardPage() {
           Financial Overview
         </h1>
         <p style={{ margin: '4px 0 0 0', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>
-          {currentSeason ? `Tracking Season ${currentSeason.year}` : 'No active season found'}
+          {currentSeason ? `Tracking Season ${currentSeason.name}` : 'No active season found'}
         </p>
       </header>
 

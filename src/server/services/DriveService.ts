@@ -87,7 +87,11 @@ export class DriveService {
         name: f.name || 'Untitled Folder',
       }));
     } catch (err: any) {
-      throw new Error(`Failed to list folders: ${err.message}`);
+      // Preserve the HTTP status (e.g. 401 for expired/invalid credentials) so
+      // callers can distinguish an auth failure from a genuine server error.
+      const wrapped = new Error(`Failed to list folders: ${err.message}`);
+      (wrapped as any).status = err?.status ?? err?.code;
+      throw wrapped;
     }
   }
 }

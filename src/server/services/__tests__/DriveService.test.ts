@@ -4,6 +4,7 @@ import { DriveService } from '../DriveService';
 const mockSetCredentials = vi.fn();
 const mockCreate = vi.fn();
 const mockGet = vi.fn();
+const mockList = vi.fn();
 
 // Mock googleapis
 vi.mock('googleapis', () => {
@@ -20,6 +21,7 @@ vi.mock('googleapis', () => {
         files: {
           create: mockCreate,
           get: mockGet,
+          list: mockList,
         },
       })),
     },
@@ -250,6 +252,40 @@ describe('DriveService', () => {
         fileId: 'folder-123',
         fields: 'id, mimeType',
       });
+    });
+  });
+
+  describe('listFolders', () => {
+    it('maps Drive folders to { id, name }', async () => {
+      mockList.mockResolvedValueOnce({
+        data: { files: [{ id: 'f1', name: 'Offers' }, { id: 'f2', name: 'Archive' }] },
+      });
+
+      const result = await driveService.listFolders();
+
+      expect(result).toEqual([
+        { id: 'f1', name: 'Offers' },
+        { id: 'f2', name: 'Archive' },
+      ]);
+    });
+
+    it('preserves the auth status (401) so callers can map expired credentials', async () => {
+      const mockError = new Error('Request had invalid authentication credentials.');
+      (mockError as any).status = 401;
+      mockList.mockRejectedValueOnce(mockError);
+
+      await expect(driveService.listFolders()).rejects.toMatchObject({
+        message: expect.stringContaining('Failed to list folders'),
+        status: 401,
+      });
+    });
+
+    it('falls back to err.code when err.status is absent', async () => {
+      const mockError = new Error('unauthorized');
+      (mockError as any).code = 401;
+      mockList.mockRejectedValueOnce(mockError);
+
+      await expect(driveService.listFolders()).rejects.toMatchObject({ status: 401 });
     });
   });
 });

@@ -53,6 +53,25 @@ describe('AssociationList', () => {
     expect(screen.getByText(/City 1/i)).toBeInTheDocument();
   });
 
+  it('shows "No address provided" for an address with only empty fields', () => {
+    const emptyAddr: Association[] = [
+      {
+        _id: '3',
+        name: 'Empty Address Assoc',
+        address: { street: '', postalCode: '', city: '', country: '' },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+    const { container } = render(
+      <AssociationList associations={emptyAddr} onEdit={mockOnEdit} onDelete={mockOnDelete} />
+    );
+
+    expect(screen.getByText(/No address provided/i)).toBeInTheDocument();
+    // No stray comma from an empty "city, postalCode" line.
+    expect(container.textContent).not.toContain(',');
+  });
+
   it('calls onEdit when a card is clicked', () => {
     render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
 

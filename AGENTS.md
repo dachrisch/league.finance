@@ -1,5 +1,8 @@
 # Agent Instructions: Leagues Finance
 
+## Deployment
+- **Production URL**: https://finance.leaguesphere.app/ (deployed via the `container` repo).
+
 ## Architecture & Boundaries
 - **Client**: `src/client/` (React + Vite + tRPC Client). Entry: `src/client/main.tsx`.
 - **Server**: `src/server/` (Express + tRPC Server + tsx). Entry: `src/server/index.ts`.

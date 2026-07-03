@@ -59,20 +59,24 @@ export const offersRouter = router({
         .sort({ createdAt: -1 })
         .lean();
 
-      // Compute each offer's total from its FinancialConfigs. The Offer document
+      // Compute each offer's pricing from its FinancialConfigs. The Offer document
       // itself carries no price; pricing lives in FinancialConfig records.
       const offerIds = offers.map((o: any) => o._id);
       const configs = await FinancialConfig.find({ offerId: { $in: offerIds } }).lean();
-      const totalByOfferId = configs.reduce((acc: Record<string, number>, config: any) => {
+
+      const totalByOfferId: Record<string, number> = {};
+      const leaguePricesByOfferId: Record<string, Array<{ leagueId: number; finalPrice: number }>> = {};
+      for (const config of configs as any[]) {
         const { finalPrice } = computeConfigPrices(config);
         const key = config.offerId?.toString?.() || config.offerId;
-        acc[key] = (acc[key] || 0) + finalPrice;
-        return acc;
-      }, {});
+        totalByOfferId[key] = (totalByOfferId[key] || 0) + finalPrice;
+        (leaguePricesByOfferId[key] ||= []).push({ leagueId: config.leagueId, finalPrice });
+      }
 
       return offers.map((offer: any) => ({
         ...normalizeOffer(offer),
         totalPrice: totalByOfferId[offer._id?.toString()] || 0,
+        leaguePrices: leaguePricesByOfferId[offer._id?.toString()] || [],
       }));
     }),
 

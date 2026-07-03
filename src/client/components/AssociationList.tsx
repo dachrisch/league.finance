@@ -76,17 +76,22 @@ export function AssociationList({ associations, onEdit, onDelete, isLoading = fa
                 </svg>
               </button>
             </div>
-            {association.address ? (
-              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-                {association.address.street}<br />
-                {association.address.city}, {association.address.postalCode}<br />
-                {association.address.country}
-              </div>
-            ) : (
-              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                No address provided
-              </div>
-            )}
+            {(() => {
+              const addr = association.address;
+              const cityLine = [addr?.city, addr?.postalCode].filter(Boolean).join(', ');
+              const hasAddress = Boolean(addr && (addr.street || cityLine || addr.country));
+              return hasAddress ? (
+                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                  {addr!.street && <>{addr!.street}<br /></>}
+                  {cityLine && <>{cityLine}<br /></>}
+                  {addr!.country}
+                </div>
+              ) : (
+                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  No address provided
+                </div>
+              );
+            })()}
           </div>
           <div style={{ marginTop: 'var(--spacing-md)', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
             Click to edit
