@@ -260,9 +260,9 @@ export function OfferDetailPage() {
             {markAccepted.isPending ? '…' : '✓ Mark as Accepted'}
           </button>
         )}
-        {offer.status === 'sent' && offer.driveMetadata?.driveFileId && (
+        {(offer.status === 'sent' || offer.status === 'accepted') && offer.driveMetadata?.driveFileId && (
           <a
-            href={`https://drive.google.com/file/d/${offer.driveMetadata.driveFileId}/view`}
+            href={offer.driveMetadata.driveLink || `https://drive.google.com/file/d/${offer.driveMetadata.driveFileId}/view`}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-primary"

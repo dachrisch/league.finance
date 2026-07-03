@@ -67,6 +67,7 @@ export const OfferSchema = z.object({
   sendJobId: z.string().optional(),
   sendJobAttempts: z.number().optional(),
   driveMetadata: DriveMetadataSchema.optional(),
+  totalPrice: z.number().optional(),
 });
 
 export type Offer = z.infer<typeof OfferSchema>;

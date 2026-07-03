@@ -68,22 +68,9 @@ export function OfferTable({
     return 0;
   });
 
-  if (filteredOffers.length === 0) {
-    return (
-      <div className="card" style={{
-        padding: 'var(--spacing-xl)',
-        textAlign: 'center',
-        background: 'var(--bg-secondary)',
-        color: 'var(--text-muted)',
-      }}>
-        <p>{filterStatus ? `No ${filterStatus} offers found.` : 'No offers found. Create one to get started.'}</p>
-      </div>
-    );
-  }
-
   return (
     <div>
-      {/* Filter Buttons */}
+      {/* Filter Buttons — always rendered so an empty filter result never hides the tabs */}
       <div style={{ marginBottom: 'var(--spacing-lg)', display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
         {[
           { label: 'All', value: null },
@@ -102,7 +89,17 @@ export function OfferTable({
         ))}
       </div>
 
-      {/* Table */}
+      {filteredOffers.length === 0 ? (
+        <div className="card" style={{
+          padding: 'var(--spacing-xl)',
+          textAlign: 'center',
+          background: 'var(--bg-secondary)',
+          color: 'var(--text-muted)',
+        }}>
+          <p>{filterStatus ? `No ${filterStatus} offers found.` : 'No offers found. Create one to get started.'}</p>
+        </div>
+      ) : (
+      /* Table */
       <div style={{ opacity: isLoading ? 0.6 : 1, pointerEvents: isLoading ? 'none' : 'auto' }}>
         <table className="mobile-cards-table" style={{
           width: '100%',
@@ -163,7 +160,7 @@ export function OfferTable({
               >
                 Status {sortBy === 'status' ? '↓' : ''}
               </th>
-              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)' }}>Delete</th>
+              <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -187,32 +184,65 @@ export function OfferTable({
                 <td data-label="Status" style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>
                   <div style={statusBadgeStyle(offer.status)}>{offer.status}</div>
                 </td>
-                <td data-label="Delete" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
-                  {offer.status === 'draft' && onDelete && (
+                <td data-label="Actions" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-xs)', justifyContent: 'center' }}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onDelete(offer._id);
+                        onView(offer._id);
                       }}
-                      className="btn btn-ghost btn-sm"
-                      style={{ color: 'var(--danger-color)', padding: '4px', minWidth: 'auto', minHeight: 'auto' }}
-                      title="Delete Offer"
+                      className="btn btn-outline btn-sm"
+                      style={{ padding: '4px 8px', minWidth: 'auto', minHeight: 'auto' }}
+                      title="View Offer"
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 6h18"></path>
-                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                      </svg>
+                      View
                     </button>
-                  )}
+                    {offer.driveMetadata?.driveFileId && (
+                      <a
+                        href={offer.driveMetadata.driveLink || `https://drive.google.com/file/d/${offer.driveMetadata.driveFileId}/view`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="btn btn-ghost btn-sm"
+                        style={{ padding: '4px', minWidth: 'auto', minHeight: 'auto' }}
+                        title="Open offer document"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                          <polyline points="14 2 14 8 20 8"></polyline>
+                          <line x1="16" y1="13" x2="8" y2="13"></line>
+                          <line x1="16" y1="17" x2="8" y2="17"></line>
+                          <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                      </a>
+                    )}
+                    {offer.status === 'draft' && onDelete && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(offer._id);
+                        }}
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: 'var(--danger-color)', padding: '4px', minWidth: 'auto', minHeight: 'auto' }}
+                        title="Delete Offer"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 6h18"></path>
+                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                          <line x1="10" y1="11" x2="10" y2="17"></line>
+                          <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }

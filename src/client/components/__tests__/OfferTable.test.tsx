@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { OfferTable } from '../OfferTable';
 import { Offer } from '../../lib/schemas';
@@ -197,5 +197,70 @@ describe('OfferTable', () => {
 
     const seasonElements = screen.getAllByText(/Season/i);
     expect(seasonElements.length).toBeGreaterThan(0);
+  });
+
+  it('keeps filter buttons visible when a filter yields no results', () => {
+    render(
+      <OfferTable
+        offers={mockOffers}
+        associationNames={mockAssociationNames}
+        onView={mockOnView}
+      />
+    );
+
+    // Filter to "Accepted" — none of the mock offers are accepted
+    fireEvent.click(screen.getByRole('button', { name: /Accepted/i }));
+
+    expect(screen.getByText(/No accepted offers found/i)).toBeInTheDocument();
+    // The filter tabs must remain so the user can switch back
+    expect(screen.getByRole('button', { name: /All/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Draft/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sent/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Accepted/i })).toBeInTheDocument();
+
+    // And switching back to a populated filter restores the list
+    fireEvent.click(screen.getByRole('button', { name: /Sent/i }));
+    expect(screen.getByText('Association 2')).toBeInTheDocument();
+  });
+
+  it('calls onView when the row View button is clicked', async () => {
+    const user = userEvent.setup();
+    render(
+      <OfferTable
+        offers={mockOffers}
+        associationNames={mockAssociationNames}
+        onView={mockOnView}
+      />
+    );
+
+    const row = screen.getByText('Association 1').closest('tr')!;
+    await user.click(within(row).getByTitle('View Offer'));
+
+    expect(mockOnView).toHaveBeenCalledWith('1');
+  });
+
+  it('shows an open-document link only for offers with a filed drive document', () => {
+    const offersWithDoc: Offer[] = [
+      mockOffers[0],
+      {
+        ...mockOffers[1],
+        driveMetadata: {
+          driveFileId: 'file-123',
+          driveLink: 'https://drive.google.com/file/d/file-123/view',
+        },
+      },
+    ];
+
+    render(
+      <OfferTable
+        offers={offersWithDoc}
+        associationNames={mockAssociationNames}
+        onView={mockOnView}
+      />
+    );
+
+    const docLinks = screen.getAllByTitle('Open offer document');
+    expect(docLinks.length).toBe(1);
+    expect(docLinks[0]).toHaveAttribute('href', 'https://drive.google.com/file/d/file-123/view');
   });
 });
