@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.7](https://github.com/dachrisch/league.finance/compare/v0.6.6...v0.6.7) (2026-07-03)
+
+
+### Bug Fixes
+
+* **offers:** restore filter tabs, list total, actions, and document link ([#263](https://github.com/dachrisch/league.finance/issues/263)) ([ebd24ec](https://github.com/dachrisch/league.finance/commit/ebd24ecb560d2b738d0544e300ac3d037d0226cc))
+
 ## [0.6.6](https://github.com/dachrisch/league.finance/compare/v0.6.5...v0.6.6) (2026-07-02)
 
 
