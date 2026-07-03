@@ -1,15 +1,23 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Offer } from '../../../models/Offer';
+import { FinancialConfig } from '../../../models/FinancialConfig';
 import { offerDriveQueue } from '../../../jobs/queue';
 import { offersDriveRouter } from '../offers-drive';
 
 vi.mock('../../../models/Offer');
+vi.mock('../../../models/FinancialConfig');
 vi.mock('../../../jobs/queue', () => ({ offerDriveQueue: { add: vi.fn(), getJob: vi.fn() } }));
 
 const ctx = { user: { userId: 'u1', email: 'a@bumbleflies.de', role: 'admin' as const }, accessToken: 'ya29.x' };
 const caller = () => offersDriveRouter.createCaller(ctx as any);
 
-beforeEach(() => vi.clearAllMocks());
+const mockConfigs = (configs: any[]) =>
+  vi.mocked(FinancialConfig.find).mockReturnValue({ lean: () => Promise.resolve(configs) } as any);
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockConfigs([]); // default: no configs unless a test overrides
+});
 
 describe('offersDrive.fileOfferInDrive', () => {
   it('rejects when offer is not draft', async () => {
@@ -35,6 +43,25 @@ describe('offersDrive.fileOfferInDrive', () => {
       expect.any(Object)
     );
     expect(res.status).toBe('queued');
+  });
+
+  it('sends priced configs (finalPrice computed) with the job so the PDF never calculates', async () => {
+    const save = vi.fn();
+    vi.mocked(Offer.findById).mockResolvedValue({ status: 'draft', save } as any);
+    mockConfigs([
+      { leagueId: 16, costModel: 'SEASON', baseRateOverride: null, customPrice: null,
+        expectedTeamsCount: 2, expectedGamedaysCount: 0, expectedTeamsPerGameday: 0 },
+    ]);
+    vi.mocked(offerDriveQueue.add as any).mockResolvedValue({ id: 7 });
+
+    await caller().fileOfferInDrive({ offerId: 'o1', driveFolderId: 'f1' });
+
+    expect(offerDriveQueue.add).toHaveBeenCalledWith(
+      expect.objectContaining({
+        configs: [expect.objectContaining({ leagueId: 16, expectedTeamsCount: 2, finalPrice: 100 })],
+      }),
+      expect.any(Object)
+    );
   });
 });
 

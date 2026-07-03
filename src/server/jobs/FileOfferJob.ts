@@ -1,7 +1,6 @@
 import { Job } from 'bull';
 import { Offer } from '../models/Offer';
 import { Contact } from '../models/Contact';
-import { FinancialConfig } from '../models/FinancialConfig';
 import { Association } from '../models/Association';
 import { PdfService, PdfGenerationData } from '../services/PdfService';
 import { DriveService } from '../services/DriveService';
@@ -12,11 +11,13 @@ export interface FileOfferJobData {
   userId: string;
   driveFolderId: string;
   accessToken: string;
+  /** Line items with prices already resolved at enqueue time; the PDF only renders them. */
+  configs: any[];
 }
 
 export class FileOfferJobHandler {
   static async process(job: Job<FileOfferJobData>) {
-    const { offerId, driveFolderId, accessToken } = job.data;
+    const { offerId, driveFolderId, accessToken, configs } = job.data;
 
     try {
       job.progress(10);
@@ -30,8 +31,6 @@ export class FileOfferJobHandler {
 
       const association = await Association.findById(offer.associationId);
       const associationName = association?.name || 'Unknown Association';
-
-      const configs = await FinancialConfig.find({ offerId }).lean();
 
       let leaguesMap: Record<number, string> = {};
       try {

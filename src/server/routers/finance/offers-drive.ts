@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { adminProcedure, router } from '../../trpc';
 import { Offer } from '../../models/Offer';
+import { FinancialConfig } from '../../models/FinancialConfig';
+import { computeConfigPrices } from '../../lib/configPricing';
 import { offerDriveQueue } from '../../jobs/queue';
 
 const JOB_OPTS = {
@@ -9,6 +11,15 @@ const JOB_OPTS = {
   backoff: { type: 'exponential' as const, delay: 2000 },
   removeOnComplete: true,
   removeOnFail: false,
+};
+
+/**
+ * Build the offer's line items with prices resolved. Prices travel with the job
+ * so the PDF renderer only formats numbers — it never calculates them.
+ */
+const buildPricedConfigs = async (offerId: string) => {
+  const configs = await FinancialConfig.find({ offerId }).lean();
+  return configs.map((config) => computeConfigPrices(config));
 };
 
 export const offersDriveRouter = router({
@@ -24,8 +35,9 @@ export const offersDriveRouter = router({
         throw new TRPCError({ code: 'UNAUTHORIZED', message: 'No Google OAuth access token found' });
       }
 
+      const configs = await buildPricedConfigs(input.offerId);
       const job = await offerDriveQueue.add(
-        { offerId: input.offerId, userId: ctx.user.userId, driveFolderId: input.driveFolderId, accessToken: ctx.accessToken },
+        { offerId: input.offerId, userId: ctx.user.userId, driveFolderId: input.driveFolderId, accessToken: ctx.accessToken, configs },
         JOB_OPTS
       );
 
@@ -92,8 +104,9 @@ export const offersDriveRouter = router({
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'No Drive folder information found' });
       }
 
+      const configs = await buildPricedConfigs(input.offerId);
       const job = await offerDriveQueue.add(
-        { offerId: input.offerId, userId: ctx.user.userId, driveFolderId, accessToken: ctx.accessToken },
+        { offerId: input.offerId, userId: ctx.user.userId, driveFolderId, accessToken: ctx.accessToken, configs },
         JOB_OPTS
       );
 

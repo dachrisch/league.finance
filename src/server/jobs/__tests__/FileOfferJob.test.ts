@@ -18,7 +18,10 @@ vi.mock('../../services/DriveService');
 vi.mock('../../db/mysql');
 
 const makeJob = () => ({
-  data: { offerId: 'o1', userId: 'u1', driveFolderId: 'fold1', accessToken: 'ya29.x' },
+  data: {
+    offerId: 'o1', userId: 'u1', driveFolderId: 'fold1', accessToken: 'ya29.x',
+    configs: [{ leagueId: 16, expectedTeamsCount: 1, finalPrice: 50 }],
+  },
   progress: vi.fn(),
   log: vi.fn(),
 });
@@ -51,6 +54,26 @@ describe('FileOfferJobHandler', () => {
     const res = await FileOfferJobHandler.process(makeJob() as any);
     expect(mockUpload).toHaveBeenCalledWith(expect.any(Buffer), 'offer.pdf', 'fold1');
     expect(res).toEqual({ success: true, driveLink: 'https://drive/file1' });
+  });
+
+  it('forwards the priced configs from the job payload to the PDF and does not query FinancialConfig', async () => {
+    const save = vi.fn();
+    vi.mocked(Offer.findById).mockResolvedValue({ _id: 'o1', contactId: 'c1', associationId: 'a1', save } as any);
+    const job = {
+      data: {
+        offerId: 'o1', userId: 'u1', driveFolderId: 'fold1', accessToken: 'ya29.x',
+        configs: [{ leagueId: 16, expectedTeamsCount: 2, finalPrice: 100 }],
+      },
+      progress: vi.fn(),
+      log: vi.fn(),
+    };
+    await FileOfferJobHandler.process(job as any);
+    expect(PdfService.generateOfferPdf).toHaveBeenCalledWith(
+      expect.objectContaining({
+        configs: [expect.objectContaining({ leagueId: 16, expectedTeamsCount: 2, finalPrice: 100 })],
+      })
+    );
+    expect(FinancialConfig.find).not.toHaveBeenCalled();
   });
 
   it('on success sets status=sent and writes driveMetadata', async () => {

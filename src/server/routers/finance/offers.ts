@@ -10,8 +10,7 @@ import { Contact } from '../../models/Contact';
 import { getMysqlPool } from '../../db/mysql';
 import { supportsTransactions } from '../../db/mongo';
 import { extractContactInfo } from '../../../../shared/lib/extraction';
-
-const DEFAULT_BASE_RATE = 50;
+import { computeConfigPrices } from '../../lib/configPricing';
 
 const normalizeOffer = (doc: any) => {
   const obj = doc.toObject?.() || doc;
@@ -41,21 +40,6 @@ const normalizeContact = (doc: any) => ({
   ...doc,
   _id: doc._id?.toString(),
 });
-
-const computeConfigPrices = (config: any, leagueName: string = 'Unknown League') => {
-  const baseRate = config.baseRateOverride ?? DEFAULT_BASE_RATE;
-  const basePrice = config.costModel === 'SEASON'
-    ? baseRate * config.expectedTeamsCount
-    : baseRate * config.expectedGamedaysCount * config.expectedTeamsPerGameday;
-
-  return {
-    ...config,
-    basePrice: Math.round(basePrice * 100) / 100,
-    customPrice: config.customPrice ?? null,
-    finalPrice: config.customPrice != null ? config.customPrice : Math.round(basePrice * 100) / 100,
-    leagueName: leagueName,
-  };
-};
 
 export const offersRouter = router({
   list: protectedProcedure
