@@ -27,9 +27,16 @@
 - **MongoDB**: Primary store for configs, discounts, and settings. 
 - **Local Dev**: If `MONGO_URI` is unset in `.env`, the server automatically starts an **in-memory MongoDB** (`mongodb-memory-server`).
 
+## Domain Data Shapes & Gotchas
+- **Seasons & leagues are SQL rows, not Mongo docs.** `teams.seasons` / `teams.leagues` return `{ id, name, slug }` (typed to the shared `Season`/`League` types). The season **`name` is the year string** (e.g. `"2026"`) — there is **no `year` field and no `_id`**. Pick the current season by `Number(season.name)` (descending) and filter offers by `season.id`. (Assuming a Mongo-style `{ _id, year }` shape caused the v0.6.10 dashboard "Tracking Season undefined" bug.)
+- **Offer pricing is never stored on the Offer document.** It lives in separate `FinancialConfig` records and is computed on read via `computeConfigPrices()` (`src/server/lib/configPricing.ts`) — passing a raw config yields `finalPrice === undefined`, which renders as `0,00 €`. Endpoint contract:
+  - `finance.offers.list` → each offer carries a derived `totalPrice` **and** a per-league `leaguePrices: [{ leagueId, finalPrice }]` breakdown. It does **not** embed `financialConfigs`.
+  - `finance.offers.get` → returns `configs` (fully priced) separately from the offer.
+
 ## Auth Flow
 - **Strategy**: Passport.js with `passport-google-oauth20`.
 - **Token**: Success redirects issue a JWT. Client uses `getToken()`/`clearToken()` in `src/client/lib/trpc.ts`.
+- **Google Drive calls use the logged-in user's OAuth access token** (`ctx.accessToken`), not a service account. When that token is missing/expired, `google.listFolders` throws **`UNAUTHORIZED`** (not a 500) so the UI can prompt a re-login — `DriveService.listFolders` preserves the Google `401/403` status for this mapping.
 
 ## Testing
 - **Suite**: Vitest.
