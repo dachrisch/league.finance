@@ -47,6 +47,19 @@ export class FileOfferJobHandler {
         console.warn('Failed to fetch league names:', err);
       }
 
+      // Resolve the season's display name (the year string, e.g. "2026"); fall back to the id.
+      let seasonName = `${offer.seasonId}`;
+      try {
+        const pool = getMysqlPool();
+        const [rows] = await pool.query<any[]>(
+          'SELECT name FROM gamedays_season WHERE id = ?',
+          [offer.seasonId]
+        );
+        if (rows[0]?.name != null) seasonName = `${rows[0].name}`;
+      } catch (err) {
+        console.warn('Failed to fetch season name:', err);
+      }
+
       // Step 1: Generate PDF
       job.progress(20);
       job.log('Generating PDF...');
@@ -56,7 +69,7 @@ export class FileOfferJobHandler {
         configs,
         leaguesMap,
         associationName,
-        seasonName: `${offer.seasonId}`,
+        seasonName,
       };
       const pdfBuffer = await PdfService.generateOfferPdf(pdfData);
       const filename = PdfService.generateFilename(offer._id.toString(), associationName);

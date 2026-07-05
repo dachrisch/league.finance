@@ -44,7 +44,12 @@ beforeEach(() => {
   vi.mocked(Contact.findById).mockResolvedValue({} as any);
   vi.mocked(Association.findById).mockResolvedValue({ name: 'AFVB' } as any);
   vi.mocked(FinancialConfig.find).mockReturnValue({ lean: () => Promise.resolve([{ leagueId: 16 }]) } as any);
-  vi.mocked(getMysqlPool).mockReturnValue({ query: () => Promise.resolve([[{ id: 16, name: 'RL Bayern' }]]) } as any);
+  vi.mocked(getMysqlPool).mockReturnValue({
+    query: (sql: string) =>
+      /gamedays_season/i.test(sql)
+        ? Promise.resolve([[{ id: 6, name: '2026' }]])
+        : Promise.resolve([[{ id: 16, name: 'RL Bayern' }]]),
+  } as any);
 });
 
 describe('FileOfferJobHandler', () => {
@@ -74,6 +79,28 @@ describe('FileOfferJobHandler', () => {
       })
     );
     expect(FinancialConfig.find).not.toHaveBeenCalled();
+  });
+
+  it('resolves the season name from gamedays_season and passes it to the PDF', async () => {
+    const save = vi.fn();
+    vi.mocked(Offer.findById).mockResolvedValue({ _id: 'o1', contactId: 'c1', associationId: 'a1', seasonId: 6, save } as any);
+    await FileOfferJobHandler.process(makeJob() as any);
+    expect(PdfService.generateOfferPdf).toHaveBeenCalledWith(
+      expect.objectContaining({ seasonName: '2026' })
+    );
+  });
+
+  it('falls back to the seasonId when the season name lookup returns nothing', async () => {
+    const save = vi.fn();
+    vi.mocked(Offer.findById).mockResolvedValue({ _id: 'o1', contactId: 'c1', associationId: 'a1', seasonId: 6, save } as any);
+    vi.mocked(getMysqlPool).mockReturnValue({
+      query: (sql: string) =>
+        /gamedays_season/i.test(sql) ? Promise.resolve([[]]) : Promise.resolve([[{ id: 16, name: 'RL Bayern' }]]),
+    } as any);
+    await FileOfferJobHandler.process(makeJob() as any);
+    expect(PdfService.generateOfferPdf).toHaveBeenCalledWith(
+      expect.objectContaining({ seasonName: '6' })
+    );
   });
 
   it('on success sets status=sent and writes driveMetadata', async () => {
