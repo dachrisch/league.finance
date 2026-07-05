@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.12](https://github.com/dachrisch/league.finance/compare/v0.6.11...v0.6.12) (2026-07-05)
+
+
+### Bug Fixes
+
+* **deps:** update dependency react-hook-form to v7.81.0 ([#275](https://github.com/dachrisch/league.finance/issues/275)) ([1b253d6](https://github.com/dachrisch/league.finance/commit/1b253d605c29cff61e2c766585aaba4a66904a6e))
+
 ## [0.6.11](https://github.com/dachrisch/league.finance/compare/v0.6.10...v0.6.11) (2026-07-03)
 
 
