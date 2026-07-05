@@ -6,8 +6,11 @@
 ## Architecture & Boundaries
 - **Client**: `src/client/` (React + Vite + tRPC Client). Entry: `src/client/main.tsx`.
 - **Server**: `src/server/` (Express + tRPC Server + tsx). Entry: `src/server/index.ts`.
-- **Shared**: `shared/` contains Zod schemas and TypeScript types used by both.
+- **Shared**: `shared/` contains Zod schemas (`shared/schemas`), types (`shared/types`), and helpers (`shared/lib`) used by both.
 - **Frontend Assets**: Uses `src/client/index.css` for responsive design. Mimic existing styles (inline styles + utility classes).
+
+### tRPC router map (`src/server/routers/index.ts`)
+The single `appRouter` is the client/server contract; its type (`AppRouter`) drives client-side inference. Top-level namespaces: `health`, `auth`, `teams`, `google`, and everything domain-specific nested under **`finance`**: `settings`, `configs`, `discounts`, `dashboard`, `calculate`, `associations`, `offers`, `offersDrive`, `contacts`, `leagues`, `seasons`. So an endpoint like the one that computes offer pricing is `finance.offers.list`, not `offers.list`. `teams`/`finance.leagues`/`finance.seasons` read from the MySQL source; the rest are MongoDB-backed.
 
 ## Command Shortcuts
 - **Dev**: `npm run dev` (Runs server on 3000, Vite dev server proxies `/trpc` and `/auth`).
@@ -15,7 +18,9 @@
   - `npm run typecheck` (Client only)
   - `npm run typecheck:server` (Server only - uses `tsconfig.server.json`)
 - **Build**: `npm run build` (Vite build + Server TSC).
-- **Test**: `npm run test` (Vitest).
+- **Test**: `npm run test` (Vitest). Single file/pattern: `npm run test -- src/server/lib/__tests__/configPricing.test.ts` or `npm run test -- -t "computes prices"`. Watch mode: `npm run test:watch`.
+- **E2E**: `npm run test:e2e` (Playwright; specs in `e2e/`). `test:e2e:ui` / `test:e2e:debug` for interactive runs.
+- **Mongo migrations**: `npm run migrate` runs compiled migrations from `src/server/db/migrations/` (build first — it reads from `dist/`).
 
 ## Toolchain Quirks
 - **TypeScript**: Two separate configs (`tsconfig.json` for client, `tsconfig.server.json` for server). Use the correct one for `tsc`.
