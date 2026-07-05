@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.13](https://github.com/dachrisch/league.finance/compare/v0.6.12...v0.6.13) (2026-07-05)
+
+
+### Bug Fixes
+
+* **offers:** render season year in filed PDF instead of season id ([#278](https://github.com/dachrisch/league.finance/issues/278)) ([1d9efc0](https://github.com/dachrisch/league.finance/commit/1d9efc0ba3e9880919dcd8c8e40f63a02891fad2))
+
 ## [0.6.12](https://github.com/dachrisch/league.finance/compare/v0.6.11...v0.6.12) (2026-07-05)
 
 
