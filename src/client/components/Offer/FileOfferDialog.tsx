@@ -93,11 +93,12 @@ export function FileOfferDialog({
         attempts++;
 
         try {
-          const statusResponse = await fetch('/trpc/finance.offersDrive.getOfferDriveStatus', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ offerId }),
-          });
+          // getOfferDriveStatus is a tRPC query; over HTTP it must be a GET
+          // with the input in the ?input= query param (a POST returns 405).
+          const statusInput = encodeURIComponent(JSON.stringify({ offerId }));
+          const statusResponse = await fetch(
+            `/trpc/finance.offersDrive.getOfferDriveStatus?input=${statusInput}`
+          );
 
           if (!statusResponse.ok) {
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
