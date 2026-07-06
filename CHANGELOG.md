@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.15](https://github.com/dachrisch/league.finance/compare/v0.6.14...v0.6.15) (2026-07-06)
+
+
+### Bug Fixes
+
+* **offers:** poll drive-status query with GET instead of POST ([#282](https://github.com/dachrisch/league.finance/issues/282)) ([8bf9b8f](https://github.com/dachrisch/league.finance/commit/8bf9b8f81983c596ee506bdcc104625215cb8177))
+
 ## [0.6.14](https://github.com/dachrisch/league.finance/compare/v0.6.13...v0.6.14) (2026-07-06)
 
 
