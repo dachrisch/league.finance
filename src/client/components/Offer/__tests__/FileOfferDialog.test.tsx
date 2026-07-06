@@ -61,4 +61,40 @@ describe('FileOfferDialog', () => {
     );
     expect(props.onError).not.toHaveBeenCalled();
   });
+
+  it('polls the drive-status query with GET (tRPC queries reject POST with 405)', async () => {
+    const calls: Array<{ url: string; method?: string }> = [];
+    const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+      calls.push({ url, method: init?.method });
+      if (url.includes('fileOfferInDrive')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ result: { data: { jobId: 'job-1' } } }),
+        });
+      }
+      if (url.includes('getOfferDriveStatus')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            result: { data: { status: 'completed', progress: 100, driveLink: 'https://drive.google.com/file/d/abc/view' } },
+          }),
+        });
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const props = { ...baseProps, onSuccess: vi.fn(), onError: vi.fn() };
+    render(<FileOfferDialog {...props} />);
+    fireEvent.click(screen.getByRole('button', { name: /Create in Drive/i }));
+
+    await waitFor(() => expect(props.onSuccess).toHaveBeenCalled(), { timeout: 4000 });
+
+    const statusCall = calls.find((c) => c.url.includes('getOfferDriveStatus'));
+    expect(statusCall).toBeTruthy();
+    // getOfferDriveStatus is a tRPC *query*; over HTTP it only accepts GET.
+    expect((statusCall!.method ?? 'GET').toUpperCase()).toBe('GET');
+    // The input travels as an ?input= query param, not a POST body.
+    expect(statusCall!.url).toContain('input=');
+  });
 });
