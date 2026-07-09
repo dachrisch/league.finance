@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.20](https://github.com/dachrisch/league.finance/compare/v0.6.19...v0.6.20) (2026-07-09)
+
+
+### Bug Fixes
+
+* **deps:** update dependency typescript to v7 ([#290](https://github.com/dachrisch/league.finance/issues/290)) ([77af782](https://github.com/dachrisch/league.finance/commit/77af782a0be949999a4d5d99c17eefbff0999076))
+
 ## [0.6.19](https://github.com/dachrisch/league.finance/compare/v0.6.18...v0.6.19) (2026-07-09)
 
 
