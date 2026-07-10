@@ -11,7 +11,7 @@ module.exports = {
     // Drop the old unique index
     try {
       await collection.dropIndex('associationId_1_seasonId_1_status_1');
-    } catch (err) {
+    } catch {
       // Index may not exist, ignore
     }
 
@@ -28,7 +28,7 @@ module.exports = {
     // Drop the new index
     try {
       await collection.dropIndex('associationId_1_seasonId_1_status_1');
-    } catch (err) {
+    } catch {
       // Index may not exist, ignore
     }
 

@@ -163,7 +163,7 @@ export function createApp() {
 
         // Return token in response (for API tests)
         res.json({ token, userId: testUser._id });
-      } catch (error) {
+      } catch {
         res.status(500).json({ error: 'Failed to create test token' });
       }
     });

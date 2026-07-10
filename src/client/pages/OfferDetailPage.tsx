@@ -54,10 +54,6 @@ export function OfferDetailPage() {
   );
   const { data: seasons = [] } = trpc.finance.seasons.list.useQuery();
 
-  const markSent = trpc.finance.offers.markSent.useMutation({
-    onSuccess: () => refetch(),
-  });
-
   const markAccepted = trpc.finance.offers.markAccepted.useMutation({
     onSuccess: () => refetch(),
   });

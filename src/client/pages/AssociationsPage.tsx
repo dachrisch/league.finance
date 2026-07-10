@@ -166,7 +166,7 @@ export function AssociationsPage() {
                     assocId = assoc._id;
                   }
 
-                  let contactId = data.createdEntities.contactId;
+                  const contactId = data.createdEntities.contactId;
                   if (!contactId) {
                     await createContact.mutateAsync({
                       name: data.contact.name,

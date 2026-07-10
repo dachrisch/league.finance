@@ -1,5 +1,5 @@
 import { router, protectedProcedure } from '../../trpc';
-import { FinancialConfig, IFinancialConfig } from '../../models/FinancialConfig';
+import { FinancialConfig } from '../../models/FinancialConfig';
 import { Discount } from '../../models/Discount';
 import { getOrCreateSettings } from '../../models/FinancialSettings';
 import { getMysqlPool } from '../../db/mysql';

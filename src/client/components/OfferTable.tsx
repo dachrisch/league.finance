@@ -55,7 +55,7 @@ export function OfferTable({
     ? offers.filter((o) => o.status === filterStatus)
     : offers;
 
-  const sortedOffers = [...filteredOffers].sort((a, b) => {
+  const sortedOffers = [...filteredOffers].toSorted((a, b) => {
     if (sortBy === 'createdAt') {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }

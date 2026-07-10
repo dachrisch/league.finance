@@ -7,14 +7,14 @@ let version = 'dev';
 
 try {
   gitHash = execSync('git rev-parse --short HEAD').toString().trim();
-} catch (e) {
+} catch {
   // Fallback for Docker builds or environments without git
   gitHash = (process.env.VITE_GIT_COMMIT_HASH || 'unknown').slice(0, 7);
 }
 
 try {
   version = execSync('git describe --tags --abbrev=0 2>/dev/null').toString().trim();
-} catch (e) {
+} catch {
   version = process.env.VITE_BUILD_VERSION || 'dev';
 }
 

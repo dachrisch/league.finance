@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { Types } from 'mongoose';
 import { router, protectedProcedure, adminProcedure } from '../../trpc';
-import { CreateOfferSchema, UpdateOfferSchema } from '../../../../shared/schemas/offer';
+import { UpdateOfferSchema } from '../../../../shared/schemas/offer';
 import { UpdateFinancialConfigSchema } from '../../../../shared/schemas/financialConfig';
 import { Offer } from '../../models/Offer';
 import { FinancialConfig } from '../../models/FinancialConfig';

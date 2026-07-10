@@ -1,4 +1,4 @@
-import { calculateCosts, CalculationDiscount } from './financeCalculator';
+import { calculateCosts } from './financeCalculator';
 
 export interface LeagueConfigForOffer {
   leagueId: number;
