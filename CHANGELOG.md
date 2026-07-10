@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.21](https://github.com/dachrisch/league.finance/compare/v0.6.20...v0.6.21) (2026-07-10)
+
+
+### Bug Fixes
+
+* **build:** migrate tsconfig.server.json to TypeScript 7 ([7387fd9](https://github.com/dachrisch/league.finance/commit/7387fd9a9e719ddcfab554531d8ac4c2596c4b2c))
+* **build:** migrate tsconfig.server.json to TypeScript 7 ([a6a35e2](https://github.com/dachrisch/league.finance/commit/a6a35e295203107305f61795283398aa165890c6))
+
 ## [0.6.20](https://github.com/dachrisch/league.finance/compare/v0.6.19...v0.6.20) (2026-07-09)
 
 
