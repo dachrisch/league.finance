@@ -7,7 +7,7 @@ class MockQueue {
   private jobId = 0;
   private eventHandlers: { [key: string]: Function[] } = {};
 
-  async add(data: any, options?: any) {
+  async add(data: any, _options?: any) {
     const id = String(++this.jobId);
     this.jobs.set(id, {
       id,
@@ -24,7 +24,7 @@ class MockQueue {
     return this.jobs.get(id) || null;
   }
 
-  process(handler: Function) {
+  process(_handler: Function) {
     // Mock processor - jobs complete immediately
   }
 

@@ -1,5 +1,3 @@
-import { Types } from 'mongoose';
-
 export type WizardStep = 'step1' | 'step2';
 export type PathChoice = 'paste' | 'existing';
 

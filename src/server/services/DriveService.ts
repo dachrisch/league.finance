@@ -43,7 +43,7 @@ export class DriveService {
         webViewLink: response.data.webViewLink || '',
       };
     } catch (err: any) {
-      throw new Error(`Drive upload failed: ${err.message}`);
+      throw new Error(`Drive upload failed: ${err.message}`, { cause: err });
     }
   }
 
@@ -56,7 +56,7 @@ export class DriveService {
 
       return response.data.webViewLink || '';
     } catch (err: any) {
-      throw new Error(`Failed to create shareable link: ${err.message}`);
+      throw new Error(`Failed to create shareable link: ${err.message}`, { cause: err });
     }
   }
 
@@ -70,7 +70,7 @@ export class DriveService {
       return response.data.mimeType === 'application/vnd.google-apps.folder';
     } catch (err: any) {
       if (err.status === 404) return false;
-      throw new Error(`Failed to validate folder: ${err.message}`);
+      throw new Error(`Failed to validate folder: ${err.message}`, { cause: err });
     }
   }
 

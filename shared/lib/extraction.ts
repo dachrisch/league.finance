@@ -25,7 +25,7 @@ export function extractContactInfo(text: string): Partial<ExtractedData> {
   let street = '';
   let city = '';
   let postalCode = '';
-  let country = 'Germany'; // Default to Germany
+  const country = 'Germany'; // Default to Germany
   let contactName = '';
   let email = '';
   let phone = '';
@@ -38,7 +38,7 @@ export function extractContactInfo(text: string): Partial<ExtractedData> {
     }
 
     // Phone pattern (starts with + or digit, contains spaces/dashes)
-    if (/^\+?\d[\d\s\-\/()]{6,}/.test(line)) {
+    if (/^\+?\d[\d\s\-/()]{6,}/.test(line)) {
       phone = line;
       continue;
     }

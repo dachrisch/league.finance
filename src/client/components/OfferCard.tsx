@@ -144,7 +144,11 @@ export function OfferCard({
                 className="btn btn-ghost btn-sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onView ? onView() : navigate(`/offers/${id}`);
+                  if (onView) {
+                    onView();
+                  } else {
+                    navigate(`/offers/${id}`);
+                  }
                 }}
               >
                 View

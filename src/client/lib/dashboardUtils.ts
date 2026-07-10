@@ -1,5 +1,3 @@
-import type { FinancialConfig, CalculationResult } from '../../../shared/types';
-
 /**
  * Offer shape as returned by `finance.offers.list`. The list endpoint attaches a
  * per-offer `totalPrice` and a per-league `leaguePrices` breakdown, both derived
@@ -33,7 +31,7 @@ const REVENUE_STATUSES = new Set(['sent', 'accepted', 'sending']);
  */
 export function selectCurrentSeason<T extends { name: string }>(seasons: T[]): T | null {
   if (!seasons.length) return null;
-  return [...seasons].sort((a, b) => Number(b.name) - Number(a.name))[0];
+  return [...seasons].toSorted((a, b) => Number(b.name) - Number(a.name))[0];
 }
 
 /** Gross revenue = sum of `totalPrice` for revenue-bearing offers in the season. */
@@ -77,7 +75,7 @@ export function buildActiveContracts(
       });
     });
 
-  return rows.sort((a, b) => a.leagueName.localeCompare(b.leagueName));
+  return rows.toSorted((a, b) => a.leagueName.localeCompare(b.leagueName));
 }
 
 /** Leagues in the season that have no offer at all. */
@@ -96,7 +94,7 @@ export function buildMissingContracts(
   return leagues
     .filter(l => !contracted.has(l.id))
     .map(l => ({ id: l.id, name: l.name }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .toSorted((a, b) => a.name.localeCompare(b.name));
 }
 
 export type DashboardRow =
@@ -147,7 +145,7 @@ export function groupDashboardData(
     group.rows.push({ type: 'PENDING', ...item });
   }
 
-  const sortedGroups = Array.from(groups.values()).sort((a, b) => b.seasonId - a.seasonId);
+  const sortedGroups = Array.from(groups.values()).toSorted((a, b) => b.seasonId - a.seasonId);
 
   for (const group of sortedGroups) {
     group.rows.sort((a, b) => {

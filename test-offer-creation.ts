@@ -2,7 +2,6 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { Contact } from './src/server/models/Contact';
 import { Association } from './src/server/models/Association';
 import { Season } from './src/server/models/Season';
-import { Offer } from './src/server/models/Offer';
 import { connectMongo, disconnectMongo } from './src/server/db/mongo';
 import { appRouter } from './src/server/routers/index';
 import { createInnerTRPCContext } from './src/server/trpc';
