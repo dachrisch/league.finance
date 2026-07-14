@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.24](https://github.com/dachrisch/league.finance/compare/v0.6.23...v0.6.24) (2026-07-14)
+
+
+### Bug Fixes
+
+* **deps:** update dependency oxlint to v1.74.0 ([#302](https://github.com/dachrisch/league.finance/issues/302)) ([5fc1f2c](https://github.com/dachrisch/league.finance/commit/5fc1f2c3b1767e12bd9e6ced0b49a22c16165cd1))
+
 ## [0.6.23](https://github.com/dachrisch/league.finance/compare/v0.6.22...v0.6.23) (2026-07-14)
 
 
