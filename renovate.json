@@ -10,6 +10,16 @@
   },
   "packageRules": [
     {
+      "description": "Group react and react-dom to keep versions in sync",
+      "matchPackageNames": [
+        "react",
+        "react-dom"
+      ],
+      "groupName": "react monorepo",
+      "automerge": true,
+      "semanticCommitType": "fix"
+    },
+    {
       "description": "Automerge non-major updates",
       "matchUpdateTypes": [
         "minor",
