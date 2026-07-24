@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.38](https://github.com/dachrisch/league.finance/compare/v0.6.37...v0.6.38) (2026-07-24)
+
+
+### Bug Fixes
+
+* align react/react-dom versions and add renovate group rule ([2171ccb](https://github.com/dachrisch/league.finance/commit/2171ccbb07845f5ba072b6f07de8a3ca1e22c4d4))
+
 ## [0.6.37](https://github.com/dachrisch/league.finance/compare/v0.6.36...v0.6.37) (2026-07-23)
 
 
