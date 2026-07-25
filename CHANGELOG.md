@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.40](https://github.com/dachrisch/league.finance/compare/v0.6.39...v0.6.40) (2026-07-25)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @hookform/resolvers to v5.4.1 ([#337](https://github.com/dachrisch/league.finance/issues/337)) ([c467768](https://github.com/dachrisch/league.finance/commit/c4677680a201229c74656a1fd0693bd46a789251))
+* **deps:** update dependency @playwright/test to v1.62.0 ([#336](https://github.com/dachrisch/league.finance/issues/336)) ([13d9f79](https://github.com/dachrisch/league.finance/commit/13d9f79cf907dcb1124d844adc094a583a61b100))
+* **deps:** update dependency react-hook-form to v7.83.0 ([#338](https://github.com/dachrisch/league.finance/issues/338)) ([8fb315d](https://github.com/dachrisch/league.finance/commit/8fb315db854fcc127c03404705cae2a9729e19ee))
+
 ## [0.6.39](https://github.com/dachrisch/league.finance/compare/v0.6.38...v0.6.39) (2026-07-24)
 
 
