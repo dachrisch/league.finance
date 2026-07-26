@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.45](https://github.com/dachrisch/league.finance/compare/v0.6.44...v0.6.45) (2026-07-26)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @hookform/resolvers to v5.5.6 ([#348](https://github.com/dachrisch/league.finance/issues/348)) ([c586821](https://github.com/dachrisch/league.finance/commit/c586821d05547695c6e06e62130e78b269fd492e))
+
 ## [0.6.44](https://github.com/dachrisch/league.finance/compare/v0.6.43...v0.6.44) (2026-07-26)
 
 
