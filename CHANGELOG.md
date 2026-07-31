@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.56](https://github.com/dachrisch/league.finance/compare/v0.6.55...v0.6.56) (2026-07-31)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @types/react to v19.2.18 ([#374](https://github.com/dachrisch/league.finance/issues/374)) ([6f33194](https://github.com/dachrisch/league.finance/commit/6f331943aa24aa4c9544d59d399c997f8fe02ef5))
+* **deps:** update dependency vite to v8.2.0 ([#375](https://github.com/dachrisch/league.finance/issues/375)) ([e8a8094](https://github.com/dachrisch/league.finance/commit/e8a809478e6447bd17b82cde0d503e37480a3ed3))
+
 ## [0.6.55](https://github.com/dachrisch/league.finance/compare/v0.6.54...v0.6.55) (2026-07-30)
 
 
