@@ -33,7 +33,7 @@
     "google-auth-library": "^11.0.0",
     "googleapis": "^174.0.0",
     "html-to-text": "^10.0.0",
-    "ioredis": "^5.10.1",
+    "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.4.1",
     "mysql2": "^3.20.0",
