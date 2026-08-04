@@ -8,7 +8,9 @@ All notable changes to this project will be documented in this file. See [standa
 ### Bug Fixes
 
 * **deps:** update dependency express-rate-limit to v8.6.2 ([#403](https://github.com/dachrisch/league.finance/issues/403)) ([6e07b6b](https://github.com/dachrisch/league.finance/commit/6e07b6bd160ecdd5ddb3ae755193516542b8ee9a))
+* **deps:** update dependency ioredis to v6 ([2e8866d](https://github.com/dachrisch/league.finance/commit/2e8866d4c834b7801ffa07d79aa61c863a0fed8a))
 * **deps:** update dependency nodemailer to v9.0.4 ([#404](https://github.com/dachrisch/league.finance/issues/404)) ([8ee3d17](https://github.com/dachrisch/league.finance/commit/8ee3d17dd6b8a97eda99b6bf83c209aa301ce1e4))
+* resolve ioredis v6 type incompatibility with bull's redis option ([08cb5d7](https://github.com/dachrisch/league.finance/commit/08cb5d7da7f74fc6a7ae6e64741192874c591b60))
 
 ## [0.6.67](https://github.com/dachrisch/league.finance/compare/v0.6.66...v0.6.67) (2026-08-04)
 
