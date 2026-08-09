@@ -23,7 +23,7 @@ export const leaguesRouter = router({
         joinClause = `
          JOIN gamedays_seasonleagueteam_teams st ON st.seasonleagueteam_id = slt.id
          JOIN gamedays_team t ON t.id = st.team_id`;
-        whereClause += ' AND t.association_id = ?';
+        whereClause += ' AND t.association_id = ? AND t.location != \'dummy\'';
         params.push(input.associationId);
       }
 

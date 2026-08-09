@@ -48,6 +48,7 @@ export const teamsRouter = router({
          JOIN gamedays_seasonleagueteam_teams st ON st.team_id = t.id
          JOIN gamedays_seasonleagueteam slt ON slt.id = st.seasonleagueteam_id
          WHERE slt.season_id = ?
+           AND t.location != 'dummy'
          ORDER BY a.name`,
         [input.seasonId]
       );

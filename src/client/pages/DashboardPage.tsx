@@ -16,13 +16,13 @@ export function DashboardPage() {
 
   // TRPC queries
   const { data: offers = [], isLoading: offersLoading } = trpc.finance.offers.list.useQuery();
-  const { data: seasons = [], isError: seasonsError, error: seasonsErrorObj } = trpc.teams.seasons.useQuery();
+  const { data: seasons = [], isLoading: seasonsLoading, isError: seasonsError, error: seasonsErrorObj } = trpc.teams.seasons.useQuery();
   const { data: associations = [], isError: assocError, error: assocErrorObj } = trpc.finance.associations.list.useQuery();
 
   // Current season (latest by year). Seasons are { id, name, slug } where name is the year.
   const currentSeason = useMemo(() => selectCurrentSeason(seasons), [seasons]);
 
-  const { data: rawLeagues = [], isError: leaguesError, error: leaguesErrorObj } = trpc.finance.leagues.listBySeason.useQuery(
+  const { data: rawLeagues = [], isLoading: leaguesLoading, isError: leaguesError, error: leaguesErrorObj } = trpc.finance.leagues.listBySeason.useQuery(
     { seasonId: currentSeason?.id ?? 0 },
     { enabled: currentSeason != null }
   );
@@ -95,7 +95,7 @@ export function DashboardPage() {
     navigate(`/offers/new?leagues=${leagueIdsStr}&season=${currentSeason?.id}`);
   };
 
-  if (offersLoading) return <div className="container"><p>Loading dashboard...</p></div>;
+  if (offersLoading || seasonsLoading || (currentSeason != null && leaguesLoading)) return <div className="container"><p>Loading dashboard...</p></div>;
 
   if (hasError) {
     const displayError = errorMessage || 'Unknown error - database may be unavailable';
@@ -206,7 +206,7 @@ export function DashboardPage() {
             <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center' }}>
               <select
                 value={associationFilterId}
-                onChange={(e) => setAssociationFilterId(e.target.value)}
+                onChange={(e) => { setAssociationFilterId(e.target.value); setSelectedMissingLeagues([]); }}
                 className="form-control"
                 style={{ width: 'auto' }}
               >
