@@ -1,12 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AssociationForm } from '../AssociationForm';
+import { trpc } from '../../lib/trpc';
+
+vi.mock('../../lib/trpc', () => ({
+  trpc: {
+    teams: {
+      associations: {
+        useQuery: vi.fn(),
+      },
+    },
+  },
+}));
 
 describe('AssociationForm', () => {
   const mockOnSubmit = vi.fn();
 
   beforeEach(() => {
     mockOnSubmit.mockClear();
+    vi.mocked(trpc.teams.associations.useQuery).mockReturnValue({
+      data: [{ id: 3, abbr: 'NRW', name: 'AFCV NRW' }],
+    } as any);
   });
 
   it('renders form with all fields', () => {
@@ -57,6 +71,7 @@ describe('AssociationForm', () => {
           city: 'Berlin',
           country: 'Germany',
         },
+        leaguesphereAssociationId: null,
       });
     });
   });
@@ -79,5 +94,24 @@ describe('AssociationForm', () => {
 
     expect(nameInput).toBeDisabled();
     expect(submitButton).toBeDisabled();
+  });
+
+  it('submits the linked leaguesphere association when selected', async () => {
+    const successSubmit = vi.fn(() => Promise.resolve());
+    render(<AssociationForm onSubmit={successSubmit} />);
+
+    fireEvent.change(screen.getByLabelText(/Association Name/i), { target: { value: 'Test Association' } });
+    fireEvent.change(screen.getByLabelText(/Street/i), { target: { value: 'Teststrasse 1' } });
+    fireEvent.change(screen.getByLabelText(/Postal Code/i), { target: { value: '12345' } });
+    fireEvent.change(screen.getByLabelText(/City/i), { target: { value: 'Berlin' } });
+    fireEvent.change(screen.getByLabelText(/Linked leaguesphere association/i), { target: { value: '3' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Create Association/i }));
+
+    await waitFor(() => {
+      expect(successSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ leaguesphereAssociationId: 3 })
+      );
+    });
   });
 });
