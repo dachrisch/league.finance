@@ -13,6 +13,7 @@ export type Address = z.infer<typeof AddressSchema>;
 export const AssociationInputSchema = z.object({
   name: z.string().min(1, 'Name is required').min(2, 'Name must be at least 2 characters'),
   address: AddressSchema,
+  leaguesphereAssociationId: z.number().nullable().optional(),
 });
 
 export type AssociationInput = z.infer<typeof AssociationInputSchema>;

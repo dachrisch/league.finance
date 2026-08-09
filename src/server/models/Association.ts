@@ -8,6 +8,7 @@ export interface IAssociation extends Document {
     postalCode: string;
     country: string;
   };
+  leaguesphereAssociationId: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +22,7 @@ const AssociationSchema = new Schema<IAssociation>(
       postalCode: { type: String, required: true },
       country: { type: String, required: true },
     },
+    leaguesphereAssociationId: { type: Number, required: false, default: null },
   },
   { timestamps: true }
 );

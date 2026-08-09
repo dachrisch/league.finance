@@ -5,6 +5,7 @@ import {
   computeGrossRevenue,
   buildActiveContracts,
   buildMissingContracts,
+  filterContractsByLeagueIds,
   type DashboardOffer,
 } from '../dashboardUtils';
 
@@ -126,5 +127,24 @@ describe('buildMissingContracts', () => {
 
   it('treats every league as missing when no season is selected', () => {
     expect(buildMissingContracts([ACCEPTED_OFFER], undefined, LEAGUES)).toEqual([]);
+  });
+});
+
+describe('filterContractsByLeagueIds', () => {
+  const ITEMS = [
+    { id: 16, name: 'RL Bayern' },
+    { id: 29, name: 'Bayern U16' },
+  ];
+
+  it('returns items unchanged when allowedIds is null', () => {
+    expect(filterContractsByLeagueIds(ITEMS, null)).toEqual(ITEMS);
+  });
+
+  it('keeps only items whose id is in allowedIds', () => {
+    expect(filterContractsByLeagueIds(ITEMS, new Set([29]))).toEqual([{ id: 29, name: 'Bayern U16' }]);
+  });
+
+  it('returns an empty array when allowedIds matches nothing', () => {
+    expect(filterContractsByLeagueIds(ITEMS, new Set([999]))).toEqual([]);
   });
 });

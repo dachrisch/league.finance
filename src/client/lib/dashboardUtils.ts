@@ -97,6 +97,15 @@ export function buildMissingContracts(
     .toSorted((a, b) => a.name.localeCompare(b.name));
 }
 
+/** Narrows a list of `{id}` items to only those in `allowedIds`. `null` means "no filter". */
+export function filterContractsByLeagueIds<T extends { id: number }>(
+  items: T[],
+  allowedIds: Set<number> | null
+): T[] {
+  if (allowedIds == null) return items;
+  return items.filter(item => allowedIds.has(item.id));
+}
+
 export type DashboardRow =
   | { type: 'CONFIGURED'; config: any; stats: any }
   | { type: 'PENDING'; leagueId: number; seasonId: number; leagueName: string; seasonName: string; gamedayCount: number };

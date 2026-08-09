@@ -7,6 +7,7 @@ import {
   computeGrossRevenue,
   buildActiveContracts,
   buildMissingContracts,
+  filterContractsByLeagueIds,
 } from '../lib/dashboardUtils';
 
 export function DashboardPage() {
@@ -15,9 +16,38 @@ export function DashboardPage() {
 
   // TRPC queries
   const { data: offers = [], isLoading: offersLoading } = trpc.finance.offers.list.useQuery();
-  const { data: leagues = [], isError: leaguesError, error: leaguesErrorObj } = trpc.teams.leagues.useQuery();
-  const { data: seasons = [], isError: seasonsError, error: seasonsErrorObj } = trpc.teams.seasons.useQuery();
+  const { data: seasons = [], isLoading: seasonsLoading, isError: seasonsError, error: seasonsErrorObj } = trpc.teams.seasons.useQuery();
   const { data: associations = [], isError: assocError, error: assocErrorObj } = trpc.finance.associations.list.useQuery();
+
+  // Current season (latest by year). Seasons are { id, name, slug } where name is the year.
+  const currentSeason = useMemo(() => selectCurrentSeason(seasons), [seasons]);
+
+  const { data: rawLeagues = [], isLoading: leaguesLoading, isError: leaguesError, error: leaguesErrorObj } = trpc.finance.leagues.listBySeason.useQuery(
+    { seasonId: currentSeason?.id ?? 0 },
+    { enabled: currentSeason != null }
+  );
+  const leagues = useMemo(() => rawLeagues.map(l => ({ id: l._id, name: l.name })), [rawLeagues]);
+
+  // Association filter for the Missing Contracts grid only (Active Contracts is unaffected).
+  const [associationFilterId, setAssociationFilterId] = useState('');
+  const { data: associationOptions = [] } = trpc.teams.associations.useQuery(
+    { seasonId: currentSeason?.id },
+    { enabled: currentSeason != null }
+  );
+  const { data: rawFilteredLeagues, isLoading: filteredLeaguesLoading } = trpc.finance.leagues.listBySeason.useQuery(
+    { seasonId: currentSeason?.id ?? 0, associationId: associationFilterId ? Number(associationFilterId) : undefined },
+    { enabled: currentSeason != null && associationFilterId !== '' }
+  );
+  // While the association-scoped query is loading, don't collapse to an empty Set (which would
+  // read as "this association has zero missing leagues") — fall back to "no filter" until real data arrives.
+  const filteredLeagueIds = useMemo(
+    () => (associationFilterId === '' || filteredLeaguesLoading) ? null : new Set((rawFilteredLeagues ?? []).map(l => l._id)),
+    [associationFilterId, rawFilteredLeagues, filteredLeaguesLoading]
+  );
+
+  // Lookup maps
+  const leagueMap = useMemo(() => Object.fromEntries(leagues.map(l => [l.id, l])), [leagues]);
+  const assocMap = useMemo(() => Object.fromEntries(associations.map(a => [a._id, a])), [associations]);
 
   // Check if any critical query has an error
   const hasError = leaguesError || seasonsError || assocError;
@@ -29,13 +59,6 @@ export function DashboardPage() {
     return 'Failed to load data';
   };
   const errorMessage = getErrorMessage(leaguesErrorObj) || getErrorMessage(seasonsErrorObj) || getErrorMessage(assocErrorObj);
-
-  // Lookup maps
-  const leagueMap = useMemo(() => Object.fromEntries(leagues.map(l => [l.id, l])), [leagues]);
-  const assocMap = useMemo(() => Object.fromEntries(associations.map(a => [a._id, a])), [associations]);
-
-  // Current season (latest by year). Seasons are { id, name, slug } where name is the year.
-  const currentSeason = useMemo(() => selectCurrentSeason(seasons), [seasons]);
 
   // Financial Stats Calculation (Current Season, Sent/Accepted/Sending)
   const stats = useMemo(() => {
@@ -55,6 +78,10 @@ export function DashboardPage() {
     () => buildMissingContracts(offers, currentSeason?.id, leagues),
     [offers, currentSeason, leagues]
   );
+  const visibleMissingContracts = useMemo(
+    () => filterContractsByLeagueIds(missingContracts, filteredLeagueIds),
+    [missingContracts, filteredLeagueIds]
+  );
 
   const toggleLeagueSelection = (id: number) => {
     setSelectedMissingLeagues(prev => 
@@ -68,7 +95,7 @@ export function DashboardPage() {
     navigate(`/offers/new?leagues=${leagueIdsStr}&season=${currentSeason?.id}`);
   };
 
-  if (offersLoading) return <div className="container"><p>Loading dashboard...</p></div>;
+  if (offersLoading || seasonsLoading || (currentSeason != null && leaguesLoading)) return <div className="container"><p>Loading dashboard...</p></div>;
 
   if (hasError) {
     const displayError = errorMessage || 'Unknown error - database may be unavailable';
@@ -177,24 +204,33 @@ export function DashboardPage() {
               Missing Contracts
             </h2>
             <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center' }}>
+              <select
+                value={associationFilterId}
+                onChange={(e) => { setAssociationFilterId(e.target.value); setSelectedMissingLeagues([]); }}
+                className="form-control"
+                style={{ width: 'auto' }}
+              >
+                <option value="">All associations</option>
+                {associationOptions.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </select>
               {selectedMissingLeagues.length > 0 && (
-                <button 
+                <button
                   className="btn btn-primary btn-sm"
                   onClick={handleCreateOfferForSelected}
                 >
                   Create Offer for {selectedMissingLeagues.length} {selectedMissingLeagues.length === 1 ? 'League' : 'Leagues'}
                 </button>
               )}
-              {missingContracts.length > 0 && <span className="chip" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>Action Required</span>}
+              {visibleMissingContracts.length > 0 && <span className="chip" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>Action Required</span>}
             </div>
           </div>
-          
+
           <div style={{ padding: 'var(--spacing-lg)' }}>
-            {missingContracts.length === 0 ? (
+            {visibleMissingContracts.length === 0 ? (
               <p style={{ margin: 0, textAlign: 'center', color: 'var(--success-color)', padding: '1rem' }}>✓ All active leagues have associated offers.</p>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--spacing-md)' }}>
-                {missingContracts.map(league => {
+                {visibleMissingContracts.map(league => {
                   const isSelected = selectedMissingLeagues.includes(league.id);
                   return (
                     <div 

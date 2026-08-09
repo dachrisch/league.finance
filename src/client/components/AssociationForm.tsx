@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { AssociationInput } from '../lib/schemas';
+import { trpc } from '../lib/trpc';
 
 export interface AssociationFormProps {
   onSubmit: (data: AssociationInput) => Promise<void>;
@@ -17,8 +18,16 @@ export function AssociationForm({ onSubmit, onCancel, isLoading = false, initial
       postalCode: '',
       country: 'Germany',
     },
+    leaguesphereAssociationId: null,
   });
   const [error, setError] = useState('');
+
+  const { data: leaguesphereAssociations = [] } = trpc.teams.associations.useQuery({});
+
+  const handleLeaguesphereAssociationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setFormData((prev) => ({ ...prev, leaguesphereAssociationId: value ? Number(value) : null }));
+  };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, name: e.target.value }));
@@ -82,6 +91,30 @@ export function AssociationForm({ onSubmit, onCancel, isLoading = false, initial
           }}
           disabled={isLoading}
         />
+      </div>
+
+      <div>
+        <label htmlFor="leaguesphereAssociationId" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500' }}>
+          Linked leaguesphere association
+        </label>
+        <select
+          id="leaguesphereAssociationId"
+          value={formData.leaguesphereAssociationId?.toString() ?? ''}
+          onChange={handleLeaguesphereAssociationChange}
+          style={{
+            width: '100%',
+            padding: '0.5rem',
+            border: '1px solid #dee2e6',
+            borderRadius: '4px',
+            fontSize: '0.875rem',
+          }}
+          disabled={isLoading}
+        >
+          <option value="">— none —</option>
+          {leaguesphereAssociations.map((a) => (
+            <option key={a.id} value={a.id}>{a.abbr} — {a.name}</option>
+          ))}
+        </select>
       </div>
 
       <div>

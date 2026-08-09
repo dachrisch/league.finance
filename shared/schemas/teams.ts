@@ -1,11 +1,5 @@
 import { z } from 'zod';
 
-export const LeagueSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  slug: z.string(),
-});
-
 export const SeasonSchema = z.object({
   id: z.number(),
   name: z.string(),
@@ -17,4 +11,10 @@ export const TeamSchema = z.object({
   name: z.string(),
   description: z.string().nullable().default(''),
   location: z.string(),
+});
+
+export const LeaguesphereAssociationSchema = z.object({
+  id: z.number(),
+  abbr: z.string(),
+  name: z.string(),
 });

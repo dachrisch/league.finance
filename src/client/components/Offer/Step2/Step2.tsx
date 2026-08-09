@@ -6,6 +6,14 @@ import { LeagueSelectorSection } from './LeagueSelectorSection';
 import type { PricingConfig } from '../types';
 import styles from '../../../styles/OfferWizard.module.css';
 
+interface AssociationFilterInfo {
+  linked: boolean;
+  filtering: boolean;
+  associationName: string;
+  seasonName: string;
+  onToggle: () => void;
+}
+
 interface Step2Props {
   summary: {
     associationName: string;
@@ -17,6 +25,7 @@ interface Step2Props {
   selectedLeagueIds: string[];
   leagueSearchTerm: string;
   leagueFilterType: 'All' | 'Youth' | 'Regional' | 'Division' | 'Other';
+  associationFilter?: AssociationFilterInfo;
   submitError?: string | null;
   onBack: () => void;
   onCancel: () => void;
@@ -40,6 +49,7 @@ export function Step2({
   selectedLeagueIds,
   leagueSearchTerm,
   leagueFilterType,
+  associationFilter,
   submitError,
   onBack,
   onCancel,
@@ -93,6 +103,7 @@ export function Step2({
         selectedIds={selectedLeagueIds}
         searchTerm={leagueSearchTerm}
         filterType={leagueFilterType}
+        associationFilter={associationFilter}
         onToggleLeague={onToggleLeague}
         onSearchChange={onSearchChange}
         onFilterChange={onFilterChange}

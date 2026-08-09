@@ -5,15 +5,25 @@ import { trpc } from '../lib/trpc';
 export function ConfigNewPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { data: leagues } = trpc.teams.leagues.useQuery();
+  const [leagueId, setLeagueId] = useState(params.get('league') ?? '');
+  const [seasonId, setSeasonId] = useState(params.get('season') ?? '');
+  const [associationFilterId, setAssociationFilterId] = useState('');
+
   const { data: seasons } = trpc.teams.seasons.useQuery();
+  const { data: associationOptions = [] } = trpc.teams.associations.useQuery(
+    { seasonId: seasonId ? Number(seasonId) : undefined },
+    { enabled: !!seasonId }
+  );
+  const { data: rawLeagues } = trpc.finance.leagues.listBySeason.useQuery(
+    { seasonId, associationId: associationFilterId ? Number(associationFilterId) : undefined },
+    { enabled: !!seasonId }
+  );
+  const leagues = (rawLeagues ?? []).map(l => ({ id: l._id, name: l.name }));
   const { data: settings } = trpc.finance.settings.get.useQuery();
   const createConfig = trpc.finance.configs.create.useMutation({
     onSuccess: (config) => navigate(`/config/${(config as any)._id}`),
   });
 
-  const [leagueId, setLeagueId] = useState(params.get('league') ?? '');
-  const [seasonId, setSeasonId] = useState(params.get('season') ?? '');
   const [costModel, setCostModel] = useState<'SEASON' | 'GAMEDAY'>('SEASON');
   const [baseRateOverride, setBaseRateOverride] = useState('');
   const [expectedTeamsCount, setExpectedTeamsCount] = useState('0');
@@ -50,20 +60,51 @@ export function ConfigNewPage() {
       <form onSubmit={handleSubmit} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
         <div className="responsive-grid-2">
           <label className="form-group">
-            <span className="form-label">League</span>
-            <select value={leagueId} onChange={(e) => setLeagueId(e.target.value)} required className="form-control">
-              <option value="">— select —</option>
-              {leagues?.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-            </select>
-          </label>
-          <label className="form-group">
             <span className="form-label">Season</span>
-            <select value={seasonId} onChange={(e) => setSeasonId(e.target.value)} required className="form-control">
+            <select
+              value={seasonId}
+              onChange={(e) => {
+                setSeasonId(e.target.value);
+                setLeagueId('');
+                setAssociationFilterId('');
+              }}
+              required
+              className="form-control"
+            >
               <option value="">— select —</option>
               {seasons?.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </label>
+          <label className="form-group">
+            <span className="form-label">Association (optional filter)</span>
+            <select
+              value={associationFilterId}
+              onChange={(e) => {
+                setAssociationFilterId(e.target.value);
+                setLeagueId('');
+              }}
+              disabled={!seasonId}
+              className="form-control"
+            >
+              <option value="">All associations</option>
+              {associationOptions.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select>
+          </label>
         </div>
+
+        <label className="form-group">
+          <span className="form-label">League</span>
+          <select
+            value={leagueId}
+            onChange={(e) => setLeagueId(e.target.value)}
+            required
+            disabled={!seasonId}
+            className="form-control"
+          >
+            <option value="">{seasonId ? '— select —' : 'Select a season first'}</option>
+            {leagues.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+          </select>
+        </label>
 
         <label className="form-group">
           <span className="form-label">Cost Model</span>

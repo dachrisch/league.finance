@@ -32,6 +32,7 @@ const initialState: WizardState = {
     leagueSearchTerm: '',
     leagueFilterType: 'All',
     leaguePrices: {},
+    showAllLeagues: false,
   },
 };
 
@@ -195,6 +196,13 @@ export function useOfferCreation() {
     []
   );
 
+  const toggleShowAllLeagues = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      step2: { ...prev.step2, showAllLeagues: !prev.step2.showAllLeagues },
+    }));
+  }, []);
+
   // Reset wizard
   const reset = useCallback(() => {
     setState(initialState);
@@ -225,6 +233,7 @@ export function useOfferCreation() {
         selectedLeagueIds: (offer.leagueIds || []).map(String),
         leagueSearchTerm: '',
         leagueFilterType: 'All',
+        showAllLeagues: false,
         leaguePrices: configs?.reduce((acc: any, c: any) => {
           acc[String(c.leagueId)] = c.customPrice;
           return acc;
@@ -260,6 +269,7 @@ export function useOfferCreation() {
     setSelectedLeagues,
     updateLeagueSearch,
     updateLeagueFilter,
+    toggleShowAllLeagues,
 
     // Utilities
     reset,

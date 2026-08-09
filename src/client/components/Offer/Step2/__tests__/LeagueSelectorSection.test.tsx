@@ -1,7 +1,7 @@
 // src/client/components/Offer/Step2/__tests__/LeagueSelectorSection.test.tsx
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LeagueSelectorSection } from '../LeagueSelectorSection';
 
@@ -45,5 +45,51 @@ describe('LeagueSelectorSection', () => {
     await user.type(input, 'N');
 
     expect(onSearchChange).toHaveBeenCalledWith('N');
+  });
+
+  it('shows a filtered banner and calls onToggle when the association filter is active', () => {
+    const onToggle = vi.fn();
+    render(
+      <LeagueSelectorSection
+        {...mockProps}
+        associationFilter={{
+          linked: true,
+          filtering: true,
+          associationName: 'AFCV NRW',
+          seasonName: '2026',
+          onToggle,
+        }}
+      />
+    );
+
+    expect(screen.getByText(/Showing leagues for/i)).toBeInTheDocument();
+    expect(screen.getByText('AFCV NRW')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Show all leagues/i }));
+    expect(onToggle).toHaveBeenCalled();
+  });
+
+  it('shows an unfiltered banner when the association filter is linked but off', () => {
+    render(
+      <LeagueSelectorSection
+        {...mockProps}
+        associationFilter={{
+          linked: true,
+          filtering: false,
+          associationName: 'AFCV NRW',
+          seasonName: '2026',
+          onToggle: vi.fn(),
+        }}
+      />
+    );
+
+    expect(screen.getByText(/Showing all leagues/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Filter to AFCV NRW/i })).toBeInTheDocument();
+  });
+
+  it('renders no banner when the association is not linked', () => {
+    render(<LeagueSelectorSection {...mockProps} />);
+    expect(screen.queryByText(/Showing leagues for/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Showing all leagues/i)).not.toBeInTheDocument();
   });
 });

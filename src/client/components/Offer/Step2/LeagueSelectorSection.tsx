@@ -10,6 +10,14 @@ interface League {
   type?: string;
 }
 
+interface AssociationFilterInfo {
+  linked: boolean;
+  filtering: boolean;
+  associationName: string;
+  seasonName: string;
+  onToggle: () => void;
+}
+
 interface LeagueSelectorSectionProps {
   leagues: League[];
   selectedIds: string[];
@@ -20,6 +28,7 @@ interface LeagueSelectorSectionProps {
   onFilterChange: (type: any) => void;
   onSelectAll: () => void;
   onClearAll: () => void;
+  associationFilter?: AssociationFilterInfo;
 }
 
 export function LeagueSelectorSection({
@@ -32,6 +41,7 @@ export function LeagueSelectorSection({
   onFilterChange,
   onSelectAll,
   onClearAll,
+  associationFilter,
 }: LeagueSelectorSectionProps) {
   const filteredLeagues = useMemo(() => {
     return leagues.filter((league) => {
@@ -72,6 +82,25 @@ export function LeagueSelectorSection({
 
       <div className={`${styles.blockBody} ${styles.open}`}>
         <div className={styles.blockInner}>
+          {associationFilter?.linked && (
+            <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 8px 0' }}>
+              {associationFilter.filtering ? (
+                <>Showing leagues for <strong>{associationFilter.associationName}</strong> in {associationFilter.seasonName}.</>
+              ) : (
+                <>Showing all leagues in {associationFilter.seasonName}.</>
+              )}
+              {' '}
+              <button
+                type="button"
+                className={styles.leagueCounterLink}
+                onClick={associationFilter.onToggle}
+                style={{ background: 'none', border: 'none', padding: 0 }}
+              >
+                {associationFilter.filtering ? 'Show all leagues' : `Filter to ${associationFilter.associationName}`}
+              </button>
+            </p>
+          )}
+
           {/* Search */}
           <div className={styles.leagueSearch}>
             <span className={styles.leagueSearchIcon}>🔍</span>
