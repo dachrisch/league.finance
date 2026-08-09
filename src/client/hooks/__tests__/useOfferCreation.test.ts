@@ -125,12 +125,28 @@ describe('useOfferCreation', () => {
         { leagueId: 11, costModel: 'SEASON', baseRateOverride: 50, expectedTeamsCount: 5 }
       ]
     };
-    
+
     act(() => {
       result.current.resetWithData(mockOfferResponse);
     });
-    
+
     expect(result.current.step2.selectedLeagueIds).toEqual(['10', '11']);
     expect(result.current.step2.pricing.baseRateOverride).toBe(50);
+  });
+
+  it('should toggle showAllLeagues, defaulting to false', () => {
+    const { result } = renderHook(() => useOfferCreation());
+
+    expect(result.current.step2.showAllLeagues).toBe(false);
+
+    act(() => {
+      result.current.toggleShowAllLeagues();
+    });
+    expect(result.current.step2.showAllLeagues).toBe(true);
+
+    act(() => {
+      result.current.toggleShowAllLeagues();
+    });
+    expect(result.current.step2.showAllLeagues).toBe(false);
   });
 });
