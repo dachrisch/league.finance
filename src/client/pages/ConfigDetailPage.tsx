@@ -9,7 +9,11 @@ export function ConfigDetailPage() {
   const { data: me } = trpc.auth.me.useQuery();
   const { data, isLoading, refetch } = trpc.finance.configs.get.useQuery({ id: id! });
   const { data: stats } = trpc.finance.calculate.forConfig.useQuery({ configId: id! });
-  const { data: leagues } = trpc.teams.leagues.useQuery();
+  const configSeasonId = (data as any)?.config?.seasonId;
+  const { data: rawLeagues } = trpc.finance.leagues.listBySeason.useQuery(
+    { seasonId: configSeasonId ?? 0 },
+    { enabled: configSeasonId != null }
+  );
   const { data: seasons } = trpc.teams.seasons.useQuery();
 
   if (isLoading) return <div className="container"><p>Loading config…</p></div>;
@@ -18,7 +22,8 @@ export function ConfigDetailPage() {
   const { config, discounts } = data as any;
   const isAdmin = me?.role === 'admin';
 
-  const league = leagues?.find(l => l.id === config.leagueId);
+  const leagues = (rawLeagues ?? []).map(l => ({ id: l._id, name: l.name }));
+  const league = leagues.find(l => l.id === config.leagueId);
   const season = seasons?.find(s => s.id === config.seasonId);
 
   return (
