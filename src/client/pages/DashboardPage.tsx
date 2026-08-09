@@ -34,13 +34,15 @@ export function DashboardPage() {
     { seasonId: currentSeason?.id },
     { enabled: currentSeason != null }
   );
-  const { data: rawFilteredLeagues } = trpc.finance.leagues.listBySeason.useQuery(
+  const { data: rawFilteredLeagues, isLoading: filteredLeaguesLoading } = trpc.finance.leagues.listBySeason.useQuery(
     { seasonId: currentSeason?.id ?? 0, associationId: associationFilterId ? Number(associationFilterId) : undefined },
     { enabled: currentSeason != null && associationFilterId !== '' }
   );
+  // While the association-scoped query is loading, don't collapse to an empty Set (which would
+  // read as "this association has zero missing leagues") — fall back to "no filter" until real data arrives.
   const filteredLeagueIds = useMemo(
-    () => associationFilterId === '' ? null : new Set((rawFilteredLeagues ?? []).map(l => l._id)),
-    [associationFilterId, rawFilteredLeagues]
+    () => (associationFilterId === '' || filteredLeaguesLoading) ? null : new Set((rawFilteredLeagues ?? []).map(l => l._id)),
+    [associationFilterId, rawFilteredLeagues, filteredLeaguesLoading]
   );
 
   // Lookup maps
