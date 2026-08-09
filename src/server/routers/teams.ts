@@ -2,15 +2,9 @@ import { z } from 'zod';
 import type { RowDataPacket } from 'mysql2';
 import { router, protectedProcedure } from '../trpc';
 import { getMysqlPool } from '../db/mysql';
-import type { League, Season, LeaguesphereAssociation } from '../../../shared/types';
+import type { Season, LeaguesphereAssociation } from '../../../shared/types';
 
 export const teamsRouter = router({
-  leagues: protectedProcedure.query(async (): Promise<League[]> => {
-    const pool = getMysqlPool();
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT id, name, slug FROM gamedays_league ORDER BY name');
-    return rows as unknown as League[];
-  }),
-
   seasons: protectedProcedure.query(async (): Promise<Season[]> => {
     const pool = getMysqlPool();
     const [rows] = await pool.query<RowDataPacket[]>('SELECT id, name, slug FROM gamedays_season ORDER BY name DESC');
