@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.0](https://github.com/dachrisch/league.finance/compare/v0.6.77...v0.7.0) (2026-08-09)
+
+
+### Features
+
+* add filterContractsByLeagueIds helper for dashboard association filter ([3a06a23](https://github.com/dachrisch/league.finance/commit/3a06a23cb29248e6891aed6e3f95f8f9a8f5be33))
+* add showAllLeagues toggle to offer wizard state ([0d03b4c](https://github.com/dachrisch/league.finance/commit/0d03b4c83b09dd773665a3ade0d552495e37de10))
+* add teamsRouter.associations for season-scoped leaguesphere associations ([e3f7157](https://github.com/dachrisch/league.finance/commit/e3f7157f33ce7ada34fc1c28cae8d02cdd1dbeda))
+* default offer wizard league list to the linked association ([8af7d8d](https://github.com/dachrisch/league.finance/commit/8af7d8d92c0687d0234c46d4733b024c575761f4))
+* filter leaguesRouter.listBySeason by leaguesphere association ([20294df](https://github.com/dachrisch/league.finance/commit/20294df864c2085875b0d382e9fd4dbe18a7ca82))
+* link an association to its leaguesphere counterpart from AssociationForm ([7e38185](https://github.com/dachrisch/league.finance/commit/7e381859cb1a230e2721e078f00ff184810aa135))
+* link billing Association to a leaguesphere association ([5d726e1](https://github.com/dachrisch/league.finance/commit/5d726e1596c8c37222964828dd66cbd8ce597d0c))
+* scope ConfigNewPage league selection to season and association ([9ca1f43](https://github.com/dachrisch/league.finance/commit/9ca1f4337bce9ed468beea25f38ec6d483e3b642))
+* scope league selection by season and leaguesphere association ([c4a5b62](https://github.com/dachrisch/league.finance/commit/c4a5b62a775ab0e1ed4d2d4a57b4b93d5c14a7a3))
+* show association-filter banner in the league selector ([5cba31c](https://github.com/dachrisch/league.finance/commit/5cba31c0aab370b9883df9a31c9c68226615ecaa))
+
+
+### Bug Fixes
+
+* address final review findings (docs, dashboard loading/selection bugs, dummy-team exclusion, dead exports) ([ffeb35f](https://github.com/dachrisch/league.finance/commit/ffeb35f89071c8024c4467f5f91d9faa7f05642a))
+* avoid stale "all clear" flash while association filter is loading (Task 11 review) ([9a51256](https://github.com/dachrisch/league.finance/commit/9a5125664fcbbfec1199c022d40ce031669a7b2c))
+* scope ConfigDetailPage league lookup to its season ([cad1461](https://github.com/dachrisch/league.finance/commit/cad14618bbd0e795b45514a4e0b9b623d6c648c4))
+* scope Dashboard leagues to current season, add association filter to Missing Contracts ([a0aad42](https://github.com/dachrisch/league.finance/commit/a0aad42d147d548dd7322adbb6e7b13f34e94291))
+* unbreak npm run typecheck (pre-existing TS7 incompatibility) ([7c2dceb](https://github.com/dachrisch/league.finance/commit/7c2dceb5e8de150918a0365744b05890149cab78))
+
 ## [0.6.77](https://github.com/dachrisch/league.finance/compare/v0.6.76...v0.6.77) (2026-08-08)
 
 
