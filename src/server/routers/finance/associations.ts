@@ -19,6 +19,7 @@ export const associationsRouter = router({
           postalCode: z.string(),
           country: z.string(),
         }),
+        leaguesphereAssociationId: z.number().nullable().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -63,6 +64,7 @@ export const associationsRouter = router({
             postalCode: z.string(),
             country: z.string(),
           }).optional(),
+          leaguesphereAssociationId: z.number().nullable().optional(),
         }),
       })
     )

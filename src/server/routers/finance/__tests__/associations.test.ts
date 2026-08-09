@@ -116,4 +116,29 @@ describe('Associations Router', () => {
     const found = await Association.findById(created._id);
     expect(found).toBeNull();
   });
+
+  it('creates and updates an association with a linked leaguesphere association', async () => {
+    const caller = associationsRouter.createCaller({ user: { userId: '1', email: 'test@test.com', role: 'admin' } });
+
+    const created = await caller.create({
+      name: 'AFCV NRW e.V.',
+      description: 'Test',
+      email: 'nrw@league.local',
+      phone: '555-9999',
+      address: {
+        street: '1 League St',
+        city: 'League City',
+        postalCode: '99999',
+        country: 'Test Country',
+      },
+      leaguesphereAssociationId: 3,
+    });
+    expect(created.leaguesphereAssociationId).toBe(3);
+
+    const updated = await caller.update({
+      id: created._id,
+      data: { leaguesphereAssociationId: null },
+    });
+    expect(updated?.leaguesphereAssociationId).toBeNull();
+  });
 });
