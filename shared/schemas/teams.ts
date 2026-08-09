@@ -18,3 +18,9 @@ export const TeamSchema = z.object({
   description: z.string().nullable().default(''),
   location: z.string(),
 });
+
+export const LeaguesphereAssociationSchema = z.object({
+  id: z.number(),
+  abbr: z.string(),
+  name: z.string(),
+});

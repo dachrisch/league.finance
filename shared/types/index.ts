@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { UserSchema, UserRoleSchema, JwtPayloadSchema } from '../schemas/user';
-import { LeagueSchema, SeasonSchema, TeamSchema } from '../schemas/teams';
+import { LeagueSchema, SeasonSchema, TeamSchema, LeaguesphereAssociationSchema } from '../schemas/teams';
 import { FinancialSettingsSchema, UpdateFinancialSettingsSchema } from '../schemas/financialSettings';
 import { FinancialConfigSchema, CostModelSchema, CreateFinancialConfigSchema, UpdateFinancialConfigSchema } from '../schemas/financialConfig';
 import { DiscountSchema, DiscountTypeSchema, AddDiscountSchema } from '../schemas/discount';
@@ -12,6 +12,7 @@ export type JwtPayload = z.infer<typeof JwtPayloadSchema>;
 export type League = z.infer<typeof LeagueSchema>;
 export type Season = z.infer<typeof SeasonSchema>;
 export type Team = z.infer<typeof TeamSchema>;
+export type LeaguesphereAssociation = z.infer<typeof LeaguesphereAssociationSchema>;
 
 export type FinancialSettings = z.infer<typeof FinancialSettingsSchema>;
 export type UpdateFinancialSettingsInput = z.infer<typeof UpdateFinancialSettingsSchema>;
