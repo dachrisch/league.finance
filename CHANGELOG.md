@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.1](https://github.com/dachrisch/league.finance/compare/v0.7.0...v0.7.1) (2026-08-10)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @testing-library/jest-dom to v7.0.1 ([#428](https://github.com/dachrisch/league.finance/issues/428)) ([85b8c62](https://github.com/dachrisch/league.finance/commit/85b8c6206b0dcc493d3eae408b70392215e696b3))
+
 ## [0.7.0](https://github.com/dachrisch/league.finance/compare/v0.6.77...v0.7.0) (2026-08-09)
 
 
