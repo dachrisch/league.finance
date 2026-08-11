@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.2](https://github.com/dachrisch/league.finance/compare/v0.8.1...v0.8.2) (2026-08-11)
+
+
+### Bug Fixes
+
+* improve offer layout and add Sheet client lookup for associations ([8f50c0c](https://github.com/dachrisch/league.finance/commit/8f50c0c5bd9c087062cf7234e517f33535a4a216))
+
 ## [0.8.1](https://github.com/dachrisch/league.finance/compare/v0.8.0...v0.8.1) (2026-08-11)
 
 
