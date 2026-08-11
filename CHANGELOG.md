@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.0](https://github.com/dachrisch/league.finance/compare/v0.7.6...v0.8.0) (2026-08-11)
+
+
+### Features
+
+* add buildLineDescriptions helper for invoice line items ([3d5e395](https://github.com/dachrisch/league.finance/commit/3d5e395a14bd2aaa6524b494a2afbadc8abd2c09))
+* add customerNumber field to Association ([def1410](https://github.com/dachrisch/league.finance/commit/def1410da8604c85869dd492239b233543d4bb44))
+* add customerNumber field to AssociationForm ([8e8824c](https://github.com/dachrisch/league.finance/commit/8e8824ca02854d1963d688107c73d918e89e78b7))
+* add FileInvoiceDialog (adapted from FileOfferDialog) ([446f1b7](https://github.com/dachrisch/league.finance/commit/446f1b76db5a866c43142ee49833a24b3dbe24cc))
+* add FileInvoiceJob (PDF generation + Drive upload) ([d2b8ddc](https://github.com/dachrisch/league.finance/commit/d2b8ddcc169fc0ebf44bc42c75cb42df72a7ee57))
+* add generateInvoiceNumber helper ([8794893](https://github.com/dachrisch/league.finance/commit/8794893d07c5f2c3d8af607adaf0b74532623477))
+* add invoice Drive filing (queue, router, job wiring) ([0eddbec](https://github.com/dachrisch/league.finance/commit/0eddbecf6716e59b93ba25118907cb6ffd9e3efe))
+* add Invoice model ([33bb39c](https://github.com/dachrisch/league.finance/commit/33bb39c833c139ceca192feb7df5a5f7e7072ec0))
+* add invoice VAT/discount/totals pricing helpers ([5af5da3](https://github.com/dachrisch/league.finance/commit/5af5da38884b475ad62d8df3c1d8044f2645e391))
+* add InvoiceDetailPage (line items, file in Drive, mark paid, delete) ([d55381e](https://github.com/dachrisch/league.finance/commit/d55381e1e0bb771e98f48b78097ccac0282e7d7e))
+* add InvoiceLineItem model ([3c79198](https://github.com/dachrisch/league.finance/commit/3c79198df810e4721c3319cc860203cd66283108))
+* add InvoiceNewPage (select leagues, choose offer/live/custom price) ([b1f00f2](https://github.com/dachrisch/league.finance/commit/b1f00f289ceb3ad5e8d9b02e7e9ee18c02867e54))
+* add Invoices nav link ([c7cacd6](https://github.com/dachrisch/league.finance/commit/c7cacd611634452f54f3cebc2cb09a34c6a8426e))
+* add invoices router (previewForOffer, get, list) ([904383c](https://github.com/dachrisch/league.finance/commit/904383c566e309ebeadabaa52732675b6c499d24))
+* add invoices router create/markPaid/delete mutations ([5094102](https://github.com/dachrisch/league.finance/commit/5094102a342472c26ef58ad93ade38afb02e79ca))
+* add InvoicesPage list view ([2f5a721](https://github.com/dachrisch/league.finance/commit/2f5a72102d187081124c6ae5b4e6d1e51e7d305a))
+* add PdfService.generateInvoicePdf and generateInvoiceFilename ([61569de](https://github.com/dachrisch/league.finance/commit/61569de24c82da9dec5b41d0804edb3850a6a7fa))
+* add resolveLineItemPricing (offer vs live price resolution) ([54dc1d9](https://github.com/dachrisch/league.finance/commit/54dc1d994b251b512affb7eccaf4cb092fff2906))
+* add resolveSeasonName helper ([12767ab](https://github.com/dachrisch/league.finance/commit/12767ab082263033f8e0b7420adbb4b7d40bfbf0))
+* add shared invoice zod schemas ([05900a7](https://github.com/dachrisch/league.finance/commit/05900a7e6be6b94ff1da2b5187addb801a03b865))
+* add SheetsService and request the Sheets OAuth scope ([8bf6529](https://github.com/dachrisch/league.finance/commit/8bf6529f33d0b0417e36a6505b435bdb1da56d1f))
+* link accepted offers to their invoices, add Create Invoice entry point ([cb3ceb6](https://github.com/dachrisch/league.finance/commit/cb3ceb6a25cd71c72c0845104c7084f314659ed8))
+* sync association customer number to Sheets clientData tab ([25464aa](https://github.com/dachrisch/league.finance/commit/25464aaa9e81aad6b6503b356c8633d759b11b8d))
+* sync created invoices and status changes (sent/paid) to the Sheets ledger ([4d7a4e5](https://github.com/dachrisch/league.finance/commit/4d7a4e5438f4aa356882398e3aa7d6c57ff39914))
+
 ## [0.7.6](https://github.com/dachrisch/league.finance/compare/v0.7.5...v0.7.6) (2026-08-11)
 
 
