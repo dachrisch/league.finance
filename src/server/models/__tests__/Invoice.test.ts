@@ -10,6 +10,7 @@ describe('Invoice Model', () => {
 
   beforeAll(async () => {
     await connectMongo();
+    await Invoice.init(); // Ensure unique index is built before tests
     const contact = await Contact.create({
       name: 'Fabian Pawlowski',
       email: 'fabian@afcvnrw.de',

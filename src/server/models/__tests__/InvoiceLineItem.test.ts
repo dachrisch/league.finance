@@ -9,6 +9,7 @@ describe('InvoiceLineItem Model', () => {
 
   beforeAll(async () => {
     await connectMongo();
+    await InvoiceLineItem.init(); // Ensure unique index is built before tests
   }, 60000);
 
   afterAll(async () => {
