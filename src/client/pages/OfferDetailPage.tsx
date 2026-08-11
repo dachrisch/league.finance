@@ -126,12 +126,35 @@ export function OfferDetailPage() {
         </div>
       </div>
 
-      {/* Summary + Stats inline row */}
-      <div style={{ display: 'flex', gap: 'var(--spacing-lg)', alignItems: 'center', flexWrap: 'wrap', marginBottom: 'var(--spacing-xl)', padding: 'var(--spacing-md) var(--spacing-lg)', background: 'var(--bg-secondary)', borderRadius: 'var(--border-radius-md)', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>
-        <span><strong style={{ color: 'var(--text-primary)' }}>Created</strong> {formatDate(offer.createdAt)}</span>
-        <span><strong style={{ color: 'var(--text-primary)' }}>Sent</strong> {offer.sentAt ? formatDate(offer.sentAt) : 'Not sent'}</span>
-        <span style={{ marginLeft: 'auto' }}><strong style={{ color: 'var(--success-color)', fontSize: 'var(--font-size-lg)' }}>{formatPrice(totalPrice)}</strong> <span style={{ opacity: 0.7, fontSize: 'var(--font-size-xs)' }}>Gross</span></span>
-        <span><strong style={{ color: 'var(--text-primary)' }}>{offer.leagueIds.length}</strong> Leagues</span>
+      {/* Summary Section */}
+      <div className="responsive-flex" style={{ marginBottom: 'var(--spacing-xl)' }}>
+        <div className="summary-card" style={{ flex: 1 }}>
+          <div className="summary-card-icon" style={{ color: 'var(--secondary-color)', background: 'var(--secondary-color)15' }}>C</div>
+          <div>
+            <span className="summary-card-label">Created</span>
+            <strong className="summary-card-value" style={{ fontSize: 'var(--font-size-md)' }}>{formatDate(offer.createdAt)}</strong>
+          </div>
+        </div>
+
+        <div className="summary-card" style={{ flex: 1 }}>
+          <div className="summary-card-icon" style={{ color: '#0369a1', background: '#0369a115' }}>S</div>
+          <div>
+            <span className="summary-card-label">Sent</span>
+            <strong className="summary-card-value" style={{ fontSize: 'var(--font-size-md)' }}>{offer.sentAt ? formatDate(offer.sentAt) : 'Not sent'}</strong>
+          </div>
+        </div>
+
+        <div className="summary-card" style={{ flex: 2 }}>
+          <div className="summary-card-icon" style={{ color: 'var(--success-color)', background: 'var(--success-color)15' }}>€</div>
+          <div style={{ flex: 1 }}>
+            <span className="summary-card-label">Total Revenue</span>
+            <strong className="summary-card-value" style={{ color: 'var(--success-color)' }}>{formatPrice(totalPrice)}</strong>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <span className="summary-card-label">Leagues</span>
+            <strong className="summary-card-value">{offer.leagueIds.length}</strong>
+          </div>
+        </div>
       </div>
 
       {/* Configs Table + Actions */}
@@ -263,18 +286,23 @@ export function OfferDetailPage() {
                   <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)' }}>Invoice #</th>
                   <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)' }}>Status</th>
                   <th style={{ padding: 'var(--spacing-lg)', textAlign: 'right', fontSize: 'var(--font-size-sm)' }}>Gross</th>
+                  <th style={{ padding: 'var(--spacing-lg)', textAlign: 'center', fontSize: 'var(--font-size-sm)' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {offerInvoices.map((inv: any) => (
-                  <tr
-                    key={inv._id}
-                    style={{ borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}
-                    onClick={() => navigate(`/invoices/${inv._id}`)}
-                  >
-                    <td style={{ padding: 'var(--spacing-lg)' }}>{inv.invoiceNumber}</td>
-                    <td style={{ padding: 'var(--spacing-lg)', textTransform: 'capitalize' }}>{inv.status}</td>
-                    <td style={{ padding: 'var(--spacing-lg)', textAlign: 'right' }}>{formatPrice(inv.grossTotal)}</td>
+                  <tr key={inv._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <td style={{ padding: 'var(--spacing-lg)', fontSize: 'var(--font-size-md)' }}>{inv.invoiceNumber}</td>
+                    <td style={{ padding: 'var(--spacing-lg)', textTransform: 'capitalize', fontSize: 'var(--font-size-sm)' }}>{inv.status}</td>
+                    <td style={{ padding: 'var(--spacing-lg)', textAlign: 'right', fontWeight: 'var(--font-weight-semibold)', fontSize: 'var(--font-size-md)' }}>{formatPrice(inv.grossTotal)}</td>
+                    <td style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
+                      <button
+                        className="btn btn-outline btn-sm"
+                        onClick={() => navigate(`/invoices/${inv._id}`)}
+                      >
+                        View Invoice
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
