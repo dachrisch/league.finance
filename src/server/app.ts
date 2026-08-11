@@ -83,6 +83,7 @@ export function createApp() {
         'https://www.googleapis.com/auth/drive.file',
         'https://www.googleapis.com/auth/gmail.send',
         'https://www.googleapis.com/auth/drive.readonly',
+        'https://www.googleapis.com/auth/spreadsheets',
       ],
       accessType: 'offline',
       prompt: 'consent',
