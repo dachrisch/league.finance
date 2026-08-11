@@ -16,6 +16,9 @@ import { resolveSeasonName } from '../../lib/seasonName';
 import { resolveLineAmount, computeInvoiceTotals, computeLineVat } from '../../lib/invoicePricing';
 import { generateInvoiceNumber } from '../../lib/invoiceNumbering';
 import { CreateInvoiceSchema, InvoiceStatusSchema } from '../../../../shared/schemas/invoice';
+import { SheetsService } from '../../services/SheetsService';
+import { buildStandardInvoiceAddress } from '../../lib/invoiceAddress';
+import { buildLineDescriptions } from '../../../../shared/lib/invoiceDescriptions';
 
 const normalizeInvoice = (doc: any) => ({
   ...(doc.toObject?.() || doc),
@@ -154,7 +157,7 @@ export const invoicesRouter = router({
 
   create: adminProcedure
     .input(CreateInvoiceSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const offer = await assertOfferAccepted(input.offerId);
       const association = await Association.findById(offer.associationId);
       if (!association) throw new TRPCError({ code: 'NOT_FOUND', message: 'Association not found' });
@@ -179,6 +182,7 @@ export const invoicesRouter = router({
       const leaguesMap = await fetchLeaguesMap(orderedLeagueIds);
       const pool = getMysqlPool();
       const settings = await getOrCreateSettings();
+      const seasonName = await resolveSeasonName(pool, offer.seasonId);
 
       const lineDocs = [];
       for (const leagueId of orderedLeagueIds) {
@@ -243,6 +247,55 @@ export const invoicesRouter = router({
 
         if (session) await session.commitTransaction();
 
+        if ((ctx as any).accessToken) {
+          try {
+            const contact = await Contact.findById(offer.contactId);
+            const invoiceAddress = buildStandardInvoiceAddress(association.name, association.address, contact?.name);
+            const descriptions = buildLineDescriptions(
+              lineDocs.map((d) => leaguesMap[d.leagueId] || 'Unknown League'),
+              seasonName
+            );
+            const totals = computeInvoiceTotals(lineDocs.map((d) => d.amount), input.discount ?? null);
+            const sheetsService = new SheetsService((ctx as any).accessToken);
+            await sheetsService.appendInvoiceRows(
+              {
+                invoiceId: invoiceNumber,
+                clientId: association.customerNumber!,
+                invoiceAddress,
+                invoiceName: `Nutzung der LeagueSphere App für die Saison ${seasonName}`,
+                invoiceDate: invoiceDate.toLocaleDateString('de-DE'),
+                jobPeriod: servicePeriod,
+                paymentTerm: 30,
+                state: 'draft',
+                netSum: totals.netTotal,
+                grossSum: totals.grossTotal,
+                vatSum: totals.vatTotal,
+              },
+              lineDocs.map((d, i) => {
+                const { vat, gross } = computeLineVat(d.amount);
+                return {
+                  invoiceId: invoiceNumber,
+                  position: i + 1,
+                  description: descriptions[i],
+                  quantity: 1,
+                  net: d.amount,
+                  vat: '19%',
+                  netSum: d.amount,
+                  vatAmount: vat,
+                  grossSum: gross,
+                  jobPeriod: servicePeriod,
+                };
+              })
+            );
+            invoice.sheetSync = { ...invoice.sheetSync, invoiceRowSyncedAt: new Date() };
+            await invoice.save();
+          } catch (err: any) {
+            console.error('Failed to sync invoice to Sheets:', err);
+            invoice.sheetSync = { ...invoice.sheetSync, lastError: err.message };
+            await invoice.save().catch(() => {});
+          }
+        }
+
         return {
           invoice: normalizeInvoice(invoice),
           lineItems: lineItems.map((li: any) => ({
@@ -266,7 +319,7 @@ export const invoicesRouter = router({
 
   markPaid: adminProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const invoice = await Invoice.findById(input.id);
       if (!invoice) throw new TRPCError({ code: 'NOT_FOUND' });
       if (invoice.status !== 'sent') {
@@ -275,6 +328,20 @@ export const invoicesRouter = router({
       invoice.status = 'paid';
       invoice.paidAt = new Date();
       await invoice.save();
+
+      if ((ctx as any).accessToken) {
+        try {
+          const sheetsService = new SheetsService((ctx as any).accessToken);
+          await sheetsService.updateInvoiceState(invoice.invoiceNumber, 'paid');
+          invoice.sheetSync = { ...invoice.sheetSync, invoiceRowSyncedAt: new Date() };
+          await invoice.save();
+        } catch (err: any) {
+          console.error('Failed to sync invoice status to Sheets:', err);
+          invoice.sheetSync = { ...invoice.sheetSync, lastError: err.message };
+          await invoice.save().catch(() => {});
+        }
+      }
+
       return normalizeInvoice(invoice);
     }),
 

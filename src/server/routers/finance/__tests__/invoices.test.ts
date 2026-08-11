@@ -12,7 +12,10 @@ vi.mock('../../../db/mysql', () => ({
   getMysqlPool: vi.fn(),
 }));
 
+vi.mock('../../../services/SheetsService');
+
 import { getMysqlPool } from '../../../db/mysql';
+import { SheetsService } from '../../../services/SheetsService';
 import { invoicesRouter } from '../invoices';
 
 const ctx = { user: { userId: 'u1', email: 'a@bumbleflies.de', role: 'admin' as const } };
@@ -279,6 +282,48 @@ describe('invoicesRouter', () => {
       });
       expect(result.invoice.discount).toMatchObject({ type: 'FIXED', value: 20, description: 'Einstiegsrabatt' });
     });
+
+    describe('create — Sheets sync', () => {
+      const mockAppendInvoiceRows = vi.fn();
+      const ctxWithToken = { ...ctx, accessToken: 'ya29.x' };
+      const callerWithToken = () => invoicesRouter.createCaller(ctxWithToken as any);
+
+      beforeEach(() => {
+        mockAppendInvoiceRows.mockReset().mockResolvedValue(undefined);
+        (SheetsService as any).mockImplementation(function () {
+          return { appendInvoiceRows: mockAppendInvoiceRows };
+        });
+      });
+
+      it('appends invoice + line item rows to the Sheets ledger when an access token is present', async () => {
+        const offer = await makeAcceptedOffer();
+        await callerWithToken().create({
+          offerId: offer._id.toString(), lines: [{ leagueId: 16, chosenSource: 'offer' }],
+        });
+
+        expect(mockAppendInvoiceRows).toHaveBeenCalledTimes(1);
+        const [header, lines] = mockAppendInvoiceRows.mock.calls[0];
+        expect(header).toMatchObject({ clientId: 10010, state: 'draft', paymentTerm: 30 });
+        expect(lines).toEqual([
+          expect.objectContaining({ position: 1, description: 'LeagueSphere App Saison 2026 - Regionalliga', net: 150 }),
+        ]);
+      });
+
+      it('does not attempt a sync when there is no access token', async () => {
+        const offer = await makeAcceptedOffer();
+        await caller().create({ offerId: offer._id.toString(), lines: [{ leagueId: 16, chosenSource: 'offer' }] });
+        expect(mockAppendInvoiceRows).not.toHaveBeenCalled();
+      });
+
+      it('does not fail invoice creation when the Sheets sync call rejects', async () => {
+        mockAppendInvoiceRows.mockRejectedValueOnce(new Error('Sheets API down'));
+        const offer = await makeAcceptedOffer();
+        const result = await callerWithToken().create({
+          offerId: offer._id.toString(), lines: [{ leagueId: 16, chosenSource: 'offer' }],
+        });
+        expect(result.invoice.invoiceNumber).toMatch(/^\d{8}-\d{2}$/);
+      });
+    });
   });
 
   describe('markPaid', () => {
@@ -303,6 +348,55 @@ describe('invoicesRouter', () => {
       const result = await caller().markPaid({ id: invoice._id.toString() });
       expect(result.status).toBe('paid');
       expect(result.paidAt).toBeDefined();
+    });
+
+    describe('markPaid — Sheets sync', () => {
+      const mockUpdateInvoiceState = vi.fn();
+      const ctxWithToken = { ...ctx, accessToken: 'ya29.x' };
+      const callerWithToken = () => invoicesRouter.createCaller(ctxWithToken as any);
+
+      beforeEach(() => {
+        mockUpdateInvoiceState.mockReset().mockResolvedValue(undefined);
+        (SheetsService as any).mockImplementation(function () {
+          return { updateInvoiceState: mockUpdateInvoiceState };
+        });
+      });
+
+      it('updates the Sheets ledger state to paid when an access token is present', async () => {
+        const offer = await makeAcceptedOffer();
+        const invoice = await Invoice.create({
+          offerId: offer._id, associationId, contactId, customerNumber: 10010, seasonId: 6,
+          invoiceNumber: '20260810-09', invoiceDate: new Date(), servicePeriod: '8.2026', dueDate: new Date(),
+          status: 'sent',
+        });
+        await callerWithToken().markPaid({ id: invoice._id.toString() });
+        expect(mockUpdateInvoiceState).toHaveBeenCalledWith('20260810-09', 'paid');
+      });
+
+      it('does not fail markPaid when the Sheets sync call rejects, and records sheetSync.lastError', async () => {
+        mockUpdateInvoiceState.mockRejectedValueOnce(new Error('Sheets API down'));
+        const offer = await makeAcceptedOffer();
+        const invoice = await Invoice.create({
+          offerId: offer._id, associationId, contactId, customerNumber: 10010, seasonId: 6,
+          invoiceNumber: '20260810-10', invoiceDate: new Date(), servicePeriod: '8.2026', dueDate: new Date(),
+          status: 'sent',
+        });
+        const result = await callerWithToken().markPaid({ id: invoice._id.toString() });
+        expect(result.status).toBe('paid');
+        const persisted = await Invoice.findById(invoice._id);
+        expect(persisted?.sheetSync?.lastError).toBe('Sheets API down');
+      });
+
+      it('does not attempt a sync when there is no access token', async () => {
+        const offer = await makeAcceptedOffer();
+        const invoice = await Invoice.create({
+          offerId: offer._id, associationId, contactId, customerNumber: 10010, seasonId: 6,
+          invoiceNumber: '20260810-11', invoiceDate: new Date(), servicePeriod: '8.2026', dueDate: new Date(),
+          status: 'sent',
+        });
+        await caller().markPaid({ id: invoice._id.toString() });
+        expect(mockUpdateInvoiceState).not.toHaveBeenCalled();
+      });
     });
   });
 

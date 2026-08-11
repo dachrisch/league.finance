@@ -5,6 +5,7 @@ import { Association } from '../models/Association';
 import { InvoiceLineItem } from '../models/InvoiceLineItem';
 import { PdfService, InvoicePdfGenerationData } from '../services/PdfService';
 import { DriveService } from '../services/DriveService';
+import { SheetsService } from '../services/SheetsService';
 import { getMysqlPool } from '../db/mysql';
 import { resolveSeasonName } from '../lib/seasonName';
 
@@ -92,6 +93,15 @@ export class FileInvoiceJobHandler {
       invoice.sendJobId = undefined;
       invoice.sendJobAttempts = 0;
       await invoice.save();
+
+      try {
+        const sheetsService = new SheetsService(accessToken);
+        await sheetsService.updateInvoiceState(invoice.invoiceNumber, 'sent');
+      } catch (err: any) {
+        console.warn('Failed to sync invoice state to Sheets:', err);
+        invoice.sheetSync = { ...invoice.sheetSync, lastError: err.message };
+        await invoice.save().catch(() => {});
+      }
 
       job.progress(100);
       job.log('Invoice filed in Drive');

@@ -8,6 +8,10 @@ import { DriveService } from '../../services/DriveService';
 import { getMysqlPool } from '../../db/mysql';
 import { FileInvoiceJobHandler } from '../FileInvoiceJob';
 
+vi.mock('../../services/SheetsService');
+
+import { SheetsService } from '../../services/SheetsService';
+
 vi.mock('../../models/Invoice');
 vi.mock('../../models/Contact');
 vi.mock('../../models/Association');
@@ -25,12 +29,13 @@ const makeJob = () => ({
 const makeInvoice = (overrides: any = {}) => ({
   _id: 'i1', contactId: 'c1', associationId: 'a1', seasonId: 6,
   invoiceNumber: '20260810-01', invoiceDate: new Date('2026-08-10'), servicePeriod: '8.2026',
-  customerNumber: 10010, discount: null, save: vi.fn(),
+  customerNumber: 10010, discount: null, save: vi.fn().mockResolvedValue(undefined),
   ...overrides,
 });
 
 const mockUpload = vi.fn();
 const mockValidate = vi.fn();
+const mockUpdateInvoiceState = vi.fn();
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -39,6 +44,10 @@ beforeEach(() => {
   });
   mockValidate.mockResolvedValue(true);
   mockUpload.mockResolvedValue({ fileId: 'file1', webViewLink: 'https://drive/file1' });
+  mockUpdateInvoiceState.mockResolvedValue(undefined);
+  (SheetsService as any).mockImplementation(function () {
+    return { updateInvoiceState: mockUpdateInvoiceState };
+  });
   vi.mocked(PdfService.generateInvoicePdf).mockResolvedValue(Buffer.from('PDF'));
   vi.mocked(PdfService.generateInvoiceFilename).mockReturnValue('invoice.pdf');
   vi.mocked(Contact.findById).mockResolvedValue({
@@ -110,5 +119,20 @@ describe('FileInvoiceJobHandler', () => {
     await expect(FileInvoiceJobHandler.process(makeJob() as any)).rejects.toThrow('boom');
     expect(invoice.driveMetadata.failureReason).toBe('boom');
     expect(invoice.status).toBe('draft');
+  });
+
+  it('syncs the new status to the Sheets ledger on success', async () => {
+    vi.mocked(Invoice.findById).mockResolvedValue(makeInvoice() as any);
+    await FileInvoiceJobHandler.process(makeJob() as any);
+    expect(mockUpdateInvoiceState).toHaveBeenCalledWith('20260810-01', 'sent');
+  });
+
+  it('still succeeds when the Sheets sync call rejects, and records sheetSync.lastError', async () => {
+    const invoice = makeInvoice();
+    vi.mocked(Invoice.findById).mockResolvedValue(invoice as any);
+    mockUpdateInvoiceState.mockRejectedValueOnce(new Error('Sheets API down'));
+    const res = await FileInvoiceJobHandler.process(makeJob() as any);
+    expect(res).toEqual({ success: true, driveLink: 'https://drive/file1' });
+    expect(invoice.sheetSync.lastError).toBe('Sheets API down');
   });
 });
