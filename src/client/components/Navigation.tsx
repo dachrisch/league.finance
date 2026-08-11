@@ -78,6 +78,9 @@ export function Navigation() {
         <Link to="/offers" style={navItemStyle(isActive('/offers'))}>
           <span style={{ marginRight: '10px' }}>💼</span> Offers
         </Link>
+        <Link to="/invoices" style={navItemStyle(isActive('/invoices'))}>
+          <span style={{ marginRight: '10px' }}>🧾</span> Invoices
+        </Link>
 
         <h3 style={sectionTitleStyle}>Contacts</h3>
         <Link to="/associations" style={navItemStyle(isActive('/associations'))}>
