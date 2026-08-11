@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.4](https://github.com/dachrisch/league.finance/compare/v0.8.3...v0.8.4) (2026-08-11)
+
+
+### Bug Fixes
+
+* restore summary cards and add View Invoice buttons to offer page ([d83196d](https://github.com/dachrisch/league.finance/commit/d83196d3f9eac7334936ecba1703159289697e21))
+
 ## [0.8.3](https://github.com/dachrisch/league.finance/compare/v0.8.2...v0.8.3) (2026-08-11)
 
 
