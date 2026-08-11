@@ -2,6 +2,10 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { router, protectedProcedure, publicProcedure } from '../../trpc';
 import { Association } from '../../models/Association';
+import { Offer } from '../../models/Offer';
+import { Contact } from '../../models/Contact';
+import { SheetsService } from '../../services/SheetsService';
+import { buildStandardInvoiceAddress } from '../../lib/invoiceAddress';
 
 const normalizeAssociation = (doc: any) => ({
   ...doc.toObject?.() || doc,
@@ -70,11 +74,27 @@ export const associationsRouter = router({
         }),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const association = await Association.findByIdAndUpdate(input.id, input.data, { returnDocument: 'after' });
       if (!association) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
+
+      if (input.data.customerNumber !== undefined && association.customerNumber != null && (ctx as any).accessToken) {
+        try {
+          const offer = await Offer.findOne({ associationId: association._id.toString() }).sort({ createdAt: -1 });
+          const contact = offer ? await Contact.findById(offer.contactId) : null;
+          const sheetsService = new SheetsService((ctx as any).accessToken);
+          await sheetsService.upsertClientRow({
+            clientId: association.customerNumber,
+            clientName: association.name,
+            standardInvoiceAddress: buildStandardInvoiceAddress(association.name, association.address, contact?.name),
+          });
+        } catch (err: any) {
+          console.error('Failed to sync association to Sheets:', err);
+        }
+      }
+
       return normalizeAssociation(association);
     }),
 
