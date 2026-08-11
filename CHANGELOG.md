@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.5](https://github.com/dachrisch/league.finance/compare/v0.8.4...v0.8.5) (2026-08-11)
+
+
+### Bug Fixes
+
+* rename offer Drive link to "View Invoice" and match button sizing ([#455](https://github.com/dachrisch/league.finance/issues/455)) ([672c220](https://github.com/dachrisch/league.finance/commit/672c2205ee72908c55968e346d092c01f927d6f1))
+
 ## [0.8.4](https://github.com/dachrisch/league.finance/compare/v0.8.3...v0.8.4) (2026-08-11)
 
 
