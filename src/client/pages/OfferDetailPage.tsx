@@ -262,9 +262,9 @@ export function OfferDetailPage() {
               href={offer.driveMetadata.driveLink || `https://drive.google.com/file/d/${offer.driveMetadata.driveFileId}/view`}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-primary"
+              className="btn btn-primary btn-sm"
             >
-              Open in Drive
+              View Invoice
             </a>
           )}
         </div>
