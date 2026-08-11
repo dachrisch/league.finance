@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.3](https://github.com/dachrisch/league.finance/compare/v0.8.2...v0.8.3) (2026-08-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency redis to v6.2.1 ([dcb0b43](https://github.com/dachrisch/league.finance/commit/dcb0b43894ea390a643c60dcdb9f223f8cb90f39))
+
 ## [0.8.2](https://github.com/dachrisch/league.finance/compare/v0.8.1...v0.8.2) (2026-08-11)
 
 
