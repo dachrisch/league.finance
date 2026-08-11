@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.6](https://github.com/dachrisch/league.finance/compare/v0.8.5...v0.8.6) (2026-08-11)
+
+
+### Bug Fixes
+
+* use border-box sizing for .btn so anchor buttons match &lt;button&gt; height ([#457](https://github.com/dachrisch/league.finance/issues/457)) ([d78b963](https://github.com/dachrisch/league.finance/commit/d78b963ae5e28ef8b007cc6a821b79fb0decd1cc))
+
 ## [0.8.5](https://github.com/dachrisch/league.finance/compare/v0.8.4...v0.8.5) (2026-08-11)
 
 
