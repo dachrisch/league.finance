@@ -11,6 +11,7 @@ import { OfferDetailPage } from './pages/OfferDetailPage';
 import OfferNewPage from './pages/OfferNewPage';
 import { InvoiceNewPage } from './pages/InvoiceNewPage';
 import { InvoiceDetailPage } from './pages/InvoiceDetailPage';
+import { InvoicesPage } from './pages/InvoicesPage';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { trpc } from './lib/trpc';
@@ -67,6 +68,7 @@ export function App() {
                     <Route path="/offers/:id" element={<OfferDetailPage />} />
                     <Route path="/offers/:offerId/invoices/new" element={<InvoiceNewPage />} />
                     <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+                    <Route path="/invoices" element={<InvoicesPage />} />
                     <Route path="/offers" element={<OffersPage />} />
                     <Route path="/associations" element={<AssociationsPage />} />
                     <Route path="/contacts" element={<ContactsPage />} />
