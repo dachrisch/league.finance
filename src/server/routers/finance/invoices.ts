@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { router, protectedProcedure } from '../../trpc';
+import { router, protectedProcedure, adminProcedure } from '../../trpc';
 import { Offer } from '../../models/Offer';
 import { Association } from '../../models/Association';
 import { Contact } from '../../models/Contact';
@@ -10,10 +10,12 @@ import { Invoice } from '../../models/Invoice';
 import { InvoiceLineItem } from '../../models/InvoiceLineItem';
 import { getOrCreateSettings } from '../../models/FinancialSettings';
 import { getMysqlPool } from '../../db/mysql';
+import { supportsTransactions } from '../../db/mongo';
 import { resolveLineItemPricing } from '../../lib/invoiceLinePricing';
 import { resolveSeasonName } from '../../lib/seasonName';
-import { computeInvoiceTotals, computeLineVat } from '../../lib/invoicePricing';
-import { InvoiceStatusSchema } from '../../../../shared/schemas/invoice';
+import { resolveLineAmount, computeInvoiceTotals, computeLineVat } from '../../lib/invoicePricing';
+import { generateInvoiceNumber } from '../../lib/invoiceNumbering';
+import { CreateInvoiceSchema, InvoiceStatusSchema } from '../../../../shared/schemas/invoice';
 
 const normalizeInvoice = (doc: any) => ({
   ...(doc.toObject?.() || doc),
@@ -148,5 +150,144 @@ export const invoicesRouter = router({
         const totals = computeInvoiceTotals(amountsByInvoiceId[invoice._id.toString()] || [], invoice.discount);
         return { ...normalizeInvoice(invoice), grossTotal: totals.grossTotal };
       });
+    }),
+
+  create: adminProcedure
+    .input(CreateInvoiceSchema)
+    .mutation(async ({ input }) => {
+      const offer = await assertOfferAccepted(input.offerId);
+      const association = await Association.findById(offer.associationId);
+      if (!association) throw new TRPCError({ code: 'NOT_FOUND', message: 'Association not found' });
+      if (association.customerNumber == null) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Set a customer number on this association before creating an invoice',
+        });
+      }
+
+      const configs = await FinancialConfig.find({ offerId: offer._id });
+      const configByLeagueId = new Map(configs.map((c) => [c.leagueId, c]));
+      const lineInputByLeagueId = new Map(input.lines.map((l) => [l.leagueId, l]));
+
+      for (const line of input.lines) {
+        if (!configByLeagueId.has(line.leagueId)) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: `League ${line.leagueId} is not part of this offer` });
+        }
+      }
+
+      const orderedLeagueIds = offer.leagueIds.filter((id) => lineInputByLeagueId.has(id));
+      const leaguesMap = await fetchLeaguesMap(orderedLeagueIds);
+      const pool = getMysqlPool();
+      const settings = await getOrCreateSettings();
+
+      const lineDocs = [];
+      for (const leagueId of orderedLeagueIds) {
+        const config = configByLeagueId.get(leagueId)!;
+        const lineInput = lineInputByLeagueId.get(leagueId)!;
+        const discounts = (await Discount.find({ configId: config._id }).lean()).map((d: any) => ({
+          type: d.type, value: d.value,
+        }));
+        const pricing = await resolveLineItemPricing(
+          config, leaguesMap[leagueId] || 'Unknown League', pool, settings, discounts
+        );
+        const amount = resolveLineAmount(
+          lineInput.chosenSource, pricing.offerPrice, pricing.livePrice, lineInput.customPrice ?? null
+        );
+        if (amount == null) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `customPrice is required for league ${leagueId} when chosenSource is "custom"`,
+          });
+        }
+        lineDocs.push({
+          leagueId,
+          financialConfigId: config._id,
+          offerPrice: pricing.offerPrice,
+          livePrice: pricing.livePrice,
+          liveBasis: pricing.liveBasis,
+          chosenSource: lineInput.chosenSource,
+          customPrice: lineInput.customPrice ?? null,
+          amount,
+        });
+      }
+
+      const invoiceNumber = await generateInvoiceNumber();
+      const invoiceDate = new Date();
+      const servicePeriod = `${invoiceDate.getMonth() + 1}.${invoiceDate.getFullYear()}`;
+      const dueDate = new Date(invoiceDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+      const session = supportsTransactions() ? await Invoice.startSession() : null;
+      if (session) await session.startTransaction();
+
+      try {
+        const [invoice] = await Invoice.create(
+          [{
+            offerId: offer._id,
+            associationId: offer.associationId,
+            contactId: offer.contactId,
+            customerNumber: association.customerNumber,
+            seasonId: offer.seasonId,
+            invoiceNumber,
+            invoiceDate,
+            servicePeriod,
+            dueDate,
+            discount: input.discount ?? null,
+          }],
+          session ? { session } : {}
+        );
+
+        const lineItems = await InvoiceLineItem.insertMany(
+          lineDocs.map((doc) => ({ ...doc, invoiceId: invoice._id })),
+          session ? { session } : {}
+        );
+
+        if (session) await session.commitTransaction();
+
+        return {
+          invoice: normalizeInvoice(invoice),
+          lineItems: lineItems.map((li: any) => ({
+            ...li.toObject(),
+            _id: li._id.toString(),
+            invoiceId: li.invoiceId.toString(),
+            financialConfigId: li.financialConfigId.toString(),
+            leagueName: leaguesMap[li.leagueId] || 'Unknown League',
+          })),
+        };
+      } catch (err: any) {
+        if (session) await session.abortTransaction();
+        if (err.code === 11000) {
+          throw new TRPCError({ code: 'CONFLICT', message: 'Invoice number collision, please retry' });
+        }
+        throw err;
+      } finally {
+        if (session) await session.endSession();
+      }
+    }),
+
+  markPaid: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      const invoice = await Invoice.findById(input.id);
+      if (!invoice) throw new TRPCError({ code: 'NOT_FOUND' });
+      if (invoice.status !== 'sent') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only sent invoices can be marked as paid' });
+      }
+      invoice.status = 'paid';
+      invoice.paidAt = new Date();
+      await invoice.save();
+      return normalizeInvoice(invoice);
+    }),
+
+  delete: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      const invoice = await Invoice.findById(input.id);
+      if (!invoice) throw new TRPCError({ code: 'NOT_FOUND' });
+      if (invoice.status !== 'draft') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only draft invoices can be deleted' });
+      }
+      await InvoiceLineItem.deleteMany({ invoiceId: invoice._id });
+      await Invoice.findByIdAndDelete(input.id);
+      return { success: true };
     }),
 });

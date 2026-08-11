@@ -192,4 +192,149 @@ describe('invoicesRouter', () => {
       expect(paidOnly[0]._id).toBe(paidInvoice._id.toString());
     });
   });
+
+  const makeAcceptedOfferWithTwoLeagues = async () => {
+    const offer = await Offer.create({
+      associationId, seasonId: 6, leagueIds: [17, 16], contactId, status: 'accepted',
+    });
+    await FinancialConfig.create({
+      leagueId: 16, seasonId: 6, costModel: 'SEASON', baseRateOverride: 50,
+      expectedTeamsCount: 3, expectedGamedaysCount: 0, expectedTeamsPerGameday: 0,
+      offerId: offer._id,
+    });
+    await FinancialConfig.create({
+      leagueId: 17, seasonId: 6, costModel: 'SEASON', baseRateOverride: 100,
+      expectedTeamsCount: 2, expectedGamedaysCount: 0, expectedTeamsPerGameday: 0,
+      offerId: offer._id,
+    });
+    return offer;
+  };
+
+  describe('create', () => {
+    it('rejects when the offer is not accepted', async () => {
+      const offer = await Offer.create({
+        associationId, seasonId: 6, leagueIds: [16], contactId, status: 'draft',
+      });
+      await expect(
+        caller().create({ offerId: offer._id.toString(), lines: [{ leagueId: 16, chosenSource: 'offer' }] })
+      ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+
+    it('rejects when the association has no customerNumber', async () => {
+      await Association.findByIdAndUpdate(associationId, { customerNumber: null });
+      const offer = await makeAcceptedOffer();
+      await expect(
+        caller().create({ offerId: offer._id.toString(), lines: [{ leagueId: 16, chosenSource: 'offer' }] })
+      ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+
+    it('rejects a leagueId that is not part of the offer', async () => {
+      const offer = await makeAcceptedOffer();
+      await expect(
+        caller().create({ offerId: offer._id.toString(), lines: [{ leagueId: 999, chosenSource: 'offer' }] })
+      ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+
+    it('rejects chosenSource=custom without a customPrice', async () => {
+      const offer = await makeAcceptedOffer();
+      await expect(
+        caller().create({ offerId: offer._id.toString(), lines: [{ leagueId: 16, chosenSource: 'custom' }] })
+      ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+
+    it('creates line items in offer.leagueIds order with resolved offer/live/custom amounts', async () => {
+      const offer = await makeAcceptedOfferWithTwoLeagues();
+
+      const result = await caller().create({
+        offerId: offer._id.toString(),
+        lines: [
+          { leagueId: 16, chosenSource: 'live' },       // offer.leagueIds = [17, 16]
+          { leagueId: 17, chosenSource: 'custom', customPrice: 555 },
+        ],
+      });
+
+      expect(result.invoice.invoiceNumber).toMatch(/^\d{8}-\d{2}$/);
+      expect(result.invoice.customerNumber).toBe(10010);
+      expect(result.invoice.seasonId).toBe(6);
+      expect(result.invoice.status).toBe('draft');
+      expect(result.invoice.servicePeriod).toMatch(/^\d{1,2}\.\d{4}$/);
+      const dueDiffDays = (new Date(result.invoice.dueDate).getTime() - new Date(result.invoice.invoiceDate).getTime()) / 86400000;
+      expect(Math.round(dueDiffDays)).toBe(30);
+
+      // League 17 comes first because it's first in offer.leagueIds, regardless of input order.
+      expect(result.lineItems).toHaveLength(2);
+      expect(result.lineItems[0]).toMatchObject({ leagueId: 17, chosenSource: 'custom', amount: 555 });
+      expect(result.lineItems[1]).toMatchObject({ leagueId: 16, chosenSource: 'live', amount: 200 });
+
+      const persisted = await InvoiceLineItem.find({ invoiceId: result.invoice._id }).sort({ createdAt: 1, _id: 1 });
+      expect(persisted.map((li) => li.leagueId)).toEqual([17, 16]);
+    });
+
+    it('persists an invoice-level discount', async () => {
+      const offer = await makeAcceptedOffer();
+      const result = await caller().create({
+        offerId: offer._id.toString(),
+        lines: [{ leagueId: 16, chosenSource: 'offer' }],
+        discount: { type: 'FIXED', value: 20, description: 'Einstiegsrabatt' },
+      });
+      expect(result.invoice.discount).toMatchObject({ type: 'FIXED', value: 20, description: 'Einstiegsrabatt' });
+    });
+  });
+
+  describe('markPaid', () => {
+    it('rejects a draft invoice', async () => {
+      const offer = await makeAcceptedOffer();
+      const invoice = await Invoice.create({
+        offerId: offer._id, associationId, contactId, customerNumber: 10010, seasonId: 6,
+        invoiceNumber: '20260810-05', invoiceDate: new Date(), servicePeriod: '8.2026', dueDate: new Date(),
+        status: 'draft',
+      });
+      await expect(caller().markPaid({ id: invoice._id.toString() }))
+        .rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+
+    it('transitions a sent invoice to paid and sets paidAt', async () => {
+      const offer = await makeAcceptedOffer();
+      const invoice = await Invoice.create({
+        offerId: offer._id, associationId, contactId, customerNumber: 10010, seasonId: 6,
+        invoiceNumber: '20260810-06', invoiceDate: new Date(), servicePeriod: '8.2026', dueDate: new Date(),
+        status: 'sent',
+      });
+      const result = await caller().markPaid({ id: invoice._id.toString() });
+      expect(result.status).toBe('paid');
+      expect(result.paidAt).toBeDefined();
+    });
+  });
+
+  describe('delete', () => {
+    it('rejects deleting a non-draft invoice', async () => {
+      const offer = await makeAcceptedOffer();
+      const invoice = await Invoice.create({
+        offerId: offer._id, associationId, contactId, customerNumber: 10010, seasonId: 6,
+        invoiceNumber: '20260810-07', invoiceDate: new Date(), servicePeriod: '8.2026', dueDate: new Date(),
+        status: 'sent',
+      });
+      await expect(caller().delete({ id: invoice._id.toString() }))
+        .rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+
+    it('deletes a draft invoice and its line items', async () => {
+      const offer = await makeAcceptedOffer();
+      const config = await FinancialConfig.findOne({ offerId: offer._id });
+      const invoice = await Invoice.create({
+        offerId: offer._id, associationId, contactId, customerNumber: 10010, seasonId: 6,
+        invoiceNumber: '20260810-08', invoiceDate: new Date(), servicePeriod: '8.2026', dueDate: new Date(),
+        status: 'draft',
+      });
+      await InvoiceLineItem.create({
+        invoiceId: invoice._id, leagueId: 16, financialConfigId: config!._id,
+        offerPrice: 150, livePrice: 150, liveBasis: 3, chosenSource: 'offer', customPrice: null, amount: 150,
+      });
+
+      await caller().delete({ id: invoice._id.toString() });
+
+      expect(await Invoice.findById(invoice._id)).toBeNull();
+      expect(await InvoiceLineItem.find({ invoiceId: invoice._id })).toHaveLength(0);
+    });
+  });
 });
