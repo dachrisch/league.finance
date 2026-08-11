@@ -72,6 +72,7 @@ describe('AssociationForm', () => {
           country: 'Germany',
         },
         leaguesphereAssociationId: null,
+        customerNumber: null,
       });
     });
   });
@@ -111,6 +112,30 @@ describe('AssociationForm', () => {
     await waitFor(() => {
       expect(successSubmit).toHaveBeenCalledWith(
         expect.objectContaining({ leaguesphereAssociationId: 3 })
+      );
+    });
+  });
+
+  it('renders a customer number field', () => {
+    render(<AssociationForm onSubmit={mockOnSubmit} />);
+    expect(screen.getByLabelText(/Customer Number/i)).toBeInTheDocument();
+  });
+
+  it('includes customerNumber in the submitted payload when filled in', async () => {
+    const successSubmit = vi.fn(() => Promise.resolve());
+    render(<AssociationForm onSubmit={successSubmit} />);
+
+    fireEvent.change(screen.getByLabelText(/Association Name/i), { target: { value: 'AFCV NRW' } });
+    fireEvent.change(screen.getByLabelText(/Street/i), { target: { value: 'Halterner Straße 193' } });
+    fireEvent.change(screen.getByLabelText(/Postal Code/i), { target: { value: '45770' } });
+    fireEvent.change(screen.getByLabelText(/City/i), { target: { value: 'Marl' } });
+    fireEvent.change(screen.getByLabelText(/Customer Number/i), { target: { value: '10010' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Create Association/i }));
+
+    await waitFor(() => {
+      expect(successSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ customerNumber: 10010 })
       );
     });
   });

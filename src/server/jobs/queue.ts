@@ -39,37 +39,40 @@ class MockQueue {
   }
 }
 
-// Create queue - use mock in development, Redis in production
-export const offerDriveQueue =
-  process.env.NODE_ENV === 'development'
-    ? new MockQueue()
-    : (() => {
-        const REDIS_URL = process.env.REDIS_URL;
-        let queue: Bull.Queue;
+function createDriveQueue(name: string): Bull.Queue | MockQueue {
+  if (process.env.NODE_ENV === 'development') {
+    return new MockQueue();
+  }
 
-        if (REDIS_URL) {
-          queue = new Bull('offer-drive', REDIS_URL);
-        } else {
-          const port = parseInt(process.env.REDIS_PORT || '6379', 10);
-          const redisConfig = {
-            host: process.env.REDIS_HOST || 'localhost',
-            port: isNaN(port) ? 6379 : port,
-          };
-          queue = new Bull('offer-drive', { redis: redisConfig });
-        }
+  const REDIS_URL = process.env.REDIS_URL;
+  let queue: Bull.Queue;
 
-        // Global error handlers
-        queue.on('error', (err) => {
-          console.error('[offer-drive-queue] Queue error:', err.message || err);
-        });
+  if (REDIS_URL) {
+    queue = new Bull(name, REDIS_URL);
+  } else {
+    const port = parseInt(process.env.REDIS_PORT || '6379', 10);
+    const redisConfig = {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: isNaN(port) ? 6379 : port,
+    };
+    queue = new Bull(name, { redis: redisConfig });
+  }
 
-        queue.on('failed', (job, err) => {
-          console.error(`[offer-drive-queue] Job ${job.id} failed: ${err.message}`);
-        });
+  queue.on('error', (err) => {
+    console.error(`[${name}-queue] Queue error:`, err.message || err);
+  });
 
-        return queue;
-      })();
+  queue.on('failed', (job, err) => {
+    console.error(`[${name}-queue] Job ${job.id} failed: ${err.message}`);
+  });
+
+  return queue;
+}
+
+export const offerDriveQueue = createDriveQueue('offer-drive');
+export const invoiceDriveQueue = createDriveQueue('invoice-drive');
 
 export async function closeQueues() {
   await (offerDriveQueue as any).close();
+  await (invoiceDriveQueue as any).close();
 }

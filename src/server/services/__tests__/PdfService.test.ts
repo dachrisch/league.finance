@@ -55,3 +55,68 @@ describe('PdfService.generateOfferPdf', () => {
     expect(isPdf(pdf)).toBe(true);
   });
 });
+
+const baseInvoiceData = {
+  invoice: {
+    _id: '507f1f77bcf86cd799439011',
+    invoiceNumber: '20260529-01',
+    invoiceDate: new Date('2026-05-29'),
+    servicePeriod: '5.2026',
+    customerNumber: 10010,
+    discount: null,
+  },
+  associationName: 'American Football und Cheerleading Verband Nordrhein-Westfalen e.V.',
+  contact: {
+    name: 'Fabian Pawlowski',
+    address: { street: 'Halterner Straße 193', postalCode: '45770', city: 'Marl' },
+  },
+  lineItems: [
+    { leagueName: 'Regionalliga', amount: 648 },
+    { leagueName: 'Oberliga', amount: 918 },
+    { leagueName: 'U10', amount: 78 },
+    { leagueName: 'U13', amount: 143 },
+    { leagueName: 'U16', amount: 117 },
+  ],
+  seasonName: '2026',
+};
+
+describe('PdfService.generateInvoiceFilename', () => {
+  it('matches the "<YYYY-MM>.<invoiceNumber> - <first word> <customerNumber> - Nutzung..." pattern', () => {
+    const filename = PdfService.generateInvoiceFilename(
+      '20260529-01', 'American Football und Cheerleading Verband Nordrhein-Westfalen e.V.',
+      10010, '2026', new Date('2026-05-29')
+    );
+    expect(filename).toBe(
+      '2026-05.20260529-01 - American 10010 - Nutzung der LeagueSphere App für die Saison 2026.pdf'
+    );
+  });
+});
+
+describe('PdfService.generateInvoicePdf', () => {
+  it('returns a valid PDF buffer matching the sample invoice (5 leagues, no discount)', async () => {
+    const pdf = await PdfService.generateInvoicePdf(baseInvoiceData as any);
+    expect(isPdf(pdf)).toBe(true);
+    expect(pdf.length).toBeGreaterThan(1000);
+  });
+
+  it('does not throw with a discount applied', async () => {
+    const data = { ...baseInvoiceData, invoice: { ...baseInvoiceData.invoice, discount: { type: 'FIXED', value: 50, description: 'Rabatt' } } };
+    const pdf = await PdfService.generateInvoicePdf(data as any);
+    expect(isPdf(pdf)).toBe(true);
+  });
+
+  it('does not throw on a single line item', async () => {
+    const data = { ...baseInvoiceData, lineItems: [{ leagueName: 'Regionalliga', amount: 900 }] };
+    const pdf = await PdfService.generateInvoicePdf(data as any);
+    expect(isPdf(pdf)).toBe(true);
+  });
+
+  it('does not throw on umlaut content in the recipient block', async () => {
+    const data = {
+      ...baseInvoiceData,
+      contact: { name: 'Christian Dähn', address: { street: 'Gleiwitzer Str. 6d', postalCode: '81929', city: 'München' } },
+    };
+    const pdf = await PdfService.generateInvoicePdf(data as any);
+    expect(isPdf(pdf)).toBe(true);
+  });
+});

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import { Association } from '../Association';
 import { connectMongo, disconnectMongo } from '../../db/mongo';
 
@@ -9,6 +9,10 @@ describe('Association Model', () => {
 
   afterAll(async () => {
     await disconnectMongo();
+  });
+
+  afterEach(async () => {
+    await Association.deleteMany({});
   });
 
   it('should create an association with name and address', async () => {
@@ -57,6 +61,34 @@ describe('Association Model', () => {
           postalCode: '10003',
           // Missing country
         } as any,
+      })
+    ).rejects.toThrow();
+  });
+
+  it('should default customerNumber to null and allow setting it', async () => {
+    const doc = await Association.create({
+      name: 'AFCV NRW',
+      address: { street: 'Halterner Straße 193', city: 'Marl', postalCode: '45770', country: 'Germany' },
+    });
+    expect(doc.customerNumber).toBeNull();
+
+    doc.customerNumber = 10010;
+    await doc.save();
+    const updated = await Association.findById(doc._id);
+    expect(updated?.customerNumber).toBe(10010);
+  });
+
+  it('should enforce customerNumber uniqueness when set', async () => {
+    await Association.create({
+      name: 'AFCV NRW',
+      address: { street: 'Halterner Straße 193', city: 'Marl', postalCode: '45770', country: 'Germany' },
+      customerNumber: 10010,
+    });
+    await expect(
+      Association.create({
+        name: 'AFCV Bayern',
+        address: { street: 'Georg Brauchle Ring 93', city: 'München', postalCode: '80992', country: 'Germany' },
+        customerNumber: 10010,
       })
     ).rejects.toThrow();
   });

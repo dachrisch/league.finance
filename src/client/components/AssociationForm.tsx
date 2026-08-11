@@ -19,6 +19,7 @@ export function AssociationForm({ onSubmit, onCancel, isLoading = false, initial
       country: 'Germany',
     },
     leaguesphereAssociationId: null,
+    customerNumber: null,
   });
   const [error, setError] = useState('');
 
@@ -27,6 +28,11 @@ export function AssociationForm({ onSubmit, onCancel, isLoading = false, initial
   const handleLeaguesphereAssociationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setFormData((prev) => ({ ...prev, leaguesphereAssociationId: value ? Number(value) : null }));
+  };
+
+  const handleCustomerNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData((prev) => ({ ...prev, customerNumber: value ? Number(value) : null }));
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,6 +121,27 @@ export function AssociationForm({ onSubmit, onCancel, isLoading = false, initial
             <option key={a.id} value={a.id}>{a.abbr} — {a.name}</option>
           ))}
         </select>
+      </div>
+
+      <div>
+        <label htmlFor="customerNumber" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500' }}>
+          Customer Number
+        </label>
+        <input
+          type="number"
+          id="customerNumber"
+          value={formData.customerNumber ?? ''}
+          onChange={handleCustomerNumberChange}
+          placeholder="e.g., 10010"
+          style={{
+            width: '100%',
+            padding: '0.5rem',
+            border: '1px solid #dee2e6',
+            borderRadius: '4px',
+            fontSize: '0.875rem',
+          }}
+          disabled={isLoading}
+        />
       </div>
 
       <div>

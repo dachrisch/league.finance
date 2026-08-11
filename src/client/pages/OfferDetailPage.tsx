@@ -53,6 +53,7 @@ export function OfferDetailPage() {
     { enabled: !!data?.offer?.associationId }
   );
   const { data: seasons = [] } = trpc.finance.seasons.list.useQuery();
+  const { data: invoices = [] } = trpc.finance.invoices.list.useQuery({});
 
   const markAccepted = trpc.finance.offers.markAccepted.useMutation({
     onSuccess: () => refetch(),
@@ -89,6 +90,7 @@ export function OfferDetailPage() {
   const totalPrice = configs.reduce((sum, config) => sum + config.finalPrice, 0);
   const season = seasons.find(s => s._id === offer.seasonId);
   const seasonYear = season?.name || offer.seasonId;
+  const offerInvoices = invoices.filter((inv: any) => inv.offerId === id);
 
   return (
     <div className="container" style={{ paddingBottom: 'var(--spacing-xl)' }}>
@@ -233,6 +235,44 @@ export function OfferDetailPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Invoices Section */}
+      {offer.status === 'accepted' && (
+        <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 'var(--spacing-xl)' }}>
+          <div style={{ padding: 'var(--spacing-lg)', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-secondary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: 'var(--font-size-lg)', fontWeight: 'var(--font-weight-semibold)' }}>Invoices</h3>
+            <button className="btn btn-primary btn-sm" onClick={() => navigate(`/offers/${id}/invoices/new`)}>
+              + Create Invoice
+            </button>
+          </div>
+          {offerInvoices.length > 0 ? (
+            <table className="mobile-cards-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+                  <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)' }}>Invoice #</th>
+                  <th style={{ padding: 'var(--spacing-lg)', textAlign: 'left', fontSize: 'var(--font-size-sm)' }}>Status</th>
+                  <th style={{ padding: 'var(--spacing-lg)', textAlign: 'right', fontSize: 'var(--font-size-sm)' }}>Gross</th>
+                </tr>
+              </thead>
+              <tbody>
+                {offerInvoices.map((inv: any) => (
+                  <tr
+                    key={inv._id}
+                    style={{ borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}
+                    onClick={() => navigate(`/invoices/${inv._id}`)}
+                  >
+                    <td style={{ padding: 'var(--spacing-lg)' }}>{inv.invoiceNumber}</td>
+                    <td style={{ padding: 'var(--spacing-lg)', textTransform: 'capitalize' }}>{inv.status}</td>
+                    <td style={{ padding: 'var(--spacing-lg)', textAlign: 'right' }}>{formatPrice(inv.grossTotal)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p style={{ padding: 'var(--spacing-lg)', color: 'var(--text-muted)', margin: 0 }}>No invoices yet for this offer.</p>
+          )}
+        </div>
+      )}
 
       {/* Actions Section */}
       <div style={{ display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'flex-end', marginTop: 'var(--spacing-xl)' }}>

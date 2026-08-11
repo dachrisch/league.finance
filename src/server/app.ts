@@ -10,8 +10,9 @@ import { appRouter } from './routers/index';
 import { createContext } from './trpc';
 import path from 'path';
 import { healthHandler } from './health';
-import { offerDriveQueue } from './jobs/queue';
+import { offerDriveQueue, invoiceDriveQueue } from './jobs/queue';
 import { FileOfferJobHandler } from './jobs/FileOfferJob';
+import { FileInvoiceJobHandler } from './jobs/FileInvoiceJob';
 import rateLimit from 'express-rate-limit';
 
 export function createApp() {
@@ -20,6 +21,7 @@ export function createApp() {
 
   // Register job processor
   offerDriveQueue.process(FileOfferJobHandler.process.bind(FileOfferJobHandler));
+  invoiceDriveQueue.process(FileInvoiceJobHandler.process.bind(FileInvoiceJobHandler));
 
   app.use(cors({ origin: CLIENT_URL, credentials: true }));
   app.use(express.json());
@@ -81,6 +83,7 @@ export function createApp() {
         'https://www.googleapis.com/auth/drive.file',
         'https://www.googleapis.com/auth/gmail.send',
         'https://www.googleapis.com/auth/drive.readonly',
+        'https://www.googleapis.com/auth/spreadsheets',
       ],
       accessType: 'offline',
       prompt: 'consent',

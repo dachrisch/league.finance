@@ -20,6 +20,7 @@ The single `appRouter` is the client/server contract; its type (`AppRouter`) dri
 - **Build**: `npm run build` (Vite build + Server TSC).
 - **Test**: `npm run test` (Vitest). Single file/pattern: `npm run test -- src/server/lib/__tests__/configPricing.test.ts` or `npm run test -- -t "computes prices"`. Watch mode: `npm run test:watch`.
 - **E2E**: `npm run test:e2e` (Playwright; specs in `e2e/`). `test:e2e:ui` / `test:e2e:debug` for interactive runs.
+- **Lint**: `npm run lint` (oxlint). CI (`part_node_build.yaml`) runs this before build/test — check it passes before pushing.
 - **Mongo migrations**: `npm run migrate` runs compiled migrations from `src/server/db/migrations/` (build first — it reads from `dist/`).
 
 ## Toolchain Quirks

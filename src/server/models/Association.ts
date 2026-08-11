@@ -9,6 +9,7 @@ export interface IAssociation extends Document {
     country: string;
   };
   leaguesphereAssociationId: number | null;
+  customerNumber: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,8 +24,14 @@ const AssociationSchema = new Schema<IAssociation>(
       country: { type: String, required: true },
     },
     leaguesphereAssociationId: { type: Number, required: false, default: null },
+    customerNumber: { type: Number, default: null },
   },
   { timestamps: true }
+);
+
+AssociationSchema.index(
+  { customerNumber: 1 },
+  { unique: true, partialFilterExpression: { customerNumber: { $type: 'number' } } }
 );
 
 export const Association = model<IAssociation>('Association', AssociationSchema);
