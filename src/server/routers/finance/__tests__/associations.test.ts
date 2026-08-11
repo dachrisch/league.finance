@@ -141,4 +141,29 @@ describe('Associations Router', () => {
     });
     expect(updated?.leaguesphereAssociationId).toBeNull();
   });
+
+  it('creates an association with a customerNumber and returns it from list/get', async () => {
+    const caller = associationsRouter.createCaller({ user: { userId: '1', email: 'test@test.com', role: 'admin' } });
+    const created = await caller.create({
+      name: 'AFCV NRW',
+      address: { street: 'Halterner Straße 193', city: 'Marl', postalCode: '45770', country: 'Germany' },
+      customerNumber: 10010,
+    });
+    expect(created.customerNumber).toBe(10010);
+
+    const fetched = await caller.get({ id: created._id });
+    expect(fetched.customerNumber).toBe(10010);
+  });
+
+  it('updates customerNumber via update', async () => {
+    const caller = associationsRouter.createCaller({ user: { userId: '1', email: 'test@test.com', role: 'admin' } });
+    const created = await caller.create({
+      name: 'AFCV Bayern',
+      address: { street: 'Georg Brauchle Ring 93', city: 'München', postalCode: '80992', country: 'Germany' },
+    });
+    expect(created.customerNumber).toBeNull();
+
+    const updated = await caller.update({ id: created._id, data: { customerNumber: 10007 } });
+    expect(updated.customerNumber).toBe(10007);
+  });
 });
