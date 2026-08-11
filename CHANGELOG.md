@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.6](https://github.com/dachrisch/league.finance/compare/v0.7.5...v0.7.6) (2026-08-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency google-auth-library to v11.0.1 ([#439](https://github.com/dachrisch/league.finance/issues/439)) ([6e49353](https://github.com/dachrisch/league.finance/commit/6e4935334e9459f1b120bed395bd1d6dd3221398))
+
 ## [0.7.5](https://github.com/dachrisch/league.finance/compare/v0.7.4...v0.7.5) (2026-08-10)
 
 
