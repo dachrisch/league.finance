@@ -45,6 +45,24 @@ export class SheetsService {
     this.sheets = google.sheets({ version: 'v4', auth });
   }
 
+  /** Finds a client in the "clientData" tab by clientId. Returns { clientName, standardInvoiceAddress } if found. */
+  async findClientByClientId(clientId: number): Promise<{ clientName: string; standardInvoiceAddress: string } | null> {
+    const existing = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'clientData!A:C',
+    });
+    const rows = existing.data.values || [];
+    for (let i = 1; i < rows.length; i++) { // skip header row
+      if (String(rows[i][0]) === String(clientId)) {
+        return {
+          clientName: rows[i][1] || '',
+          standardInvoiceAddress: rows[i][2] || '',
+        };
+      }
+    }
+    return null;
+  }
+
   /** Upserts a row in the "clientData" tab, matched by clientId in column A. */
   async upsertClientRow(row: ClientRow): Promise<void> {
     const existing = await this.sheets.spreadsheets.values.get({

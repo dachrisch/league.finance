@@ -9,6 +9,7 @@ import { connectMongo, disconnectMongo } from '../../../db/mongo';
 vi.mock('../../../services/SheetsService');
 
 const mockUpsertClientRow = vi.fn();
+const mockFindClientByClientId = vi.fn();
 
 describe('Associations Router', () => {
   beforeAll(async () => {
@@ -22,9 +23,10 @@ describe('Associations Router', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (SheetsService as any).mockImplementation(function () {
-      return { upsertClientRow: mockUpsertClientRow };
+      return { upsertClientRow: mockUpsertClientRow, findClientByClientId: mockFindClientByClientId };
     });
     mockUpsertClientRow.mockResolvedValue(undefined);
+    mockFindClientByClientId.mockResolvedValue(null);
   });
 
   afterEach(async () => {

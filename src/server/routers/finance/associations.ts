@@ -82,14 +82,22 @@ export const associationsRouter = router({
 
       if (input.data.customerNumber !== undefined && association.customerNumber != null && (ctx as any).accessToken) {
         try {
-          const offer = await Offer.findOne({ associationId: association._id.toString() }).sort({ createdAt: -1 });
-          const contact = offer ? await Contact.findById(offer.contactId) : null;
           const sheetsService = new SheetsService((ctx as any).accessToken);
-          await sheetsService.upsertClientRow({
-            clientId: association.customerNumber,
-            clientName: association.name,
-            standardInvoiceAddress: buildStandardInvoiceAddress(association.name, association.address, contact?.name),
-          });
+          const existingClient = await sheetsService.findClientByClientId(association.customerNumber);
+
+          if (existingClient) {
+            // Customer exists in the Sheet — link the existing entry; don't overwrite sheet data.
+            console.log(`Linked association ${association._id} to existing sheet customer: ${existingClient.clientName}`);
+          } else {
+            // New customer — look up most recent offer contact for address.
+            const offer = await Offer.findOne({ associationId: association._id.toString() }).sort({ createdAt: -1 });
+            const contact = offer ? await Contact.findById(offer.contactId) : null;
+            await sheetsService.upsertClientRow({
+              clientId: association.customerNumber,
+              clientName: association.name,
+              standardInvoiceAddress: buildStandardInvoiceAddress(association.name, association.address, contact?.name),
+            });
+          }
         } catch (err: any) {
           console.error('Failed to sync association to Sheets:', err);
         }
