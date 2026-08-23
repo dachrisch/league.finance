@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.25](https://github.com/dachrisch/league.finance/compare/v0.8.24...v0.8.25) (2026-08-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency googleapis to v176 ([0d5b3a1](https://github.com/dachrisch/league.finance/commit/0d5b3a1a5bc0915803de0a1e76b3fe4473c1a744))
+* **deps:** update dependency mysql2 to v3.23.4 ([d1bcfb5](https://github.com/dachrisch/league.finance/commit/d1bcfb5f24b0af27723f7f18b718e701c60c9acd))
+* **deps:** update dependency react-hook-form to v7.86.0 ([7c4146b](https://github.com/dachrisch/league.finance/commit/7c4146b517931f76c8a560150a612354a514bb7c))
+* **deps:** update dependency vite to v8.2.2 ([3ce42b6](https://github.com/dachrisch/league.finance/commit/3ce42b604583086e12abbbc3adc8006453e5bfd1))
+
 ## [0.8.24](https://github.com/dachrisch/league.finance/compare/v0.8.23...v0.8.24) (2026-08-22)
 
 
