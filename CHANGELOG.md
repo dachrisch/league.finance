@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.30](https://github.com/dachrisch/league.finance/compare/v0.8.29...v0.8.30) (2026-08-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency googleapis to v176 ([9e60a4c](https://github.com/dachrisch/league.finance/commit/9e60a4c780c6905e920e999ec2ee5f885094f303))
+
 ## [0.8.29](https://github.com/dachrisch/league.finance/compare/v0.8.28...v0.8.29) (2026-08-23)
 
 
