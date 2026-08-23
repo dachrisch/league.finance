@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.27](https://github.com/dachrisch/league.finance/compare/v0.8.26...v0.8.27) (2026-08-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency pdfkit to ^0.20.0 ([#505](https://github.com/dachrisch/league.finance/issues/505)) ([fd0fefa](https://github.com/dachrisch/league.finance/commit/fd0fefa74e1f9e9d5ccc18690c4e7fff75d58132))
+
 ## [0.8.26](https://github.com/dachrisch/league.finance/compare/v0.8.25...v0.8.26) (2026-08-23)
 
 
