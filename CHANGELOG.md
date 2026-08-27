@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.41](https://github.com/dachrisch/league.finance/compare/v0.8.40...v0.8.41) (2026-08-27)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @testing-library/react to v16.3.3 ([#536](https://github.com/dachrisch/league.finance/issues/536)) ([e4d8308](https://github.com/dachrisch/league.finance/commit/e4d83086fee1d59464f625ae15369c8b97e52d1b))
+
 ## [0.8.40](https://github.com/dachrisch/league.finance/compare/v0.8.39...v0.8.40) (2026-08-27)
 
 
