@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.42](https://github.com/dachrisch/league.finance/compare/v0.8.41...v0.8.42) (2026-08-28)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @vitejs/plugin-react to v6.1.1 ([#538](https://github.com/dachrisch/league.finance/issues/538)) ([4f0bcab](https://github.com/dachrisch/league.finance/commit/4f0bcabe246504fa507a27eb0537159f8f6a40f4))
+
 ## [0.8.41](https://github.com/dachrisch/league.finance/compare/v0.8.40...v0.8.41) (2026-08-27)
 
 
