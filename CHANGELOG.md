@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.46](https://github.com/dachrisch/league.finance/compare/v0.8.45...v0.8.46) (2026-08-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency zod to v4.5.4 ([#548](https://github.com/dachrisch/league.finance/issues/548)) ([e848327](https://github.com/dachrisch/league.finance/commit/e848327ec8dbf94d1b27a9d929462294d38cc422))
+
 ## [0.8.45](https://github.com/dachrisch/league.finance/compare/v0.8.44...v0.8.45) (2026-08-29)
 
 
