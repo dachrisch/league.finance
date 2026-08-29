@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.44](https://github.com/dachrisch/league.finance/compare/v0.8.43...v0.8.44) (2026-08-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency express-rate-limit to v8.7.0 ([#545](https://github.com/dachrisch/league.finance/issues/545)) ([cd812ad](https://github.com/dachrisch/league.finance/commit/cd812ada3e8f08096ee6ed28c40b9c2a1ed84515))
+* **deps:** update dependency zod to v4.5.2 ([#544](https://github.com/dachrisch/league.finance/issues/544)) ([5742961](https://github.com/dachrisch/league.finance/commit/5742961819a427b15468fe65206db7e753fa0554))
+
 ## [0.8.43](https://github.com/dachrisch/league.finance/compare/v0.8.42...v0.8.43) (2026-08-28)
 
 
