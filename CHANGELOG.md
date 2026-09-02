@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.54](https://github.com/dachrisch/league.finance/compare/v0.8.53...v0.8.54) (2026-09-02)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @testing-library/user-event to v14.6.7 ([#566](https://github.com/dachrisch/league.finance/issues/566)) ([d1f8b51](https://github.com/dachrisch/league.finance/commit/d1f8b518c1ecffd179da100376b007a543a1dbd9))
+* **deps:** update dependency mysql2 to v3.24.3 ([#567](https://github.com/dachrisch/league.finance/issues/567)) ([c1d06d2](https://github.com/dachrisch/league.finance/commit/c1d06d2cc9efdb8930398eca13fa5b54de578813))
+
 ## [0.8.53](https://github.com/dachrisch/league.finance/compare/v0.8.52...v0.8.53) (2026-09-02)
 
 
