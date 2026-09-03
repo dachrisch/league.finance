@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.56](https://github.com/dachrisch/league.finance/compare/v0.8.55...v0.8.56) (2026-09-03)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @types/react-dom to v19.2.6 ([#570](https://github.com/dachrisch/league.finance/issues/570)) ([f5b4881](https://github.com/dachrisch/league.finance/commit/f5b488174c9c5951be87a39335a787c67f6281af))
+
 ## [0.8.55](https://github.com/dachrisch/league.finance/compare/v0.8.54...v0.8.55) (2026-09-02)
 
 
