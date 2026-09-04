@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.58](https://github.com/dachrisch/league.finance/compare/v0.8.57...v0.8.58) (2026-09-04)
+
+
+### Bug Fixes
+
+* **deps:** update dependency mongoose to v9.9.5 ([#576](https://github.com/dachrisch/league.finance/issues/576)) ([07087ea](https://github.com/dachrisch/league.finance/commit/07087eae84e74fd87df0372b7d0d8922dd27990e))
+
 ## [0.8.57](https://github.com/dachrisch/league.finance/compare/v0.8.56...v0.8.57) (2026-09-03)
 
 
