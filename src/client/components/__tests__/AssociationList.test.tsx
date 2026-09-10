@@ -33,19 +33,21 @@ describe('AssociationList', () => {
 
   const mockOnEdit = vi.fn();
   const mockOnDelete = vi.fn();
+  const mockOnViewDetails = vi.fn();
 
   beforeEach(() => {
     mockOnEdit.mockClear();
     mockOnDelete.mockClear();
+    mockOnViewDetails.mockClear();
   });
 
   it('renders empty state when no associations', () => {
-    render(<AssociationList associations={[]} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
+    render(<AssociationList associations={[]} onEdit={mockOnEdit} onDelete={mockOnDelete} onViewDetails={mockOnViewDetails} />);
     expect(screen.getByText(/No associations found/i)).toBeInTheDocument();
   });
 
   it('renders cards with associations', () => {
-    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
+    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} onViewDetails={mockOnViewDetails} />);
 
     expect(screen.getByText('Association 1')).toBeInTheDocument();
     expect(screen.getByText('Association 2')).toBeInTheDocument();
@@ -64,7 +66,7 @@ describe('AssociationList', () => {
       },
     ];
     const { container } = render(
-      <AssociationList associations={emptyAddr} onEdit={mockOnEdit} onDelete={mockOnDelete} />
+      <AssociationList associations={emptyAddr} onEdit={mockOnEdit} onDelete={mockOnDelete} onViewDetails={mockOnViewDetails} />
     );
 
     expect(screen.getByText(/No address provided/i)).toBeInTheDocument();
@@ -73,7 +75,7 @@ describe('AssociationList', () => {
   });
 
   it('calls onEdit when a card is clicked', () => {
-    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
+    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} onViewDetails={mockOnViewDetails} />);
 
     const card = screen.getByText('Association 1');
     fireEvent.click(card);
@@ -82,12 +84,21 @@ describe('AssociationList', () => {
   });
 
   it('calls onDelete when delete button is clicked', () => {
-    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
+    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} onViewDetails={mockOnViewDetails} />);
 
     const deleteButtons = screen.getAllByTitle('Delete Association');
     fireEvent.click(deleteButtons[0]);
 
     expect(mockOnDelete).toHaveBeenCalledWith('1');
+    expect(mockOnEdit).not.toHaveBeenCalled();
+  });
+
+  it('calls onViewDetails without triggering onEdit when the details link is clicked', () => {
+    render(<AssociationList associations={mockAssociations} onEdit={mockOnEdit} onDelete={mockOnDelete} onViewDetails={mockOnViewDetails} />);
+
+    fireEvent.click(screen.getAllByText(/View leagues & contacts/i)[0]);
+
+    expect(mockOnViewDetails).toHaveBeenCalledWith('1');
     expect(mockOnEdit).not.toHaveBeenCalled();
   });
 });

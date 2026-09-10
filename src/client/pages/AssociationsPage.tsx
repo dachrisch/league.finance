@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 import { AssociationContactForm } from '../components/AssociationContactForm';
 import { AssociationForm } from '../components/AssociationForm';
@@ -12,6 +13,7 @@ interface Modal {
 }
 
 export function AssociationsPage() {
+  const navigate = useNavigate();
   const [modal, setModal] = useState<Modal | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; action?: { label: string; onClick: () => void } } | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -199,6 +201,7 @@ export function AssociationsPage() {
           associations={visibleAssociations}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onViewDetails={(id) => navigate(`/associations/${id}`)}
           isLoading={isLoading}
         />
       )}
