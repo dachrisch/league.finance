@@ -5,6 +5,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { AssociationsPage } from './pages/AssociationsPage';
+import { AssociationDetailPage } from './pages/AssociationDetailPage';
 import { ContactsPage } from './pages/ContactsPage';
 import { OffersPage } from './pages/OffersPage';
 import { OfferDetailPage } from './pages/OfferDetailPage';
@@ -71,6 +72,7 @@ export function App() {
                     <Route path="/invoices" element={<InvoicesPage />} />
                     <Route path="/offers" element={<OffersPage />} />
                     <Route path="/associations" element={<AssociationsPage />} />
+                    <Route path="/associations/:id" element={<AssociationDetailPage />} />
                     <Route path="/contacts" element={<ContactsPage />} />
                   </Route>
                   <Route path="/config/*" element={<Navigate to="/dashboard" replace />} />

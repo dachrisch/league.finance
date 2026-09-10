@@ -28,7 +28,7 @@ export const AssociationSchema = AssociationInputSchema.extend({
 export type Association = z.infer<typeof AssociationSchema>;
 
 // Offer schemas
-export const OfferStatusSchema = z.enum(['draft', 'sending', 'sent', 'accepted']);
+export const OfferStatusSchema = z.enum(['draft', 'sending', 'sent', 'accepted', 'rejected']);
 export type OfferStatus = z.infer<typeof OfferStatusSchema>;
 
 export const DriveMetadataSchema = z.object({

@@ -1,7 +1,7 @@
 import { Schema, model, Document, Types } from 'mongoose';
 
 export interface IOffer extends Document {
-  status: 'draft' | 'sending' | 'sent' | 'accepted';
+  status: 'draft' | 'sending' | 'sent' | 'accepted' | 'rejected';
   associationId: string;
   seasonId: number;
   leagueIds: number[];
@@ -27,7 +27,7 @@ const OfferSchema = new Schema<IOffer>(
   {
     status: {
       type: String,
-      enum: ['draft', 'sending', 'sent', 'accepted'],
+      enum: ['draft', 'sending', 'sent', 'accepted', 'rejected'],
       default: 'draft',
     },
     associationId: { type: String, required: true },

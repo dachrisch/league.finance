@@ -9,7 +9,7 @@ export interface OfferCardProps {
   contactName: string;
   leagueCount: number;
   leagueNames: string[];
-  status: 'draft' | 'sending' | 'sent' | 'accepted';
+  status: 'draft' | 'sending' | 'sent' | 'accepted' | 'rejected';
   createdAt: Date | string;
   isExpanded: boolean;
   onToggleExpand: () => void;

@@ -15,6 +15,7 @@ const statusBadgeStyle = (status: string): React.CSSProperties => {
     draft: { bg: 'var(--bg-secondary)', color: 'var(--text-muted)', border: 'var(--border-color)' },
     sent: { bg: '#eff6ff', color: '#0369a1', border: '#bae6fd' },
     accepted: { bg: '#ecfdf5', color: 'var(--success-color)', border: 'var(--success-color)' },
+    rejected: { bg: '#fef2f2', color: '#b91c1c', border: '#fecaca' },
   };
 
   const colorSet = colors[status] || colors.draft;
@@ -77,6 +78,7 @@ export function OfferTable({
           { label: 'Draft', value: 'draft' },
           { label: 'Sent', value: 'sent' },
           { label: 'Accepted', value: 'accepted' },
+          { label: 'Rejected', value: 'rejected' },
         ].map(({ label, value }) => (
           <button
             key={label}

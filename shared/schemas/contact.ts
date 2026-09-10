@@ -12,6 +12,7 @@ export const CreateContactSchema = z.object({
   address: AddressSchema,
   email: z.string().email('Invalid email address'),
   phone: z.string().optional(),
+  associationId: z.string().min(1).nullable().optional(),
 });
 
 export const UpdateContactSchema = CreateContactSchema.partial();

@@ -5,10 +5,11 @@ interface AssociationListProps {
   associations: Association[];
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onViewDetails: (id: string) => void;
   isLoading?: boolean;
 }
 
-export function AssociationList({ associations, onEdit, onDelete, isLoading = false }: AssociationListProps) {
+export function AssociationList({ associations, onEdit, onDelete, onViewDetails, isLoading = false }: AssociationListProps) {
   if (associations.length === 0) {
     return (
       <div className="card" style={{
@@ -96,6 +97,16 @@ export function AssociationList({ associations, onEdit, onDelete, isLoading = fa
           <div style={{ marginTop: 'var(--spacing-md)', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
             Click to edit
           </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(association._id);
+            }}
+            className="btn btn-ghost btn-sm"
+            style={{ marginTop: 'var(--spacing-sm)', padding: 0, minHeight: 'auto', alignSelf: 'flex-start' }}
+          >
+            View leagues & contacts →
+          </button>
         </div>
       ))}
     </div>
