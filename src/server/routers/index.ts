@@ -14,6 +14,7 @@ import { invoicesRouter } from './finance/invoices';
 import { invoicesDriveRouter } from './finance/invoices-drive';
 import { contactsRouter } from './finance/contacts';
 import { leaguesRouter } from './finance/leagues';
+import { trackedLeaguesRouter } from './finance/trackedLeagues';
 import { seasonsRouter } from './finance/seasons';
 import { healthRouter } from './health';
 
@@ -35,6 +36,7 @@ export const appRouter = router({
     invoicesDrive: invoicesDriveRouter,
     contacts: contactsRouter,
     leagues: leaguesRouter,
+    trackedLeagues: trackedLeaguesRouter,
     seasons: seasonsRouter,
   }),
 });
