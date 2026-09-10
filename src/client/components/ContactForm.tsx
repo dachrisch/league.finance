@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
+import { trpc } from '../lib/trpc';
 
 export interface ContactFormProps {
   initialData?: any;
+  lockedAssociationId?: string;
   onSubmit: (data: {
     name: string;
     email: string;
+    associationId: string | null;
     address: {
       street: string;
       city: string;
@@ -16,7 +19,10 @@ export interface ContactFormProps {
   isLoading?: boolean;
 }
 
-export function ContactForm({ initialData, onSubmit, onCancel, isLoading = false }: ContactFormProps) {
+export function ContactForm({ initialData, lockedAssociationId, onSubmit, onCancel, isLoading = false }: ContactFormProps) {
+  const { data: associations = [] } = trpc.finance.associations.list.useQuery(undefined, {
+    enabled: !lockedAssociationId,
+  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -24,6 +30,7 @@ export function ContactForm({ initialData, onSubmit, onCancel, isLoading = false
     city: '',
     postalCode: '',
     country: '',
+    associationId: lockedAssociationId || '',
   });
   const [error, setError] = useState('');
 
@@ -36,11 +43,14 @@ export function ContactForm({ initialData, onSubmit, onCancel, isLoading = false
         city: initialData.address?.city || initialData.city || '',
         postalCode: initialData.address?.postalCode || initialData.postalCode || '',
         country: initialData.address?.country || initialData.country || '',
+        associationId: lockedAssociationId || initialData.associationId || '',
       });
+    } else if (lockedAssociationId) {
+      setFormData((prev) => ({ ...prev, associationId: lockedAssociationId }));
     }
-  }, [initialData]);
+  }, [initialData, lockedAssociationId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -68,6 +78,7 @@ export function ContactForm({ initialData, onSubmit, onCancel, isLoading = false
       await onSubmit({
         name: formData.name,
         email: formData.email,
+        associationId: formData.associationId || null,
         address: {
           street: formData.street,
           city: formData.city,
@@ -131,6 +142,33 @@ export function ContactForm({ initialData, onSubmit, onCancel, isLoading = false
           disabled={isLoading}
         />
       </div>
+
+      {!lockedAssociationId && (
+        <div>
+          <label htmlFor="associationId" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500' }}>
+            Association
+          </label>
+          <select
+            id="associationId"
+            name="associationId"
+            value={formData.associationId}
+            onChange={handleChange}
+            disabled={isLoading}
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              border: '1px solid #dee2e6',
+              borderRadius: '4px',
+              fontSize: '0.875rem',
+            }}
+          >
+            <option value="">— No association —</option>
+            {associations.map((a: any) => (
+              <option key={a._id} value={a._id}>{a.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div>
         <label htmlFor="street" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500' }}>
