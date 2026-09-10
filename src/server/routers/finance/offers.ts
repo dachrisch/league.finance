@@ -45,7 +45,7 @@ export const offersRouter = router({
   list: protectedProcedure
     .input(
       z.object({
-        status: z.enum(['draft', 'sent', 'accepted']).optional(),
+        status: z.enum(['draft', 'sending', 'sent', 'accepted', 'rejected']).optional(),
         associationId: z.number().optional(),
       }).optional()
     )
@@ -312,6 +312,19 @@ export const offersRouter = router({
       const offer = await Offer.findByIdAndUpdate(
         input.id,
         { status: 'accepted', acceptedAt: new Date() },
+        { returnDocument: 'after' }
+      ).lean();
+
+      if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
+      return normalizeOffer(offer);
+    }),
+
+  markRejected: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      const offer = await Offer.findByIdAndUpdate(
+        input.id,
+        { status: 'rejected' },
         { returnDocument: 'after' }
       ).lean();
 

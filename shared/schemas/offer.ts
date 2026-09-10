@@ -9,7 +9,7 @@ export const CreateOfferSchema = z.object({
 });
 
 export const UpdateOfferSchema = z.object({
-  status: z.enum(['draft', 'sending', 'sent', 'accepted']).optional(),
+  status: z.enum(['draft', 'sending', 'sent', 'accepted', 'rejected']).optional(),
   contactId: z.string().optional(),
   leagueIds: z.array(z.number().int().positive()).min(1).optional(),
   sentAt: z.date().optional(),
@@ -31,7 +31,7 @@ export const UpdateOfferSchema = z.object({
 
 export const OfferSchema = CreateOfferSchema.extend({
   _id: z.string(),
-  status: z.enum(['draft', 'sending', 'sent', 'accepted']),
+  status: z.enum(['draft', 'sending', 'sent', 'accepted', 'rejected']),
   createdAt: z.date(),
   updatedAt: z.date(),
   sentAt: z.date().optional(),
