@@ -10,10 +10,13 @@ const normalizeContact = (doc: any) => ({
 });
 
 export const contactsRouter = router({
-  list: protectedProcedure.query(async () => {
-    const contacts = await Contact.find().sort({ name: 1 }).lean();
-    return contacts.map(normalizeContact);
-  }),
+  list: protectedProcedure
+    .input(z.object({ associationId: z.string().optional() }).optional())
+    .query(async ({ input }) => {
+      const filter = input?.associationId ? { associationId: input.associationId } : {};
+      const contacts = await Contact.find(filter).sort({ name: 1 }).lean();
+      return contacts.map(normalizeContact);
+    }),
 
   get: protectedProcedure
     .input(z.object({ id: z.string() }))

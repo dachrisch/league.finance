@@ -4,6 +4,7 @@ export interface IContact extends Document {
   name: string;
   email: string;
   phone?: string;
+  associationId: string | null;
   address: {
     street: string;
     city: string;
@@ -19,6 +20,7 @@ const ContactSchema = new Schema<IContact>(
     name: { type: String, required: true },
     email: { type: String, required: true },
     phone: { type: String, default: '' },
+    associationId: { type: String, default: null },
     address: {
       street: { type: String, required: true },
       city: { type: String, required: true },
@@ -30,5 +32,6 @@ const ContactSchema = new Schema<IContact>(
 );
 
 ContactSchema.index({ name: 1 });
+ContactSchema.index({ associationId: 1 });
 
 export const Contact = model<IContact>('Contact', ContactSchema);
