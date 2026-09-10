@@ -9,6 +9,7 @@ const statusBadgeStyle = (status: string): React.CSSProperties => {
     sending: { bg: '#fff7ed', color: '#c2410c', border: '#fed7aa' },
     sent: { bg: '#eff6ff', color: '#0369a1', border: '#bae6fd' },
     accepted: { bg: '#ecfdf5', color: 'var(--success-color)', border: 'var(--success-color)' },
+    rejected: { bg: '#fef2f2', color: '#b91c1c', border: '#fecaca' },
   };
 
   const colorSet = colors[status] || colors.draft;
@@ -56,6 +57,9 @@ export function OfferDetailPage() {
   const { data: invoices = [] } = trpc.finance.invoices.list.useQuery({});
 
   const markAccepted = trpc.finance.offers.markAccepted.useMutation({
+    onSuccess: () => refetch(),
+  });
+  const markRejected = trpc.finance.offers.markRejected.useMutation({
     onSuccess: () => refetch(),
   });
 
@@ -255,6 +259,16 @@ export function OfferDetailPage() {
               disabled={markAccepted.isPending}
             >
               {markAccepted.isPending ? '…' : '✓ Mark as Accepted'}
+            </button>
+          )}
+          {offer.status === 'sent' && (
+            <button
+              className="btn btn-ghost"
+              style={{ color: 'var(--danger-color)' }}
+              onClick={() => markRejected.mutate({ id: id! })}
+              disabled={markRejected.isPending}
+            >
+              {markRejected.isPending ? '…' : '✕ Mark as Rejected'}
             </button>
           )}
           {(offer.status === 'sent' || offer.status === 'accepted') && offer.driveMetadata?.driveFileId && (
