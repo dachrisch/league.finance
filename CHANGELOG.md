@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.0](https://github.com/dachrisch/league.finance/compare/v0.8.68...v0.9.0) (2026-09-10)
+
+
+### Features
+
+* add Association detail page with a Contacts section ([5138bd5](https://github.com/dachrisch/league.finance/commit/5138bd50c3532d54d98142bc078cbb44b1bf572a))
+* add finance.trackedLeagues router ([a961e85](https://github.com/dachrisch/league.finance/commit/a961e859060fb19067f5fb8ef797f508f41ed5ef))
+* add leaguesphere name-matching for tracked league crosscheck ([b2f3018](https://github.com/dachrisch/league.finance/commit/b2f3018bd2a82a1388aff78f0914caaf5f5371a8))
+* add rejected status to Offer ([a35e6d0](https://github.com/dachrisch/league.finance/commit/a35e6d0ca67c2b99044a71dbe6919c73cc51cee0))
+* add TrackedLeague schema and model ([8aebfa0](https://github.com/dachrisch/league.finance/commit/8aebfa09c2ae2d450eafb677d6276390bb894150))
+* add TrackedLeagueForm component ([feb348e](https://github.com/dachrisch/league.finance/commit/feb348e67e5c3779cc96d9af2d819b17f3cbc332))
+* add TrackedLeagueList and wire tracked leagues into the Association detail page ([55b539e](https://github.com/dachrisch/league.finance/commit/55b539e4febd81e378d4011cb021375359e406b9))
+* derive TrackedLeague effective status from linked Offer/Invoice ([c41a85d](https://github.com/dachrisch/league.finance/commit/c41a85d3532913430eabd61793bec34fe372a764))
+* import Tracker Kontakte Ligen sheet into tracked leagues ([26b8291](https://github.com/dachrisch/league.finance/commit/26b8291d2b827fe6b3fd23d21774448a4c859b69))
+* let ContactForm assign a contact to an association ([44e48b7](https://github.com/dachrisch/league.finance/commit/44e48b75fdc62dc8501811aae3ef6ff2fb17463d))
+* link contacts to an association ([30ec4b9](https://github.com/dachrisch/league.finance/commit/30ec4b94bdff44def9817df1ecb1dc14a71649b8))
+* render rejected offer status and add a reject action ([4743afb](https://github.com/dachrisch/league.finance/commit/4743afb00d12e054101982d4400ece2e18fb9326))
+
 ## [0.8.68](https://github.com/dachrisch/league.finance/compare/v0.8.67...v0.8.68) (2026-09-10)
 
 
