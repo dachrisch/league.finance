@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.4](https://github.com/dachrisch/league.finance/compare/v0.9.3...v0.9.4) (2026-09-11)
+
+
+### Bug Fixes
+
+* exit migration process explicitly after success ([#611](https://github.com/dachrisch/league.finance/issues/611)) ([dd2a496](https://github.com/dachrisch/league.finance/commit/dd2a4964f2fed17e07a35a7cc4fb9cf812c51040))
+
 ## [0.9.3](https://github.com/dachrisch/league.finance/compare/v0.9.2...v0.9.3) (2026-09-10)
 
 
