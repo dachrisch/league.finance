@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.5](https://github.com/dachrisch/league.finance/compare/v0.9.4...v0.9.5) (2026-09-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency googleapis to v180 ([#610](https://github.com/dachrisch/league.finance/issues/610)) ([875ebae](https://github.com/dachrisch/league.finance/commit/875ebaeacd1828078a298b8cd41f0699a993222c))
+* **deps:** update dependency zod to v4.6.2 ([#609](https://github.com/dachrisch/league.finance/issues/609)) ([5ff8c33](https://github.com/dachrisch/league.finance/commit/5ff8c3382aca90007bc13abef8a60ae741142d45))
+
 ## [0.9.4](https://github.com/dachrisch/league.finance/compare/v0.9.3...v0.9.4) (2026-09-11)
 
 
