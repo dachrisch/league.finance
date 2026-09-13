@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.10](https://github.com/dachrisch/league.finance/compare/v0.9.9...v0.9.10) (2026-09-13)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @testing-library/dom to v10.4.2 ([#622](https://github.com/dachrisch/league.finance/issues/622)) ([3350d14](https://github.com/dachrisch/league.finance/commit/3350d1476e79a9fadaf3013c5c7c51bd6b2e1a7c))
+
 ## [0.9.9](https://github.com/dachrisch/league.finance/compare/v0.9.8...v0.9.9) (2026-09-13)
 
 
