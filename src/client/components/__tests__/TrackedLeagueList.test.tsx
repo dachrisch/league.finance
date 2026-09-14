@@ -1,6 +1,15 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TrackedLeagueList } from '../TrackedLeagueList';
+
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 const contacts = [{ _id: 'contact-1', name: 'Michael Hanke' }];
 
@@ -21,6 +30,10 @@ const league = (over: Record<string, any> = {}) => ({
 });
 
 describe('TrackedLeagueList', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear();
+  });
+
   it('shows the empty state', () => {
     render(
       <TrackedLeagueList
@@ -50,7 +63,41 @@ describe('TrackedLeagueList', () => {
     );
     expect(screen.getByText('2026')).toBeInTheDocument();
     expect(screen.getByText('2025')).toBeInTheDocument();
-    expect(screen.getByText('Paid')).toBeInTheDocument();
+    expect(screen.getByText(/Paid/)).toBeInTheDocument();
+  });
+
+  it('navigates to the linked offer when a linked status badge is clicked', () => {
+    render(
+      <TrackedLeagueList
+        trackedLeagues={[league({ leaguesphereLeagueId: 16, linkedOfferId: 'o1', effectiveStatus: { stage: 'paid', offerId: 'o1' } })]}
+        contacts={contacts}
+        crosscheckSuggestions={{}}
+        onLink={vi.fn()}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onCreateOfferFromSelected={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByText(/Paid/));
+
+    expect(mockNavigate).toHaveBeenCalledWith('/offers/o1');
+  });
+
+  it('does not render the status as a link when there is no linked offer', () => {
+    render(
+      <TrackedLeagueList
+        trackedLeagues={[league({ effectiveStatus: { stage: 'lead' } })]}
+        contacts={contacts}
+        crosscheckSuggestions={{}}
+        onLink={vi.fn()}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onCreateOfferFromSelected={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
   it('shows a crosscheck suggestion and links it on click', () => {
