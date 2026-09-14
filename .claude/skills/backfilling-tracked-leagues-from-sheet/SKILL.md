@@ -1,24 +1,36 @@
 ---
 name: backfilling-tracked-leagues-from-sheet
-description: Use when a Google Sheet tracking association contacts and per-league sales-pipeline status (e.g. "Tracker Kontakte Ligen") needs importing or re-syncing into leagues.finance's Association/Contact/TrackedLeague collections — new rows were added since the last import, a similarly-shaped new sheet appears, or the existing import migration needs updating.
+description: Use when a Google Sheet tracking association contacts and per-league sales-pipeline status (e.g. "Tracker Kontakte Ligen") needs importing or re-syncing into leagues.finance's Association/Contact/TrackedLeague collections, or when a TrackedLeague/Association/Contact is missing an address or a historical Offer and old offer/contract documents might exist somewhere in Google Drive.
 ---
 
 # Backfilling Tracked Leagues From a Sheet
 
 ## Overview
 
-Turns a manually-maintained sales-pipeline sheet into an idempotent Mongo
-migration under `src/server/db/migrations/`. Never write to the live
-database directly — a migration is reviewable, dry-runnable, and safe to
-re-run. See `docs/ARCHITECTURE.md` for how `Association`/`Contact`/
-`TrackedLeague`/`Offer` connect, and
-`docs/superpowers/specs/2026-09-10-tracked-leagues-design.md` for why this
-shape was chosen.
+Covers two related but differently-shaped backfills:
 
-**Reference implementation:** `src/server/db/migrations/004-import-tracked-leagues.js`
-— the worked example for everything below. Read it before writing a new one.
+- **Procedure 1 — sheet import/re-sync**: a one-time (or occasionally
+  re-run) snapshot import, written as an idempotent Mongo migration under
+  `src/server/db/migrations/`, because the sheet's rows are a fixed set at
+  any given moment.
+- **Procedure 2 — Drive document lookup**: NOT a migration. Documents in
+  Drive are fluid — searched fresh every run, matches and extracted data
+  vary — so this is a reusable runtime script
+  (`src/server/scripts/applyDriveBackfill.ts`) driven by an agent each time,
+  never a file with hardcoded snapshot data checked into git.
 
-## Procedure
+Never write to the live database directly in either case — a migration is
+reviewable and dry-runnable; the runtime script takes a human-confirmed
+proposal file and is dry-runnable the same way. See `docs/ARCHITECTURE.md`
+for how `Association`/`Contact`/`TrackedLeague`/`Offer`/`FinancialConfig`
+connect, and `docs/superpowers/specs/2026-09-10-tracked-leagues-design.md`
+for why this shape was chosen.
+
+**Reference implementation for Procedure 1:** `src/server/db/migrations/004-import-tracked-leagues.js`.
+**Reference implementation for Procedure 2:** `src/server/scripts/applyDriveBackfill.ts`
+and `src/server/lib/offerBundleConfigs.ts`.
+
+## Procedure 1: Sheet import / re-sync
 
 1. **Fetch the sheet.** Use the Google Drive tools (`search_files` by title,
    then `read_file_content`) to get the sheet's rows as markdown/CSV text.
@@ -50,9 +62,10 @@ shape was chosen.
    | Rejected before any offer was ever sent | `rejected_pre_offer` |
    | Offer accepted and/or invoiced, already resolved before this tracker existed | `closed_historical` |
 
-   `closed_historical` is a dead end deliberately — don't try to
-   reconstruct real `Offer`/`Invoice` documents for old, already-closed
-   deals. The comment field carries the historical outcome as text.
+   `closed_historical` doesn't reconstruct real `Offer`/`Invoice` documents
+   from the sheet's text alone — the comment field carries the historical
+   outcome as text instead. If a supporting document later turns up in
+   Drive, Procedure 2 below can promote it to a real linked `Offer`.
 
 4. **Resolve each `label` to a real leaguesphere association** using the
    same query as `resolveLeaguesphereAssociation()` in the reference
@@ -77,14 +90,83 @@ shape was chosen.
    policy (see `CLAUDE.md`). Re-run once more to confirm it reports 0
    new records (idempotency check).
 
+## Procedure 2: Backfilling addresses and historical offers from Drive documents
+
+Two things can be missing that only a document — not the sheet — can supply:
+an `Association`/`Contact` postal address (the sheet never had one), and a
+real `Offer`/`FinancialConfig` for a `TrackedLeague` sitting in
+`closed_historical` or `offer_in_progress` with only a vague price note
+("unbekannt, nur PDF-Angebot"). Documents for these are **scattered across
+Drive with no known folder** — treat every match as unconfirmed until a
+human says otherwise.
+
+1. **Search, per association and per contact name**, using the Drive tools
+   (`search_files`, then `read_file_content` — it handles PDFs directly).
+   Cast a wide net (association name, contact name, league name) rather
+   than guessing a folder.
+
+2. **Extract only what a document states unambiguously.** An address or
+   price is either clearly stated for *that* association/contact/league, or
+   it doesn't count — never infer from a loosely related document.
+
+3. **Group historical leagues into Offer bundles**, not one Offer per
+   league. Several sheet rows say outright that leagues shared one deal
+   ("Teil eines gemeinsamen Angebots", or the same contract/invoice date
+   repeated across rows, as with the five AFCVNRW 2026 leagues). One
+   `Offer.leagueIds` bundles them; each still gets its own
+   `FinancialConfig`. Every league in a bundle needs a resolved
+   `leaguesphereLeagueId` first (Procedure 1's crosscheck, or
+   `finance.trackedLeagues.crosscheck`) — `Offer.leagueIds` requires real
+   numeric IDs.
+
+4. **Write a proposal JSON** shaped for `applyDriveBackfill.ts`:
+   ```json
+   {
+     "addressUpdates": [
+       { "collection": "associations", "id": "...", "address": { "street": "...", "city": "...", "postalCode": "...", "country": "..." }, "source": "Angebot_AFVH_2026.pdf" }
+     ],
+     "offerBundles": [
+       {
+         "associationId": "...", "contactId": "...", "seasonId": 2026, "status": "accepted", "costModel": "SEASON",
+         "leagues": [
+           { "leaguesphereLeagueId": 12, "trackedLeagueId": "...", "customPrice": 1740 },
+           { "leaguesphereLeagueId": 13, "trackedLeagueId": "...", "customPrice": 2175 }
+         ],
+         "source": "Vertrag_AFCVNRW_2026.pdf"
+       }
+     ]
+   }
+   ```
+   Use `customPrice` for a document-stated flat amount — it overrides the
+   formula in `computeConfigPrices()` outright, which is exactly right for
+   a real contracted price instead of a computed estimate.
+
+5. **Stop and show the full proposal to a human before running anything.**
+   List every match, what was extracted, its source document, and anything
+   left unresolved (no document found, price unclear). This is not
+   optional — the search is unscoped, so false matches are expected, not
+   an edge case.
+
+6. **Apply it**: `npx tsx src/server/scripts/applyDriveBackfill.ts
+   --input=./proposal.json --dry-run` against the test environment first,
+   review the log, run for real, re-run once to confirm it now skips
+   everything (address already set / `TrackedLeague` already linked), then
+   repeat against production.
+
 ## Common mistakes
 
-- Hardcoding the sheet's data from memory instead of re-fetching it — the
-  whole point of this skill is that the sheet keeps changing.
+- Hardcoding the sheet's data from memory instead of re-fetching it (Procedure 1) —
+  the whole point of this skill is that the source keeps changing.
 - Coercing free-text estimate fields (`"~50"`) into numbers — they stay
   strings.
 - Treating a `-` in the Liga column as a real league name.
 - Forgetting a label in `VIRTUAL_LABELS` — it'll get logged as "no
   leaguesphere match found" and create a real-looking but unlinked
   association instead of a clearly virtual one.
-- Skipping the `DRY_RUN` pass or the test-environment run.
+- Skipping the `DRY_RUN` pass or the test-environment run, in either procedure.
+- (Procedure 2) Creating one `Offer` per league when the source documents
+  describe one shared deal — check for bundling language before writing
+  the proposal.
+- (Procedure 2) Writing `applyDriveBackfill.ts` input straight from search
+  results without the human-confirmation stop — the search has no known
+  folder to scope it, so unconfirmed matches will be wrong sometimes.
