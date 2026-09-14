@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.12](https://github.com/dachrisch/league.finance/compare/v0.9.11...v0.9.12) (2026-09-14)
+
+
+### Bug Fixes
+
+* **deps:** update dependency nodemailer to v10.0.10 ([#627](https://github.com/dachrisch/league.finance/issues/627)) ([2838a67](https://github.com/dachrisch/league.finance/commit/2838a677247b3d09cd8dd1b28d62cb1874843992))
+* **deps:** update dependency oxlint to v1.83.0 ([#628](https://github.com/dachrisch/league.finance/issues/628)) ([673f7ff](https://github.com/dachrisch/league.finance/commit/673f7ff6155f48940d3107ff8fd6d34177df042b))
+
 ## [0.9.11](https://github.com/dachrisch/league.finance/compare/v0.9.10...v0.9.11) (2026-09-14)
 
 
