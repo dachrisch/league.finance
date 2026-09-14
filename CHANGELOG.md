@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.13](https://github.com/dachrisch/league.finance/compare/v0.9.12...v0.9.13) (2026-09-14)
+
+
+### Bug Fixes
+
+* link tracked league status badge to its offer once linked ([8716aaa](https://github.com/dachrisch/league.finance/commit/8716aaa3bd23f6be5c805ccb93e3709aaee5b283))
+* link tracked leagues to their offer + docs ([fa5edb0](https://github.com/dachrisch/league.finance/commit/fa5edb0770db5bd3e1f80d929b39b62ce76cf828))
+
 ## [0.9.12](https://github.com/dachrisch/league.finance/compare/v0.9.11...v0.9.12) (2026-09-14)
 
 
