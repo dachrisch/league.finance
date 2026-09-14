@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const STAGE_LABELS: Record<string, string> = {
   lead: 'Lead',
@@ -62,6 +63,7 @@ export interface TrackedLeagueListProps {
 export function TrackedLeagueList({
   trackedLeagues, contacts, crosscheckSuggestions, onLink, onEdit, onDelete, onCreateOfferFromSelected,
 }: TrackedLeagueListProps) {
+  const navigate = useNavigate();
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const contactName = (id: string | null) => contacts.find((c) => c._id === id)?.name || '—';
@@ -155,12 +157,29 @@ export function TrackedLeagueList({
                     <td>{contactName(league.contactId)}</td>
                     <td>{league.estimatedTeamsCount || '—'} / {league.estimatedGamedaysCount || '—'}</td>
                     <td>
-                      <span style={{
-                        display: 'inline-block', padding: '2px 8px', borderRadius: 'var(--border-radius-md)',
-                        fontSize: 'var(--font-size-xs)', background: stageStyle.bg, color: stageStyle.color,
-                      }}>
-                        {STAGE_LABELS[league.effectiveStatus.stage] || league.effectiveStatus.stage}
-                      </span>
+                      {league.effectiveStatus.offerId ? (
+                        <span
+                          role="link"
+                          tabIndex={0}
+                          onClick={(e) => { e.stopPropagation(); navigate(`/offers/${league.effectiveStatus.offerId}`); }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/offers/${league.effectiveStatus.offerId}`); }}
+                          title="View offer"
+                          style={{
+                            display: 'inline-block', padding: '2px 8px', borderRadius: 'var(--border-radius-md)',
+                            fontSize: 'var(--font-size-xs)', background: stageStyle.bg, color: stageStyle.color,
+                            cursor: 'pointer', textDecoration: 'underline',
+                          }}
+                        >
+                          {STAGE_LABELS[league.effectiveStatus.stage] || league.effectiveStatus.stage} ↗
+                        </span>
+                      ) : (
+                        <span style={{
+                          display: 'inline-block', padding: '2px 8px', borderRadius: 'var(--border-radius-md)',
+                          fontSize: 'var(--font-size-xs)', background: stageStyle.bg, color: stageStyle.color,
+                        }}>
+                          {STAGE_LABELS[league.effectiveStatus.stage] || league.effectiveStatus.stage}
+                        </span>
+                      )}
                     </td>
                     <td>
                       <button className="btn btn-ghost btn-sm" style={{ color: 'var(--danger-color)' }} onClick={() => onDelete(league._id)}>

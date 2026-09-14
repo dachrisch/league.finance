@@ -8,6 +8,7 @@
 - **Server**: `src/server/` (Express + tRPC Server + tsx). Entry: `src/server/index.ts`.
 - **Shared**: `shared/` contains Zod schemas (`shared/schemas`), types (`shared/types`), and helpers (`shared/lib`) used by both.
 - **Frontend Assets**: Uses `src/client/index.css` for responsive design. Mimic existing styles (inline styles + utility classes).
+- **Domain entity relationships** (how `Association`, `Contact`, `TrackedLeague`, `Offer`, `FinancialConfig`, and `Invoice` connect, and how to navigate that chain in the UI): see [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
 ### tRPC router map (`src/server/routers/index.ts`)
 The single `appRouter` is the client/server contract; its type (`AppRouter`) drives client-side inference. Top-level namespaces: `health`, `auth`, `teams`, `google`, and everything domain-specific nested under **`finance`**: `settings`, `configs`, `discounts`, `dashboard`, `calculate`, `associations`, `offers`, `offersDrive`, `contacts`, `leagues`, `seasons`. So an endpoint like the one that computes offer pricing is `finance.offers.list`, not `offers.list`. `teams`/`finance.leagues`/`finance.seasons` read from the MySQL source; the rest are MongoDB-backed.
