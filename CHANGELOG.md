@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.0](https://github.com/dachrisch/league.finance/compare/v0.9.13...v0.10.0) (2026-09-14)
+
+
+### Features
+
+* add runtime script to backfill addresses and historical offers from Drive documents ([1636aba](https://github.com/dachrisch/league.finance/commit/1636abaeff358620da45e51e03e55bb9f037b707))
+* backfill addresses and historical offers from Drive documents ([cdefa04](https://github.com/dachrisch/league.finance/commit/cdefa043a7f874a2ce4b469296f2f5b6466c78c5))
+
 ## [0.9.13](https://github.com/dachrisch/league.finance/compare/v0.9.12...v0.9.13) (2026-09-14)
 
 
