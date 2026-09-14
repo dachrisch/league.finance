@@ -8,4 +8,7 @@ duplicated here — read it in full before making changes.
 
 @AGENTS.md
 
-See also [`README.md`](./README.md) for the human-facing overview and domain notes.
+See also [`README.md`](./README.md) for the human-facing overview and domain notes, and
+[`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for how the core domain entities
+(`Association`, `Contact`, `TrackedLeague`, `Offer`, `FinancialConfig`, `Invoice`) connect
+end to end, from a sales lead to a paid invoice.
