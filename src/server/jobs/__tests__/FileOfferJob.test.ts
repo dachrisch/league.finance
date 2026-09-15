@@ -61,6 +61,30 @@ describe('FileOfferJobHandler', () => {
     expect(res).toEqual({ success: true, driveLink: 'https://drive/file1' });
   });
 
+  it('uses the association\'s address, not the contact\'s, as the recipient address', async () => {
+    const save = vi.fn();
+    vi.mocked(Offer.findById).mockResolvedValue({ _id: 'o1', contactId: 'c1', associationId: 'a1', save } as any);
+    vi.mocked(Association.findById).mockResolvedValue({
+      name: 'AFVB',
+      address: { street: 'Georg-Brauchle-Ring 93', postalCode: '80992', city: 'München' },
+    } as any);
+    vi.mocked(Contact.findById).mockResolvedValue({
+      name: 'Lynn Hoffer',
+      address: { street: 'Wrong Contact Street', postalCode: '00000', city: 'Wrongtown' },
+    } as any);
+
+    await FileOfferJobHandler.process(makeJob() as any);
+
+    expect(PdfService.generateOfferPdf).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contact: expect.objectContaining({
+          name: 'Lynn Hoffer',
+          address: { street: 'Georg-Brauchle-Ring 93', postalCode: '80992', city: 'München' },
+        }),
+      })
+    );
+  });
+
   it('forwards the priced configs from the job payload to the PDF and does not query FinancialConfig', async () => {
     const save = vi.fn();
     vi.mocked(Offer.findById).mockResolvedValue({ _id: 'o1', contactId: 'c1', associationId: 'a1', save } as any);

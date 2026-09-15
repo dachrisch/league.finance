@@ -53,14 +53,18 @@ const InvoiceSchema = new Schema<IInvoice>(
       default: 'draft',
     },
     paidAt: { type: Date },
+    // The nested field is named `type`, colliding with Mongoose's own `type` keyword for
+    // declaring a path's SchemaType — without wrapping it in an explicit Schema, Mongoose
+    // hydrates a stored `null` as a truthy empty subdocument ({ type: undefined, value:
+    // undefined }) instead of null, which corrupted every invoice PDF's totals (NaN) via
+    // the "no discount" branch in computeDiscountAmount().
     discount: {
-      type: {
-        type: String,
-        enum: ['FIXED', 'PERCENT'],
-      },
-      value: Number,
-      description: String,
-      _id: false,
+      type: new Schema({
+        type: { type: String, enum: ['FIXED', 'PERCENT'] },
+        value: Number,
+        description: String,
+      }, { _id: false }),
+      default: null,
     },
     driveMetadata: {
       driveFileId: String,
