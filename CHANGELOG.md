@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.4](https://github.com/dachrisch/league.finance/compare/v0.10.3...v0.10.4) (2026-09-15)
+
+
+### Bug Fixes
+
+* **deps:** update dependency react-router-dom to v7.18.4 ([#641](https://github.com/dachrisch/league.finance/issues/641)) ([ebeae8b](https://github.com/dachrisch/league.finance/commit/ebeae8bc36ac5ba3e8f2c1b3d45875c689117aaf))
+* **deps:** update dependency vitest to v5.0.1 ([#642](https://github.com/dachrisch/league.finance/issues/642)) ([a31b936](https://github.com/dachrisch/league.finance/commit/a31b936016e542b7fb36352f77476a8c71c6552d))
+
 ## [0.10.3](https://github.com/dachrisch/league.finance/compare/v0.10.2...v0.10.3) (2026-09-15)
 
 
