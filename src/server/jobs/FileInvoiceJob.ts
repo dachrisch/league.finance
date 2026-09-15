@@ -63,7 +63,10 @@ export class FileInvoiceJobHandler {
           discount: invoice.discount ?? null,
         },
         associationName,
-        contact: { name: contact.name, address: contact.address },
+        // The recipient's postal address is the association's business address — the
+        // contact is only the "z.H." (attention) line. Falling back to contact.address
+        // guards against an unresolved association, not against using it deliberately.
+        contact: { name: contact.name, address: association?.address ?? contact.address },
         lineItems: lineItemDocs.map((li: any) => ({
           leagueName: leaguesMap[li.leagueId] || 'Unknown League',
           amount: li.amount,

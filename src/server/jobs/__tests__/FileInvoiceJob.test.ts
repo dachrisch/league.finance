@@ -73,6 +73,29 @@ describe('FileInvoiceJobHandler', () => {
     expect(res).toEqual({ success: true, driveLink: 'https://drive/file1' });
   });
 
+  it('uses the association\'s address, not the contact\'s, as the recipient address', async () => {
+    vi.mocked(Invoice.findById).mockResolvedValue(makeInvoice() as any);
+    vi.mocked(Association.findById).mockResolvedValue({
+      name: 'AFCV NRW',
+      address: { street: 'Halterner Straße 193', postalCode: '45770', city: 'Marl' },
+    } as any);
+    vi.mocked(Contact.findById).mockResolvedValue({
+      name: 'Fabian Pawlowski',
+      address: { street: 'Wrong Contact Street', postalCode: '00000', city: 'Wrongtown' },
+    } as any);
+
+    await FileInvoiceJobHandler.process(makeJob() as any);
+
+    expect(PdfService.generateInvoicePdf).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contact: expect.objectContaining({
+          name: 'Fabian Pawlowski',
+          address: { street: 'Halterner Straße 193', postalCode: '45770', city: 'Marl' },
+        }),
+      })
+    );
+  });
+
   it('resolves league names from MySQL and passes them with amounts to the PDF', async () => {
     vi.mocked(Invoice.findById).mockResolvedValue(makeInvoice() as any);
     await FileInvoiceJobHandler.process(makeJob() as any);

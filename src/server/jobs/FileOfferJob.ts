@@ -65,7 +65,10 @@ export class FileOfferJobHandler {
       job.log('Generating PDF...');
       const pdfData: PdfGenerationData = {
         offer,
-        contact,
+        // The recipient's postal address is the association's business address — the
+        // contact is only the "z.H." (attention) line. Falling back to contact.address
+        // guards against an unresolved association, not against using it deliberately.
+        contact: { name: contact.name, email: contact.email, address: association?.address ?? contact.address },
         configs,
         leaguesMap,
         associationName,
