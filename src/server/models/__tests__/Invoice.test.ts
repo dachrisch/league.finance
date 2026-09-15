@@ -73,6 +73,17 @@ describe('Invoice Model', () => {
     expect(doc.discount?.value).toBe(10);
   });
 
+  it('leaves discount falsy when not set, even after re-fetching from the database', async () => {
+    const created = await Invoice.create({
+      offerId, associationId: 'assoc-1', contactId, customerNumber: 10010, seasonId: 2026,
+      invoiceNumber: '20260810-05', invoiceDate: new Date(), servicePeriod: '8.2026', dueDate: new Date(),
+    });
+    expect(created.discount).toBeFalsy();
+
+    const refetched = await Invoice.findById(created._id);
+    expect(refetched?.discount).toBeFalsy();
+  });
+
   it('accepts driveMetadata and sheetSync subdocuments', async () => {
     const doc = new Invoice({
       offerId, associationId: 'assoc-1', contactId, customerNumber: 10010, seasonId: 2026,
