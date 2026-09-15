@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.2](https://github.com/dachrisch/league.finance/compare/v0.10.1...v0.10.2) (2026-09-15)
+
+
+### Bug Fixes
+
+* **deps:** update dependency googleapis to v181 ([63365b0](https://github.com/dachrisch/league.finance/commit/63365b09cb08b0ac108e37737d403d35b61c0b85))
+* invoice discount hydrates as a truthy empty object instead of null ([6e10e5b](https://github.com/dachrisch/league.finance/commit/6e10e5bf70239a887683a82fd346082552190f67))
+* invoice PDF NaN totals and wrong recipient address ([671d59c](https://github.com/dachrisch/league.finance/commit/671d59caea199bbf2889e46eca1c8f622f65725a))
+* offer and invoice PDFs used the contact's address, not the association's ([3a422b4](https://github.com/dachrisch/league.finance/commit/3a422b45079df7a8d2d26dbe02e6caba65186641))
+
 ## [0.10.1](https://github.com/dachrisch/league.finance/compare/v0.10.0...v0.10.1) (2026-09-14)
 
 
