@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.3](https://github.com/dachrisch/league.finance/compare/v0.10.2...v0.10.3) (2026-09-15)
+
+
+### Bug Fixes
+
+* track applied migrations instead of re-running all of them on every boot ([d1db45e](https://github.com/dachrisch/league.finance/commit/d1db45e1b0b4fdf0b0cd1c37c004b77fec0e3533))
+* track applied migrations to stop data loss on every deploy ([ec78f47](https://github.com/dachrisch/league.finance/commit/ec78f472afed30e8605c5a773adc12ce21e24d22))
+
 ## [0.10.2](https://github.com/dachrisch/league.finance/compare/v0.10.1...v0.10.2) (2026-09-15)
 
 
