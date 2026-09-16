@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.5](https://github.com/dachrisch/league.finance/compare/v0.10.4...v0.10.5) (2026-09-16)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @types/nodemailer to v8.0.2 ([#644](https://github.com/dachrisch/league.finance/issues/644)) ([d2b071a](https://github.com/dachrisch/league.finance/commit/d2b071a4c9706d77350c3db8b340f34118a07be0))
+
 ## [0.10.4](https://github.com/dachrisch/league.finance/compare/v0.10.3...v0.10.4) (2026-09-15)
 
 
