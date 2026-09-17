@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.8](https://github.com/dachrisch/league.finance/compare/v0.10.7...v0.10.8) (2026-09-17)
+
+
+### Bug Fixes
+
+* **deps:** update dependency jsdom to v30.1.0 ([#652](https://github.com/dachrisch/league.finance/issues/652)) ([57ba353](https://github.com/dachrisch/league.finance/commit/57ba353f90d318f719c81aebdd2e902919fecf32))
+* **deps:** update trpc monorepo to v11.19.0 ([#653](https://github.com/dachrisch/league.finance/issues/653)) ([54268b7](https://github.com/dachrisch/league.finance/commit/54268b7b4d4cb7fce55c6b04fe1dffaf7a2334b8))
+
 ## [0.10.7](https://github.com/dachrisch/league.finance/compare/v0.10.6...v0.10.7) (2026-09-16)
 
 
