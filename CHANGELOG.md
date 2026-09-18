@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.9](https://github.com/dachrisch/league.finance/compare/v0.10.8...v0.10.9) (2026-09-18)
+
+
+### Bug Fixes
+
+* **deps:** update dependency dotenv to v18 ([#655](https://github.com/dachrisch/league.finance/issues/655)) ([ef805be](https://github.com/dachrisch/league.finance/commit/ef805bed0cdaf1c076c6652d4343d1cba22fb4c9))
+
 ## [0.10.8](https://github.com/dachrisch/league.finance/compare/v0.10.7...v0.10.8) (2026-09-17)
 
 
