@@ -48,6 +48,13 @@ describe('generateInvoiceNumber', () => {
     expect(number).toBe('20260810-01');
   });
 
+  it('continues after the highest existing suffix, not the count, so gaps never cause collisions', async () => {
+    // e.g. only a recorded (externally issued) -02 exists for the day
+    await Invoice.create(makeInvoice('20260810-02'));
+    const number = await generateInvoiceNumber(new Date('2026-08-10T12:00:00Z'));
+    expect(number).toBe('20260810-03');
+  });
+
   it('zero-pads the sequence to 2 digits', async () => {
     for (let i = 1; i <= 9; i++) {
       await Invoice.create(makeInvoice(`20260810-0${i}`));

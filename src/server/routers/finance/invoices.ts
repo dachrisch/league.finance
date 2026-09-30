@@ -15,7 +15,12 @@ import { resolveLineItemPricing } from '../../lib/invoiceLinePricing';
 import { resolveSeasonName } from '../../lib/seasonName';
 import { resolveLineAmount, computeInvoiceTotals, computeLineVat } from '../../lib/invoicePricing';
 import { generateInvoiceNumber } from '../../lib/invoiceNumbering';
-import { CreateInvoiceSchema, InvoiceStatusSchema } from '../../../../shared/schemas/invoice';
+import {
+  CreateInvoiceSchema,
+  InvoiceStatusSchema,
+  RecordExistingInvoiceSchema,
+  type CreateInvoiceInput,
+} from '../../../../shared/schemas/invoice';
 import { SheetsService } from '../../services/SheetsService';
 import { buildStandardInvoiceAddress } from '../../lib/invoiceAddress';
 import { buildLineDescriptions } from '../../../../shared/lib/invoiceDescriptions';
@@ -53,6 +58,86 @@ async function assertOfferAccepted(offerId: string) {
   }
   return offer;
 }
+
+/**
+ * Validates an invoice request against its accepted offer and prices the selected lines
+ * (in offer.leagueIds order). Shared by `create` and `recordExisting`.
+ */
+async function buildInvoiceLines(input: CreateInvoiceInput) {
+  const offer = await assertOfferAccepted(input.offerId);
+  const association = await Association.findById(offer.associationId);
+  if (!association) throw new TRPCError({ code: 'NOT_FOUND', message: 'Association not found' });
+  const customerNumber = association.customerNumber;
+  if (customerNumber == null) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Set a customer number on this association before creating an invoice',
+    });
+  }
+
+  const configs = await FinancialConfig.find({ offerId: offer._id });
+  const configByLeagueId = new Map(configs.map((c) => [c.leagueId, c]));
+  const lineInputByLeagueId = new Map(input.lines.map((l) => [l.leagueId, l]));
+
+  for (const line of input.lines) {
+    if (!configByLeagueId.has(line.leagueId)) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: `League ${line.leagueId} is not part of this offer` });
+    }
+  }
+
+  const orderedLeagueIds = offer.leagueIds.filter((id) => lineInputByLeagueId.has(id));
+  const leaguesMap = await fetchLeaguesMap(orderedLeagueIds);
+  const pool = getMysqlPool();
+  const settings = await getOrCreateSettings();
+  const seasonName = await resolveSeasonName(pool, offer.seasonId);
+
+  const lineDocs = [];
+  for (const leagueId of orderedLeagueIds) {
+    const config = configByLeagueId.get(leagueId)!;
+    const lineInput = lineInputByLeagueId.get(leagueId)!;
+    const discounts = (await Discount.find({ configId: config._id }).lean()).map((d: any) => ({
+      type: d.type, value: d.value,
+    }));
+    const pricing = await resolveLineItemPricing(
+      config, leaguesMap[leagueId] || 'Unknown League', pool, settings, discounts
+    );
+    const amount = resolveLineAmount(
+      lineInput.chosenSource, pricing.offerPrice, pricing.livePrice, lineInput.customPrice ?? null
+    );
+    if (amount == null) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `customPrice is required for league ${leagueId} when chosenSource is "custom"`,
+      });
+    }
+    lineDocs.push({
+      leagueId,
+      financialConfigId: config._id,
+      offerPrice: pricing.offerPrice,
+      livePrice: pricing.livePrice,
+      liveBasis: pricing.liveBasis,
+      chosenSource: lineInput.chosenSource,
+      customPrice: lineInput.customPrice ?? null,
+      amount,
+    });
+  }
+
+  return { offer, association, customerNumber, lineDocs, leaguesMap, seasonName };
+}
+
+const normalizeLineItems = (lineItems: any[], leaguesMap: Record<number, string>) =>
+  lineItems.map((li: any) => ({
+    ...li.toObject(),
+    _id: li._id.toString(),
+    invoiceId: li.invoiceId.toString(),
+    financialConfigId: li.financialConfigId.toString(),
+    leagueName: leaguesMap[li.leagueId] || 'Unknown League',
+  }));
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Extracts the file id from a Drive link like https://drive.google.com/file/d/<id>/view. */
+const driveFileIdFromLink = (link: string) => link.match(/\/d\/([\w-]+)/)?.[1];
 
 export const invoicesRouter = router({
   previewForOffer: protectedProcedure
@@ -158,67 +243,12 @@ export const invoicesRouter = router({
   create: adminProcedure
     .input(CreateInvoiceSchema)
     .mutation(async ({ input, ctx }) => {
-      const offer = await assertOfferAccepted(input.offerId);
-      const association = await Association.findById(offer.associationId);
-      if (!association) throw new TRPCError({ code: 'NOT_FOUND', message: 'Association not found' });
-      if (association.customerNumber == null) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Set a customer number on this association before creating an invoice',
-        });
-      }
-
-      const configs = await FinancialConfig.find({ offerId: offer._id });
-      const configByLeagueId = new Map(configs.map((c) => [c.leagueId, c]));
-      const lineInputByLeagueId = new Map(input.lines.map((l) => [l.leagueId, l]));
-
-      for (const line of input.lines) {
-        if (!configByLeagueId.has(line.leagueId)) {
-          throw new TRPCError({ code: 'BAD_REQUEST', message: `League ${line.leagueId} is not part of this offer` });
-        }
-      }
-
-      const orderedLeagueIds = offer.leagueIds.filter((id) => lineInputByLeagueId.has(id));
-      const leaguesMap = await fetchLeaguesMap(orderedLeagueIds);
-      const pool = getMysqlPool();
-      const settings = await getOrCreateSettings();
-      const seasonName = await resolveSeasonName(pool, offer.seasonId);
-
-      const lineDocs = [];
-      for (const leagueId of orderedLeagueIds) {
-        const config = configByLeagueId.get(leagueId)!;
-        const lineInput = lineInputByLeagueId.get(leagueId)!;
-        const discounts = (await Discount.find({ configId: config._id }).lean()).map((d: any) => ({
-          type: d.type, value: d.value,
-        }));
-        const pricing = await resolveLineItemPricing(
-          config, leaguesMap[leagueId] || 'Unknown League', pool, settings, discounts
-        );
-        const amount = resolveLineAmount(
-          lineInput.chosenSource, pricing.offerPrice, pricing.livePrice, lineInput.customPrice ?? null
-        );
-        if (amount == null) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: `customPrice is required for league ${leagueId} when chosenSource is "custom"`,
-          });
-        }
-        lineDocs.push({
-          leagueId,
-          financialConfigId: config._id,
-          offerPrice: pricing.offerPrice,
-          livePrice: pricing.livePrice,
-          liveBasis: pricing.liveBasis,
-          chosenSource: lineInput.chosenSource,
-          customPrice: lineInput.customPrice ?? null,
-          amount,
-        });
-      }
+      const { offer, association, customerNumber, lineDocs, leaguesMap, seasonName } = await buildInvoiceLines(input);
 
       const invoiceNumber = await generateInvoiceNumber();
       const invoiceDate = new Date();
       const servicePeriod = `${invoiceDate.getMonth() + 1}.${invoiceDate.getFullYear()}`;
-      const dueDate = new Date(invoiceDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const dueDate = new Date(invoiceDate.getTime() + 30 * DAY_MS);
 
       const session = supportsTransactions() ? await Invoice.startSession() : null;
       if (session) await session.startTransaction();
@@ -229,7 +259,7 @@ export const invoicesRouter = router({
             offerId: offer._id,
             associationId: offer.associationId,
             contactId: offer.contactId,
-            customerNumber: association.customerNumber,
+            customerNumber,
             seasonId: offer.seasonId,
             invoiceNumber,
             invoiceDate,
@@ -260,7 +290,7 @@ export const invoicesRouter = router({
             await sheetsService.appendInvoiceRows(
               {
                 invoiceId: invoiceNumber,
-                clientId: association.customerNumber!,
+                clientId: customerNumber,
                 invoiceAddress,
                 invoiceName: `Nutzung der LeagueSphere App für die Saison ${seasonName}`,
                 invoiceDate: invoiceDate.toLocaleDateString('de-DE'),
@@ -298,18 +328,73 @@ export const invoicesRouter = router({
 
         return {
           invoice: normalizeInvoice(invoice),
-          lineItems: lineItems.map((li: any) => ({
-            ...li.toObject(),
-            _id: li._id.toString(),
-            invoiceId: li.invoiceId.toString(),
-            financialConfigId: li.financialConfigId.toString(),
-            leagueName: leaguesMap[li.leagueId] || 'Unknown League',
-          })),
+          lineItems: normalizeLineItems(lineItems, leaguesMap),
         };
       } catch (err: any) {
         if (session) await session.abortTransaction();
         if (err.code === 11000) {
           throw new TRPCError({ code: 'CONFLICT', message: 'Invoice number collision, please retry' });
+        }
+        throw err;
+      } finally {
+        if (session) await session.endSession();
+      }
+    }),
+
+  /**
+   * Records an invoice that was already issued outside the app (e.g. by the legacy sheet +
+   * Apps Script flow): keeps its own number, dates and PDF. Unlike `create` it never appends
+   * to the Sheets ledger (the row already exists there) and never renders or files a PDF.
+   */
+  recordExisting: adminProcedure
+    .input(RecordExistingInvoiceSchema)
+    .mutation(async ({ input }) => {
+      const { offer, customerNumber, lineDocs, leaguesMap } = await buildInvoiceLines(input);
+
+      if (await Invoice.exists({ invoiceNumber: input.invoiceNumber })) {
+        throw new TRPCError({ code: 'CONFLICT', message: `Invoice ${input.invoiceNumber} already exists` });
+      }
+
+      const session = supportsTransactions() ? await Invoice.startSession() : null;
+      if (session) await session.startTransaction();
+
+      try {
+        const [invoice] = await Invoice.create(
+          [{
+            offerId: offer._id,
+            associationId: offer.associationId,
+            contactId: offer.contactId,
+            customerNumber,
+            seasonId: offer.seasonId,
+            invoiceNumber: input.invoiceNumber,
+            invoiceDate: input.invoiceDate,
+            servicePeriod: input.servicePeriod,
+            dueDate: new Date(input.invoiceDate.getTime() + 30 * DAY_MS),
+            status: input.status,
+            paidAt: input.status === 'paid' ? input.paidAt ?? new Date() : undefined,
+            discount: input.discount ?? null,
+            driveMetadata: input.driveLink
+              ? { driveLink: input.driveLink, driveFileId: driveFileIdFromLink(input.driveLink), filedAt: new Date() }
+              : undefined,
+          }],
+          session ? { session } : {}
+        );
+
+        const lineItems = await InvoiceLineItem.insertMany(
+          lineDocs.map((doc) => ({ ...doc, invoiceId: invoice._id })),
+          session ? { session } : {}
+        );
+
+        if (session) await session.commitTransaction();
+
+        return {
+          invoice: normalizeInvoice(invoice),
+          lineItems: normalizeLineItems(lineItems, leaguesMap),
+        };
+      } catch (err: any) {
+        if (session) await session.abortTransaction();
+        if (err.code === 11000) {
+          throw new TRPCError({ code: 'CONFLICT', message: `Invoice ${input.invoiceNumber} already exists` });
         }
         throw err;
       } finally {

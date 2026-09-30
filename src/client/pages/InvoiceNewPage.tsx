@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
+import {
+  ExistingInvoiceFields,
+  emptyExistingInvoice,
+  isExistingInvoiceValid,
+  type ExistingInvoiceValue,
+} from '../components/Invoice/ExistingInvoiceFields';
 
 type ChosenSource = 'offer' | 'live' | 'custom';
 
@@ -22,6 +28,8 @@ export function InvoiceNewPage() {
   const [discountType, setDiscountType] = useState<'FIXED' | 'PERCENT'>('FIXED');
   const [discountValue, setDiscountValue] = useState('');
   const [discountDescription, setDiscountDescription] = useState('');
+  const [recordExisting, setRecordExisting] = useState(false);
+  const [existing, setExisting] = useState<ExistingInvoiceValue>(emptyExistingInvoice);
 
   useEffect(() => {
     if (!preview) return;
@@ -40,6 +48,10 @@ export function InvoiceNewPage() {
   const createInvoice = trpc.finance.invoices.create.useMutation({
     onSuccess: (result) => navigate(`/invoices/${result.invoice._id}`),
   });
+  const recordExistingInvoice = trpc.finance.invoices.recordExisting.useMutation({
+    onSuccess: (result) => navigate(`/invoices/${result.invoice._id}`),
+  });
+  const mutation = recordExisting ? recordExistingInvoice : createInvoice;
 
   if (!offerId) return <div className="container"><p>Missing offer.</p></div>;
   if (isLoading) return <div className="container"><p>Loading offer pricing…</p></div>;
@@ -56,7 +68,7 @@ export function InvoiceNewPage() {
   const selectedLeagueIds = preview.lines.filter((l) => selected[l.leagueId]).map((l) => l.leagueId);
 
   const handleSubmit = () => {
-    createInvoice.mutate({
+    const input = {
       offerId,
       lines: selectedLeagueIds.map((leagueId) => ({
         leagueId,
@@ -66,13 +78,26 @@ export function InvoiceNewPage() {
       discount: discountEnabled && discountValue
         ? { type: discountType, value: Number(discountValue), description: discountDescription }
         : undefined,
-    });
+    };
+    if (recordExisting) {
+      recordExistingInvoice.mutate({
+        ...input,
+        invoiceNumber: existing.invoiceNumber,
+        invoiceDate: new Date(existing.invoiceDate),
+        servicePeriod: existing.servicePeriod,
+        status: existing.status,
+        driveLink: existing.driveLink || undefined,
+      });
+    } else {
+      createInvoice.mutate(input);
+    }
   };
 
   const canSubmit =
     preview.customerNumber != null &&
     selectedLeagueIds.length > 0 &&
-    selectedLeagueIds.every((id) => source[id] !== 'custom' || (customPrice[id] && Number(customPrice[id]) > 0));
+    selectedLeagueIds.every((id) => source[id] !== 'custom' || (customPrice[id] && Number(customPrice[id]) > 0)) &&
+    (!recordExisting || isExistingInvoiceValid(existing));
 
   return (
     <div className="container" style={{ paddingBottom: 'var(--spacing-xl)' }}>
@@ -187,12 +212,29 @@ export function InvoiceNewPage() {
         )}
       </div>
 
-      {createInvoice.error && (
-        <p style={{ color: 'var(--danger-color)', marginBottom: 'var(--spacing-md)' }}>{createInvoice.error.message}</p>
+      <div className="card" style={{ padding: 'var(--spacing-lg)', marginBottom: 'var(--spacing-xl)' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: recordExisting ? 'var(--spacing-md)' : 0 }}>
+          <input type="checkbox" checked={recordExisting} onChange={(e) => setRecordExisting(e.target.checked)} />
+          Already issued — record an existing invoice
+        </label>
+        {recordExisting && (
+          <>
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)', marginTop: 0 }}>
+              Keeps the invoice's own number and dates. Nothing is added to the Sheets ledger and no PDF is generated.
+            </p>
+            <ExistingInvoiceFields value={existing} onChange={setExisting} />
+          </>
+        )}
+      </div>
+
+      {mutation.error && (
+        <p style={{ color: 'var(--danger-color)', marginBottom: 'var(--spacing-md)' }}>{mutation.error.message}</p>
       )}
 
-      <button className="btn btn-primary" disabled={!canSubmit || createInvoice.isPending} onClick={handleSubmit}>
-        {createInvoice.isPending ? 'Creating…' : 'Create Draft Invoice'}
+      <button className="btn btn-primary" disabled={!canSubmit || mutation.isPending} onClick={handleSubmit}>
+        {recordExisting
+          ? (mutation.isPending ? 'Recording…' : 'Record Existing Invoice')
+          : (mutation.isPending ? 'Creating…' : 'Create Draft Invoice')}
       </button>
     </div>
   );
