@@ -41,6 +41,9 @@ The single `appRouter` is the client/server contract; its type (`AppRouter`) dri
   - `finance.offers.list` → each offer carries a derived `totalPrice` **and** a per-league `leaguePrices: [{ leagueId, finalPrice }]` breakdown. It does **not** embed `financialConfigs`.
   - `finance.offers.get` → returns `configs` (fully priced) separately from the offer.
 
+- **Two ways an invoice gets into the app.** `finance.invoices.create` issues a *new* invoice: it generates the number (`YYYYMMDD-NN`, next after the day's highest suffix), dates it today and appends the header + position rows to the legacy Sheets ledger (`SheetsService`, spreadsheet `1yLKEp…`). `finance.invoices.recordExisting` tracks an invoice that was *already issued* outside the app (legacy sheet + Apps Script PDF): it keeps the given number/dates/status/Drive link and **never** touches the Sheets ledger or renders a PDF — using `create` for those would duplicate their ledger rows.
+- **Invoice PDF layout mirrors the legacy Apps Script design.** `PdfService.generateInvoicePdf` places everything at absolute A4 points (`INVOICE_LAYOUT`) measured from the Apps Script-issued PDFs, so app- and sheet-issued invoices look the same; the logo is embedded as base64 (`src/server/assets/bumbleflies-logo.ts`) because `tsc` does not copy binary assets into `dist`. Layout tests spy on pdfkit's `text`/`image` calls to pin those positions.
+
 ## Auth Flow
 - **Strategy**: Passport.js with `passport-google-oauth20`.
 - **Token**: Success redirects issue a JWT. Client uses `getToken()`/`clearToken()` in `src/client/lib/trpc.ts`.
