@@ -326,6 +326,86 @@ describe('invoicesRouter', () => {
     });
   });
 
+  describe('recordExisting', () => {
+    const mockAppendInvoiceRows = vi.fn();
+    const ctxWithToken = { ...ctx, accessToken: 'ya29.x' };
+    const callerWithToken = () => invoicesRouter.createCaller(ctxWithToken as any);
+
+    beforeEach(() => {
+      mockAppendInvoiceRows.mockReset().mockResolvedValue(undefined);
+      (SheetsService as any).mockImplementation(function () {
+        return { appendInvoiceRows: mockAppendInvoiceRows };
+      });
+    });
+
+    const recordInput = (offerId: string, overrides: Record<string, unknown> = {}) => ({
+      offerId,
+      lines: [{ leagueId: 16, chosenSource: 'custom' as const, customPrice: 180 }],
+      invoiceNumber: '20260809-01',
+      invoiceDate: '2026-10-01',
+      servicePeriod: '1.2026',
+      status: 'sent' as const,
+      driveLink: 'https://drive.google.com/file/d/18LouletmuvrB1dpDXBoQQGltPMIYmzZd/view',
+      ...overrides,
+    });
+
+    it('stores the given number, dates and status with priced line items', async () => {
+      const offer = await makeAcceptedOffer();
+      const result = await caller().recordExisting(recordInput(offer._id.toString()));
+
+      expect(result.invoice).toMatchObject({
+        invoiceNumber: '20260809-01', servicePeriod: '1.2026', status: 'sent', customerNumber: 10010, seasonId: 6,
+      });
+      expect(new Date(result.invoice.invoiceDate).toISOString().slice(0, 10)).toBe('2026-10-01');
+      expect(new Date(result.invoice.dueDate).toISOString().slice(0, 10)).toBe('2026-10-31');
+      expect(result.lineItems).toEqual([expect.objectContaining({ leagueId: 16, chosenSource: 'custom', amount: 180 })]);
+    });
+
+    it('records the Drive link and file id of the already-issued PDF', async () => {
+      const offer = await makeAcceptedOffer();
+      const result = await caller().recordExisting(recordInput(offer._id.toString()));
+      expect(result.invoice.driveMetadata).toMatchObject({
+        driveLink: 'https://drive.google.com/file/d/18LouletmuvrB1dpDXBoQQGltPMIYmzZd/view',
+        driveFileId: '18LouletmuvrB1dpDXBoQQGltPMIYmzZd',
+      });
+    });
+
+    it('never appends rows to the Sheets ledger, even with an access token', async () => {
+      const offer = await makeAcceptedOffer();
+      await callerWithToken().recordExisting(recordInput(offer._id.toString()));
+      expect(mockAppendInvoiceRows).not.toHaveBeenCalled();
+    });
+
+    it('sets paidAt when recording a paid invoice', async () => {
+      const offer = await makeAcceptedOffer();
+      const result = await caller().recordExisting(
+        recordInput(offer._id.toString(), { status: 'paid', paidAt: '2026-10-15' })
+      );
+      expect(result.invoice.status).toBe('paid');
+      expect(new Date(result.invoice.paidAt).toISOString().slice(0, 10)).toBe('2026-10-15');
+    });
+
+    it('rejects a duplicate invoice number with CONFLICT', async () => {
+      const offer = await makeAcceptedOffer();
+      await caller().recordExisting(recordInput(offer._id.toString()));
+      const other = await makeAcceptedOffer();
+      await expect(caller().recordExisting(recordInput(other._id.toString())))
+        .rejects.toMatchObject({ code: 'CONFLICT' });
+    });
+
+    it('rejects when the offer is not accepted', async () => {
+      const offer = await Offer.create({ associationId, seasonId: 6, leagueIds: [16], contactId, status: 'sent' });
+      await expect(caller().recordExisting(recordInput(offer._id.toString())))
+        .rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+
+    it('rejects a malformed invoice number', async () => {
+      const offer = await makeAcceptedOffer();
+      await expect(caller().recordExisting(recordInput(offer._id.toString(), { invoiceNumber: '2026-01' })))
+        .rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+  });
+
   describe('markPaid', () => {
     it('rejects a draft invoice', async () => {
       const offer = await makeAcceptedOffer();

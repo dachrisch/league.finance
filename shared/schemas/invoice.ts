@@ -21,8 +21,19 @@ export const CreateInvoiceSchema = z.object({
   discount: InvoiceDiscountSchema.nullable().optional(),
 });
 
+/** Records an invoice that was already issued outside the app (own number, dates and PDF). */
+export const RecordExistingInvoiceSchema = CreateInvoiceSchema.extend({
+  invoiceNumber: z.string().regex(/^\d{8}-\d{2}$/, 'Invoice number must look like YYYYMMDD-NN'),
+  invoiceDate: z.coerce.date(),
+  servicePeriod: z.string().regex(/^\d{1,2}\.\d{4}$/, 'Service period must look like M.YYYY'),
+  status: z.enum(['sent', 'paid']),
+  paidAt: z.coerce.date().optional(),
+  driveLink: z.string().url().optional(),
+});
+
 export type ChosenSource = z.infer<typeof ChosenSourceSchema>;
 export type InvoiceStatus = z.infer<typeof InvoiceStatusSchema>;
 export type InvoiceDiscountInput = z.infer<typeof InvoiceDiscountSchema>;
 export type InvoiceLineInput = z.infer<typeof InvoiceLineInputSchema>;
 export type CreateInvoiceInput = z.infer<typeof CreateInvoiceSchema>;
+export type RecordExistingInvoiceInput = z.infer<typeof RecordExistingInvoiceSchema>;
