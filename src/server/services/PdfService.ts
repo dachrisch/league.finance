@@ -2,7 +2,7 @@ import PDFDocument from 'pdfkit';
 import { buildLineDescriptions } from '../../../shared/lib/invoiceDescriptions';
 import { computeLineVat, computeInvoiceTotals } from '../lib/invoicePricing';
 import { buildStandardInvoiceAddress } from '../lib/invoiceAddress';
-import { BUMBLEFLIES_LOGO_PNG } from '../assets/bumbleflies-logo';
+import { BUMBLEFLIES_LOGO_PNG_DATA_URI } from '../assets/bumbleflies-logo';
 
 export interface PdfGenerationData {
   offer: any;
@@ -246,7 +246,7 @@ export class PdfService {
     doc.fillColor('black');
 
     // Logo + sender line
-    doc.image(BUMBLEFLIES_LOGO_PNG, L.logo.x, L.logo.y, { width: L.logo.width });
+    doc.image(BUMBLEFLIES_LOGO_PNG_DATA_URI, L.logo.x, L.logo.y, { width: L.logo.width });
     text('bumbleflies UG (haftungsbeschränkt) · Gleiwitzer Str. 6d · 81929 München', L.left, L.senderY, 8, true);
 
     // Recipient
