@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.11.0](https://github.com/dachrisch/league.finance/compare/v0.10.29...v0.11.0) (2026-09-30)
+
+
+### Features
+
+* **invoices:** record already-issued invoices ([a3acd20](https://github.com/dachrisch/league.finance/commit/a3acd209d6bd74f634183bb41603de242d151310))
+* **pdf:** render invoices in the legacy Apps Script design ([7e997a7](https://github.com/dachrisch/league.finance/commit/7e997a7e48ecba9a2faca2d77ae1e6b80c338ece))
+* record already-issued invoices + legacy invoice PDF design ([7ac70eb](https://github.com/dachrisch/league.finance/commit/7ac70eb18142ffd372d4685b1c8c45c4b8ae54e8))
+
+
+### Bug Fixes
+
+* **pdf:** embed invoice logo as a data URI for pdfkit 0.20 ([9cd4f5f](https://github.com/dachrisch/league.finance/commit/9cd4f5fe32f51df1041fb97f4afc3e4c18cd5560))
+
 ## [0.10.29](https://github.com/dachrisch/league.finance/compare/v0.10.28...v0.10.29) (2026-09-30)
 
 
