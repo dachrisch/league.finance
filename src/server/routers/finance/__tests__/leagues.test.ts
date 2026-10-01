@@ -41,3 +41,16 @@ describe('leaguesRouter.listBySeason', () => {
     expect(result).toEqual([]);
   });
 });
+
+describe('leaguesRouter.listAll', () => {
+  const caller = leaguesRouter.createCaller({ user: { userId: '1', email: 'test@test.com', role: 'admin' } });
+
+  it('lists every league, not season-scoped', async () => {
+    const query = vi.fn().mockResolvedValue([[{ _id: 1, name: 'DFFL', slug: 'dffl' }]]);
+    vi.mocked(getMysqlPool).mockReturnValue({ query } as any);
+    expect(await caller.listAll()).toEqual([{ _id: 1, name: 'DFFL', slug: 'dffl' }]);
+    const [sql] = query.mock.calls[0];
+    expect(sql).not.toContain('season');
+    expect(sql).toContain('ORDER BY l.name');
+  });
+});

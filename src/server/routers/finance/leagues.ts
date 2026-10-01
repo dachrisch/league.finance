@@ -39,4 +39,11 @@ export const leaguesRouter = router({
 
       return rows;
     }),
+
+  listAll: protectedProcedure.query(async () => {
+    const [rows] = await getMysqlPool().query<RowDataPacket[]>(
+      'SELECT l.id as _id, l.name, l.slug FROM gamedays_league l ORDER BY l.name'
+    );
+    return rows;
+  }),
 });
