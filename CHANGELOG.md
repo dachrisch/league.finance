@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.0](https://github.com/dachrisch/league.finance/compare/v0.11.1...v0.12.0) (2026-10-01)
+
+
+### Features
+
+* **offers:** edit price lines and letter metadata via tRPC; list all leagues ([588aeac](https://github.com/dachrisch/league.finance/commit/588aeaca013dd74d85b84e7c36382e816e00590b))
+* **offers:** price lines and legacy offer letter PDF ([0f3ec3e](https://github.com/dachrisch/league.finance/commit/0f3ec3ee469488b2024d4d734fe50fe66278c58e))
+* **offers:** price lines editor, letter fields and PDF preview on the offer page ([1c15452](https://github.com/dachrisch/league.finance/commit/1c15452101e37b8bba2c4bec0655ec5c34d1791c))
+* **offers:** shared price line math (totals, config lines, percent discount) ([4e107be](https://github.com/dachrisch/league.finance/commit/4e107bee756b98ba287180e922dd9b3ab16d5679))
+* **offers:** store price lines and letter metadata, YYYYMMDD-N numbering ([7597b93](https://github.com/dachrisch/league.finance/commit/7597b9337979772bf2a49d5bdd74fb83d3f91ca8))
+* **pdf:** render offers as the legacy bumbleflies offer letter, add PDF preview ([ff29547](https://github.com/dachrisch/league.finance/commit/ff29547bd586f70c2fdb6bfe7b9d682793de0e1f))
+
+
+### Bug Fixes
+
+* **offer-detail:** fresh PDF preview, inline line validation, Berlin dates, safer discount UI ([c8ec49d](https://github.com/dachrisch/league.finance/commit/c8ec49d13d49de1f15a166011f6e877ee9bf81c8))
+* **offers:** price offers without lines correctly, unset cleared letter notes, wrap long PDF titles ([2d650d4](https://github.com/dachrisch/league.finance/commit/2d650d410dcc6941bc29f726ba4666484f873956))
+* **offers:** stop clobbering unsaved edits and fix mis-targeted discounts in offer lines/letter UI ([f452ff7](https://github.com/dachrisch/league.finance/commit/f452ff78f1f4f899f97c56ddfa3a11600cff9780))
+* **offers:** use the Europe/Berlin calendar day for offer dates and numbers ([c73a418](https://github.com/dachrisch/league.finance/commit/c73a418d141bfee96cc9337b1c83f95e958de4bd))
+* **pdf:** size the offer price label column to its labels, keep sign-off together ([edb8e11](https://github.com/dachrisch/league.finance/commit/edb8e117ba1ab1728e128bacbac8aeffe4f57c80))
+
 ## [0.11.1](https://github.com/dachrisch/league.finance/compare/v0.11.0...v0.11.1) (2026-09-30)
 
 
