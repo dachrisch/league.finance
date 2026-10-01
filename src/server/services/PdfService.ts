@@ -117,11 +117,12 @@ const euro = (n: number) =>
 /** Invoice dates as the legacy invoices print them (unpadded, e.g. 29.5.2026). */
 const deDate = (d: Date) => d.toLocaleDateString('de-DE');
 /**
- * Offer letter dates as the legacy letters print them (01.10.2026). Formatted in UTC so the
- * date always agrees with the YYYYMMDD part of the offer number (generateOfferNumber uses UTC).
+ * Offer letter dates as the legacy letters print them (01.10.2026), as the Europe/Berlin
+ * calendar day: right for server-side new Date() just after local midnight and for date-input
+ * values stored as UTC midnight, and consistent with generateOfferNumber.
  */
 const offerDate = (d: Date) =>
-  d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+  d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Berlin' });
 
 export class PdfService {
   /**

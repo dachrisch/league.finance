@@ -131,6 +131,18 @@ describe('PdfService.generateOfferPdf — layout matches the legacy offer letter
     find('bumbleflies (i.V. Christian Dähn)');
   });
 
+  it('prints dates as the Europe/Berlin calendar day (server new Date() just after local midnight)', async () => {
+    await render({ ...offerData, offerDate: new Date('2026-09-30T22:30:00Z'), validUntil: new Date('2026-10-30T23:30:00Z') });
+    find('Datum: 01.10.2026');
+    find('Wir binden uns an dieses Angebot bis zum 31.10.2026 und freuen uns auf die Zusammenarbeit.');
+  });
+
+  it('keeps browser date-input values (UTC midnight) on the same day', async () => {
+    await render({ ...offerData, offerDate: new Date('2026-10-01T00:00:00Z'), validUntil: new Date('2026-10-31T00:00:00Z') });
+    find('Datum: 01.10.2026');
+    find('Wir binden uns an dieses Angebot bis zum 31.10.2026 und freuen uns auf die Zusammenarbeit.');
+  });
+
   it('pins the 3-column 7pt footer to the page bottom', async () => {
     await render();
     const f = find('bumbleflies UG (haftungsbeschränkt)');

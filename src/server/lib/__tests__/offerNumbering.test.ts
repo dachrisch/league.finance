@@ -21,6 +21,10 @@ describe('generateOfferNumber', () => {
     expect(await generateOfferNumber(day)).toBe('20261001-1');
   });
 
+  it('uses the Europe/Berlin calendar day (00:30 CEST on 1 Oct is still 30 Sep in UTC)', async () => {
+    expect(await generateOfferNumber(new Date('2026-09-30T22:30:00Z'))).toBe('20261001-1');
+  });
+
   it('continues after the highest numeric suffix of the day, ignoring gaps', async () => {
     await make('20261001-1');
     await make('20261001-4');

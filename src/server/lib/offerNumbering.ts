@@ -6,7 +6,8 @@ import { Offer } from '../models/Offer';
  * are ignored rather than parsed.
  */
 export async function generateOfferNumber(date: Date = new Date()): Promise<string> {
-  const datePart = date.toISOString().slice(0, 10).replace(/-/g, '');
+  // The Europe/Berlin calendar day ('en-CA' formats as YYYY-MM-DD), not the UTC one.
+  const datePart = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' }).format(date).replace(/-/g, '');
   const sameDay = await Offer.find({ offerNumber: { $regex: `^${datePart}-\\d+$` } }, { offerNumber: 1 }).lean();
   const highest = sameDay.reduce((max, { offerNumber }) => Math.max(max, Number(offerNumber!.slice(datePart.length + 1))), 0);
   return `${datePart}-${highest + 1}`;
