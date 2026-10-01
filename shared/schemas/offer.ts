@@ -1,5 +1,21 @@
 import { z } from 'zod';
 
+export const OfferLineSchema = z.object({
+  label: z.string(),
+  detail: z.string().optional(),
+  amount: z.number(),
+  kind: z.enum(['league', 'fee', 'discount', 'optional']),
+  leagueId: z.number().int().positive().optional(),
+});
+
+export const OfferLetterSchema = z.object({
+  offerNumber: z.string().trim().min(1).optional(),
+  offerDate: z.coerce.date().optional(),
+  validUntil: z.coerce.date().optional(),
+  introNote: z.string().optional(),
+  closingNote: z.string().optional(),
+});
+
 // Offer metadata only - financial config is separate
 export const CreateOfferSchema = z.object({
   associationId: z.string().min(1, 'Association is required'),
