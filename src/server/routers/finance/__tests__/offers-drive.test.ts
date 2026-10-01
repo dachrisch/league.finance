@@ -45,23 +45,17 @@ describe('offersDrive.fileOfferInDrive', () => {
     expect(res.status).toBe('queued');
   });
 
-  it('sends priced configs (finalPrice computed) with the job so the PDF never calculates', async () => {
+  it('queues only { offerId, userId, driveFolderId, accessToken } — the job resolves lines itself', async () => {
     const save = vi.fn();
     vi.mocked(Offer.findById).mockResolvedValue({ status: 'draft', save } as any);
-    mockConfigs([
-      { leagueId: 16, costModel: 'SEASON', baseRateOverride: null, customPrice: null,
-        expectedTeamsCount: 2, expectedGamedaysCount: 0, expectedTeamsPerGameday: 0 },
-    ]);
     vi.mocked(offerDriveQueue.add as any).mockResolvedValue({ id: 7 });
 
     await caller().fileOfferInDrive({ offerId: 'o1', driveFolderId: 'f1' });
 
-    expect(offerDriveQueue.add).toHaveBeenCalledWith(
-      expect.objectContaining({
-        configs: [expect.objectContaining({ leagueId: 16, expectedTeamsCount: 2, finalPrice: 100 })],
-      }),
-      expect.any(Object)
+    expect(vi.mocked(offerDriveQueue.add as any).mock.calls[0][0]).toEqual(
+      { offerId: 'o1', userId: 'u1', driveFolderId: 'f1', accessToken: 'ya29.x' }
     );
+    expect(FinancialConfig.find).not.toHaveBeenCalled();
   });
 });
 

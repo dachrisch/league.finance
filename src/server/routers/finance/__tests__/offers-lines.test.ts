@@ -8,7 +8,9 @@ import { getMysqlPool } from '../../../db/mysql';
 
 vi.mock('../../../db/mysql');
 vi.mocked(getMysqlPool).mockReturnValue({
-  query: vi.fn().mockResolvedValue([[{ id: 16, name: 'Regionalliga NRW' }, { id: 17, name: 'Oberliga NRW' }]]),
+  query: vi.fn(async (sql: string) => (sql.includes('gamedays_season')
+    ? [[{ name: '2027' }]]
+    : [[{ id: 16, name: 'Regionalliga NRW' }, { id: 17, name: 'Oberliga NRW' }]])),
 } as any);
 
 const caller = offersRouter.createCaller({ user: { userId: '1', email: 't@t', role: 'admin' } } as any);
@@ -90,5 +92,17 @@ describe('offers price lines', () => {
     const other = await draft();
     await expect(caller.updateLetter({ id: other.id, data: { offerNumber: '20261001-1' } }))
       .rejects.toMatchObject({ code: 'CONFLICT' });
+  });
+
+  it('previewPdf returns a PDF without changing status', async () => {
+    const offer = await draft({ offerNumber: '20261001-9', lines: [{ label: 'Grundpreis', amount: 600, kind: 'fee' }] });
+    const res = await caller.previewPdf({ id: offer.id });
+    expect(Buffer.from(res.base64, 'base64').toString('ascii', 0, 5)).toBe('%PDF-');
+    expect(res.filename).toBe('Angebot_20261001-9-Nutzung der LeagueSphere App für die Saison 2027.pdf');
+    expect((await Offer.findById(offer.id))!.status).toBe('draft');
+  });
+
+  it('previewPdf rejects an unknown offer with NOT_FOUND', async () => {
+    await expect(caller.previewPdf({ id: new Types.ObjectId().toString() })).rejects.toMatchObject({ code: 'NOT_FOUND' });
   });
 });

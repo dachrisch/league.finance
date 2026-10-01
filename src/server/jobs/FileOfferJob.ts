@@ -1,23 +1,19 @@
 import { Job } from 'bull';
 import { Offer } from '../models/Offer';
-import { Contact } from '../models/Contact';
-import { Association } from '../models/Association';
-import { PdfService, PdfGenerationData } from '../services/PdfService';
+import { PdfService } from '../services/PdfService';
 import { DriveService } from '../services/DriveService';
-import { getMysqlPool } from '../db/mysql';
+import { buildOfferPdfData } from '../lib/offerPdfData';
 
 export interface FileOfferJobData {
   offerId: string;
   userId: string;
   driveFolderId: string;
   accessToken: string;
-  /** Line items with prices already resolved at enqueue time; the PDF only renders them. */
-  configs: any[];
 }
 
 export class FileOfferJobHandler {
   static async process(job: Job<FileOfferJobData>) {
-    const { offerId, driveFolderId, accessToken, configs } = job.data;
+    const { offerId, driveFolderId, accessToken } = job.data;
 
     try {
       job.progress(10);
@@ -26,56 +22,12 @@ export class FileOfferJobHandler {
       const offer = await Offer.findById(offerId);
       if (!offer) throw new Error('Offer not found');
 
-      const contact = await Contact.findById(offer.contactId);
-      if (!contact) throw new Error('Contact not found');
-
-      const association = await Association.findById(offer.associationId);
-      const associationName = association?.name || 'Unknown Association';
-
-      let leaguesMap: Record<number, string> = {};
-      try {
-        const pool = getMysqlPool();
-        const [rows] = await pool.query<any[]>(
-          'SELECT id, name FROM gamedays_league WHERE id IN (?)',
-          [configs.map((c) => c.leagueId)]
-        );
-        leaguesMap = rows.reduce((acc, row) => {
-          acc[row.id] = row.name;
-          return acc;
-        }, {});
-      } catch (err) {
-        console.warn('Failed to fetch league names:', err);
-      }
-
-      // Resolve the season's display name (the year string, e.g. "2026"); fall back to the id.
-      let seasonName = `${offer.seasonId}`;
-      try {
-        const pool = getMysqlPool();
-        const [rows] = await pool.query<any[]>(
-          'SELECT name FROM gamedays_season WHERE id = ?',
-          [offer.seasonId]
-        );
-        if (rows[0]?.name != null) seasonName = `${rows[0].name}`;
-      } catch (err) {
-        console.warn('Failed to fetch season name:', err);
-      }
-
-      // Step 1: Generate PDF
+      // Step 1: Generate PDF (lines, letter metadata and recipient resolved from stored data)
       job.progress(20);
       job.log('Generating PDF...');
-      const pdfData: PdfGenerationData = {
-        offer,
-        // The recipient's postal address is the association's business address — the
-        // contact is only the "z.H." (attention) line. Falling back to contact.address
-        // guards against an unresolved association, not against using it deliberately.
-        contact: { name: contact.name, email: contact.email, address: association?.address ?? contact.address },
-        configs,
-        leaguesMap,
-        associationName,
-        seasonName,
-      };
+      const pdfData = await buildOfferPdfData(offerId);
       const pdfBuffer = await PdfService.generateOfferPdf(pdfData);
-      const filename = PdfService.generateFilename(offer._id.toString(), associationName);
+      const filename = PdfService.generateFilename(pdfData.offerNumber, pdfData.seasonName);
 
       // Step 2: Upload to Drive
       job.progress(40);

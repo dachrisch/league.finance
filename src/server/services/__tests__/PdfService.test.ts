@@ -2,58 +2,155 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import PDFDocument from 'pdfkit';
 import { PdfService } from '../PdfService';
 
-const baseData = {
-  offer: { _id: '507f1f77bcf86cd799439011' },
-  contact: {
-    name: 'Lynn Hoffer',
-    address: { street: 'Georg Brauchle Ring 93', city: 'München', postalCode: '80992', country: 'Germany' },
-    email: 'lynn@example.com',
-  },
-  configs: [{ leagueId: 16, finalPrice: 560, expectedTeamsCount: 1 }],
-  leaguesMap: { 16: 'RL Bayern' },
-  associationName: 'American Football Verband Bayern e.V.',
-  seasonName: '2026',
-};
-
 const isPdf = (buf: Buffer) => Buffer.isBuffer(buf) && buf.toString('ascii', 0, 5) === '%PDF-';
+const eur = (n: number) => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
+
+const offerData = {
+  offerNumber: '20261001-3',
+  offerDate: new Date('2026-10-01T00:00:00Z'),
+  validUntil: new Date('2026-11-15T00:00:00Z'),
+  closingNote: 'Weitere Ligen berechnen wir mit 10 € pro Spieltag und Team.',
+  recipient: { associationName: 'American Football und Cheerleading Verband Berlin-Brandenburg e. V.',
+    contactName: 'Chris Claussen', street: 'Hanns-Braun-Straße 1', postalCode: '14053', city: 'Berlin' },
+  lines: [
+    { label: 'Oberliga Ost', detail: 'bis zu 20 Spieltage mit jeweils 6 Teams', amount: 900, kind: 'fee' },
+    { label: 'U16 Sachsen', amount: 144, kind: 'league' },
+    { label: 'U16 Thüringen', amount: 216, kind: 'league' },
+    { label: 'U16 Sachsen-Anhalt', amount: 180, kind: 'league' },
+    { label: 'U13 Mitteldeutschland', amount: 122, kind: 'league' },
+    { label: 'U13 Mitteldeutschland', amount: 72, kind: 'league' },
+    { label: '15 % Rabatt auf die Jugendligen', detail: `auf ${eur(734)}`, amount: -110.1, kind: 'discount' },
+    { label: 'DFFLF2', detail: '9 Teams', amount: 486, kind: 'optional' },
+  ],
+  seasonName: '2027',
+} as const;
 
 describe('PdfService.generateFilename', () => {
-  it('generates filename correctly', () => {
-    const filename = PdfService.generateFilename('507f1f77bcf86cd799439011', 'Test Association');
-    expect(filename).toMatch(/^Angebot_\d{8}-507f1f77_Test-Association\.pdf$/);
-  });
-
-  it('sanitizes special characters', () => {
-    const filename = PdfService.generateFilename('507f1f77bcf86cd799439011', 'Test & Association @ 2026');
-    expect(filename).not.toContain('&');
-    expect(filename).not.toContain('@');
-    expect(filename).toContain('Test-Association-2026');
+  it('uses the legacy Google Docs file name', () => {
+    expect(PdfService.generateFilename('20261001-1', '2027'))
+      .toBe('Angebot_20261001-1-Nutzung der LeagueSphere App für die Saison 2027.pdf');
   });
 });
 
-describe('PdfService.generateOfferPdf', () => {
-  it('returns a valid PDF buffer (single config)', async () => {
-    const pdf = await PdfService.generateOfferPdf(baseData as any);
-    expect(isPdf(pdf)).toBe(true);
-    expect(pdf.length).toBeGreaterThan(1000);
+describe('PdfService.generateOfferPdf — layout matches the legacy offer letter', () => {
+  type TextCall = { str: string; x: number; y: number; size: number; font: string; opts: any };
+  type ImageCall = { x: number; y: number; opts: any };
+  let texts: TextCall[];
+  let images: ImageCall[];
+
+  beforeEach(() => {
+    texts = [];
+    images = [];
+    const proto = PDFDocument.prototype as any;
+    const origText = proto.text;
+    const origImage = proto.image;
+    vi.spyOn(proto, 'text').mockImplementation(function (this: any, str: any, x?: any, y?: any, opts?: any) {
+      const hasXY = typeof x === 'number';
+      texts.push({
+        str: String(str), x: hasXY ? x : this.x, y: hasXY ? y : this.y,
+        size: this._fontSize, font: this._font?.name, opts: hasXY ? opts : x,
+      });
+      return origText.apply(this, arguments as any);
+    });
+    vi.spyOn(proto, 'image').mockImplementation(function (this: any, src: any, x: number, y: number, opts: any) {
+      images.push({ x, y, opts });
+      return origImage.apply(this, arguments as any);
+    });
   });
 
-  it('returns a valid PDF buffer (multiple configs)', async () => {
-    const data = { ...baseData, configs: [
-      { leagueId: 16, finalPrice: 560, expectedTeamsCount: 1 },
-      { leagueId: 29, finalPrice: 280, expectedTeamsCount: 1 },
-    ], leaguesMap: { 16: 'RL Bayern', 29: 'Bayern U16' } };
-    const pdf = await PdfService.generateOfferPdf(data as any);
-    expect(isPdf(pdf)).toBe(true);
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it('does not throw on umlaut / euro content', async () => {
-    const data = { ...baseData,
-      contact: { ...baseData.contact, name: 'Christian Dähn' },
-      configs: [{ leagueId: 29, finalPrice: 1440, expectedTeamsCount: 3 }],
-      leaguesMap: { 29: 'Bayern U16 Süd' } };
-    const pdf = await PdfService.generateOfferPdf(data as any);
-    expect(isPdf(pdf)).toBe(true);
+  const render = (d: any = offerData) => PdfService.generateOfferPdf(d);
+  const find = (str: string) => {
+    const call = texts.find((t) => t.str === str);
+    if (!call) throw new Error(`text "${str}" was not drawn; drawn: ${texts.map((t) => t.str).join(' | ')}`);
+    return call;
+  };
+  const near = (actual: number, expected: number) => expect(Math.abs(actual - expected)).toBeLessThan(1.5);
+
+  it('returns a valid PDF', async () => {
+    expect(isPdf(await render())).toBe(true);
+  });
+
+  it('places logo top right and the 7pt sender line', async () => {
+    await render();
+    near(images[0].x, 424.5); near(images[0].y, 22.1); near(images[0].opts.width, 127);
+    const sender = find('bumbleflies UG (haftungsbeschränkt) · Gleiwitzer Str. 6d · 81929 München');
+    near(sender.x, 43.1); near(sender.y, 50.6); expect(sender.size).toBe(7);
+  });
+
+  it('draws recipient left and meta block right', async () => {
+    await render();
+    const name = find('American Football und Cheerleading Verband Berlin-Brandenburg e. V.');
+    near(name.x, 42.3); near(name.y, 82.1); expect(name.size).toBe(11);
+    near(find('z.H. Chris Claussen').y, 97.3);
+    near(find('Hanns-Braun-Straße 1').y, 112.5);
+    near(find('14053 Berlin').y, 127.7);
+    near(find('info@bumbleflies.de').y, 82.1);
+    near(find('Angebot: 20261001-3').y, 94.5);
+    near(find('Datum: 01.10.2026').y, 106.9);
+  });
+
+  it('draws title and section headings in 14pt bold', async () => {
+    await render();
+    const title = find('Angebot: 20261001-3 - Nutzung der LeagueSphere App für die Saison 2027');
+    near(title.y, 163.4); expect(title.size).toBe(14); expect(title.font).toBe('Helvetica-Bold');
+    near(find('Unser Angebot').y, 198.7);
+    for (const h of ['Unser Angebot', 'Leistungsumfang', 'Preise und Konditionen']) {
+      expect(find(h).font).toBe('Helvetica-Bold');
+    }
+  });
+
+  it('states the total in the pricing sentence and lists lines with right-aligned amounts', async () => {
+    await render();
+    expect(texts.some((t) => t.str.includes(`berechnen wir ${eur(1523.9)}, die sich wie folgt zusammensetzen:`))).toBe(true);
+    const label = find('Oberliga Ost');
+    near(label.x, 79.1);
+    near(find('bis zu 20 Spieltage mit jeweils 6 Teams').x, 187.1);
+    // euro() emits a no-break space before €; build the expected string with the same formatter
+    const discount = find(eur(-110.1));
+    expect(discount.opts.align).toBe('right');
+    near(discount.x + discount.opts.width, 470);
+    expect(find('Gesamt (zzgl. MwSt.)').font).toBe('Helvetica-Bold');
+  });
+
+  it('lists optional lines after the total under "Optional:"', async () => {
+    await render();
+    expect(find('Optional:').y).toBeGreaterThan(find('Gesamt (zzgl. MwSt.)').y);
+    expect(find('DFFLF2').y).toBeGreaterThan(find('Optional:').y);
+  });
+
+  it('prints closing note, VAT + validity sentence and sign-off', async () => {
+    await render();
+    find('Weitere Ligen berechnen wir mit 10 € pro Spieltag und Team.');
+    find('Alle oben genannten Preise verstehen sich zzgl. der gesetzlichen MwSt.');
+    find('Wir binden uns an dieses Angebot bis zum 15.11.2026 und freuen uns auf die Zusammenarbeit.');
+    find('Viele Grüße');
+    find('bumbleflies (i.V. Christian Dähn)');
+  });
+
+  it('pins the 3-column 7pt footer to the page bottom', async () => {
+    await render();
+    const f = find('bumbleflies UG (haftungsbeschränkt)');
+    near(f.x, 49.1); near(f.y, 784.8); expect(f.size).toBe(7);
+    near(find('Bank: GLS Bank').x, 217.8);
+    near(find('E-mail: info@bumbleflies.de').x, 386.6);
+  });
+
+  it('RF2: long line lists continue on a new page instead of overlapping the footer', async () => {
+    const addPage = vi.spyOn(PDFDocument.prototype as any, 'addPage');
+    const many = Array.from({ length: 30 }, (_, i) => ({ label: `Liga ${i + 1}`, detail: 'bis zu 20 Spieltage mit jeweils 6 Teams', amount: 10, kind: 'league' }));
+    await render({ ...offerData, lines: many });
+    expect(addPage).toHaveBeenCalled();
+    const maxBodyY = Math.max(...texts.filter((t) => t.size !== 7).map((t) => t.y));
+    expect(maxBodyY).toBeLessThan(775);
+  });
+
+  it('wraps a long detail inside its column', async () => {
+    await render({ ...offerData, lines: [{ label: 'X', detail: 'sehr '.repeat(40), amount: 1, kind: 'fee' }] });
+    expect(find('sehr '.repeat(40)).opts.width).toBeLessThanOrEqual(200);
   });
 });
 

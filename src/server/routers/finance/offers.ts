@@ -14,6 +14,8 @@ import { computeConfigPrices } from '../../lib/configPricing';
 import { offerLinesTotal, linesFromConfigs, validateOfferLines } from '../../../../shared/lib/offerLines';
 import { generateOfferNumber } from '../../lib/offerNumbering';
 import { fetchLeaguesMap } from '../../lib/leagueNames';
+import { buildOfferPdfData } from '../../lib/offerPdfData';
+import { PdfService } from '../../services/PdfService';
 
 const normalizeOffer = (doc: any) => {
   const obj = doc.toObject?.() || doc;
@@ -409,5 +411,16 @@ export const offersRouter = router({
         throw err;
       }
       return normalizeOffer(offer);
+    }),
+
+  /** Renders the offer letter for preview (admin only); does not change the offer's status. */
+  previewPdf: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const exists = await Offer.exists({ _id: input.id });
+      if (!exists) throw new TRPCError({ code: 'NOT_FOUND', message: 'Offer not found' });
+      const data = await buildOfferPdfData(input.id);
+      const pdf = await PdfService.generateOfferPdf(data);
+      return { filename: PdfService.generateFilename(data.offerNumber, data.seasonName), base64: pdf.toString('base64') };
     }),
 });
