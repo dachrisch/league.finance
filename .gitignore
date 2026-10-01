@@ -10,3 +10,4 @@ test_output*.json
 .worktrees/
 playwright-report/
 test-results/
+tmp-offers/
