@@ -3,6 +3,7 @@ import PDFDocument from 'pdfkit';
 import { PdfService } from '../PdfService';
 
 const isPdf = (buf: Buffer) => Buffer.isBuffer(buf) && buf.toString('ascii', 0, 5) === '%PDF-';
+const width11 = (str: string) => new PDFDocument({ size: 'A4', margin: 0 }).font('Helvetica').fontSize(11).widthOfString(str);
 const eur = (n: number) => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
 
 const offerData = {
@@ -108,12 +109,56 @@ describe('PdfService.generateOfferPdf — layout matches the legacy offer letter
     expect(texts.some((t) => t.str.includes(`berechnen wir ${eur(1523.9)}, die sich wie folgt zusammensetzen:`))).toBe(true);
     const label = find('Oberliga Ost');
     near(label.x, 79.1);
-    near(find('bis zu 20 Spieltage mit jeweils 6 Teams').x, 187.1);
+    // the label column grows with the longest label ("15 % Rabatt auf die Jugendligen")
+    expect(find('bis zu 20 Spieltage mit jeweils 6 Teams').x).toBeGreaterThan(label.x + width11('15 % Rabatt auf die Jugendligen'));
     // euro() emits a no-break space before €; build the expected string with the same formatter
     const discount = find(eur(-110.1));
     expect(discount.opts.align).toBe('right');
     near(discount.x + discount.opts.width, 470);
     expect(find('Gesamt (zzgl. MwSt.)').font).toBe('Helvetica-Bold');
+  });
+
+  it('draws long labels on a single line and keeps the detail clear of the amounts', async () => {
+    await render();
+    for (const str of ['U13 Mitteldeutschland', '15 % Rabatt auf die Jugendligen']) {
+      const l = find(str);
+      expect(l.opts.width).toBeGreaterThanOrEqual(width11(str));
+    }
+    const detail = find(`auf ${eur(734)}`);
+    expect(detail.x).toBeGreaterThan(find('15 % Rabatt auf die Jugendligen').x + width11('15 % Rabatt auf die Jugendligen'));
+    // detail column ends at least 10pt before the widest amount (the total)
+    expect(detail.x + detail.opts.width).toBeLessThanOrEqual(470 - width11(eur(1523.9)) - 10);
+  });
+
+  it('keeps the 2026 reference detail column (x 187.1) for short labels', async () => {
+    await render({ ...offerData, closingNote: undefined, lines: [
+      { label: 'Grundpreis', amount: 600, kind: 'fee' },
+      { label: 'Erwachsenenteams', detail: '35 Teams (je 18 €)', amount: 560, kind: 'fee' },
+      { label: 'Jugendteams', detail: '35 Teams (je 9 €)', amount: 280, kind: 'fee' },
+    ] });
+    near(find('35 Teams (je 18 €)').x, 187.1);
+  });
+
+  it('keeps the validity sentence, greeting and signature on the same page', async () => {
+    const proto = PDFDocument.prototype as any;
+    const origAddPage = proto.addPage;
+    vi.spyOn(proto, 'addPage').mockImplementation(function (this: any) {
+      texts.push({ str: '<<page>>', x: 0, y: 0, size: 0, font: '', opts: {} });
+      return origAddPage.apply(this, arguments as any);
+    });
+    const pageOf = (str: string) => texts.slice(0, texts.findIndex((t) => t.str === str)).filter((t) => t.str === '<<page>>').length;
+    let brokeBeforeClosing = false;
+    for (let n = 1; n <= 20; n++) {
+      texts.length = 0;
+      const lines = Array.from({ length: n }, (_, i) => ({ label: `Liga ${i + 1}`, amount: 10, kind: 'league' }));
+      await render({ ...offerData, lines });
+      const validity = pageOf('Wir binden uns an dieses Angebot bis zum 15.11.2026 und freuen uns auf die Zusammenarbeit.');
+      expect(pageOf('Viele Grüße')).toBe(validity);
+      expect(pageOf('bumbleflies (i.V. Christian Dähn)')).toBe(validity);
+      if (validity > pageOf('Alle oben genannten Preise verstehen sich zzgl. der gesetzlichen MwSt.')) brokeBeforeClosing = true;
+    }
+    // at least one size actually moved the closing block to a new page
+    expect(brokeBeforeClosing).toBe(true);
   });
 
   it('lists optional lines after the total under "Optional:"', async () => {

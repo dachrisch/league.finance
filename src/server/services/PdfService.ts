@@ -91,7 +91,15 @@ const OFFER_LAYOUT = {
   bulletsGapBefore: 12,
   bulletsGapAfter: 2,
   bullet: { x: 61.1, textX: 79.1 },
-  priceColumns: { label: 79.1, labelWidth: 104, detail: 187.1, detailWidth: 200, amountRight: 470 },
+  /**
+   * Price rows: the detail column starts after the longest label (+ labelGap), but never before
+   * the 2026 reference position 187.1 (label + minLabelColumn) and never after label +
+   * maxLabelColumn. The detail column ends amountGap before the widest amount.
+   */
+  priceColumns: {
+    label: 79.1, minLabelColumn: 108, maxLabelColumn: 200, labelGap: 12, labelGutter: 4,
+    maxDetailWidth: 200, amountGap: 10, amountRight: 470,
+  },
   /** body content must end above this; the footer starts at footerY */
   contentBottom: 770,
   continuationTopY: 50,
@@ -170,10 +178,11 @@ export class PdfService {
         y = L.continuationTopY;
       }
     };
+    const paragraphHeight = (str: string) => Math.max(doc.heightOfString(str, wrapOpts(L.bodyWidth)), L.lineHeight);
     /** Wrapped paragraph at the body width; advances y. */
     const paragraph = (str: string) => {
       const opts = wrapOpts(L.bodyWidth);
-      const h = Math.max(doc.heightOfString(str, opts), L.lineHeight);
+      const h = paragraphHeight(str);
       ensure(h);
       doc.text(str, L.left, y, opts);
       y += h;
@@ -230,9 +239,19 @@ export class PdfService {
     paragraph(`Für die Nutzung der LeagueSphere App in der Saison ${seasonName} berechnen wir ${euro(total)}, ` +
       'die sich wie folgt zusammensetzen:');
     const C = L.priceColumns;
+    const widest = (strs: string[], bold = false) => {
+      font(11, bold);
+      return Math.max(0, ...strs.map((str) => doc.widthOfString(str)));
+    };
+    const labelColumn = Math.min(C.maxLabelColumn,
+      Math.max(C.minLabelColumn, widest(lines.map((l) => l.label)) + C.labelGap));
+    const detailX = C.label + labelColumn;
+    // amounts measured in bold so the bold total also stays clear of the detail column
+    const amountLeft = C.amountRight - widest([...lines.map((l) => euro(l.amount)), euro(total)], true);
+    const detailWidth = Math.min(C.maxDetailWidth, amountLeft - C.amountGap - detailX);
     const priceRow = (l: OfferLine) => {
-      const labelOpts = wrapOpts(C.labelWidth);
-      const detailOpts = wrapOpts(C.detailWidth);
+      const labelOpts = wrapOpts(labelColumn - C.labelGutter);
+      const detailOpts = wrapOpts(detailWidth);
       const h = Math.max(
         doc.heightOfString(l.label, labelOpts),
         l.detail ? doc.heightOfString(l.detail, detailOpts) : 0,
@@ -240,7 +259,7 @@ export class PdfService {
       ensure(h);
       line('•', L.bullet.x, y, 11);
       doc.text(l.label, C.label, y, labelOpts);
-      if (l.detail) doc.text(l.detail, C.detail, y, detailOpts);
+      if (l.detail) doc.text(l.detail, detailX, y, detailOpts);
       right(euro(l.amount), C.amountRight, y, 11);
       y += h;
     };
@@ -264,12 +283,15 @@ export class PdfService {
     if (data.closingNote) paragraph(data.closingNote);
     paragraph('Alle oben genannten Preise verstehen sich zzgl. der gesetzlichen MwSt.');
     y += L.lineHeight;
-    paragraph(`Wir binden uns an dieses Angebot bis zum ${offerDate(data.validUntil)} und freuen uns auf die Zusammenarbeit.`);
+    // Validity sentence, greeting and signature form one block that never splits across pages.
+    const validity = `Wir binden uns an dieses Angebot bis zum ${offerDate(data.validUntil)} und freuen uns auf die Zusammenarbeit.`;
+    const signatureGap = 45;
+    ensure(paragraphHeight(validity) + L.lineHeight + paragraphHeight('Viele Grüße') + signatureGap +
+      paragraphHeight('bumbleflies (i.V. Christian Dähn)'));
+    paragraph(validity);
     y += L.lineHeight;
-    // keep greeting and signature together
-    ensure(L.lineHeight * 5);
     paragraph('Viele Grüße');
-    y += 45;
+    y += signatureGap;
     paragraph('bumbleflies (i.V. Christian Dähn)');
 
     drawFooter();
