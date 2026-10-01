@@ -50,14 +50,8 @@ export function OfferEditWizard({ editId }: Props) {
   const linkedAssociationId = (selectedAssociation as any)?.leaguesphereAssociationId ?? null;
   const associationFiltering = linkedAssociationId != null && !wizard.step2.showAllLeagues;
 
-  // Get leagues for selected season, optionally narrowed to the linked association
-  const { data: leagues = [] } = trpc.finance.leagues.listBySeason.useQuery(
-    {
-      seasonId: wizard.step1.selectedSeasonId || '',
-      associationId: associationFiltering ? linkedAssociationId : undefined,
-    },
-    { enabled: !!wizard.step1.selectedSeasonId }
-  );
+  // All leagues, regardless of season or association
+  const { data: leagues = [] } = trpc.finance.leagues.listAll.useQuery();
 
   // Mutation
   const updateMutation = trpc.finance.offers.update.useMutation();
