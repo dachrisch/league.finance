@@ -46,18 +46,8 @@ export function OfferEditWizard({ editId }: Props) {
     }
   }, [editId, existingOfferData, hasInitialized, wizard]);
 
-  const selectedAssociation = associations.find(a => a._id === wizard.step1.selectedAssociationId);
-  const linkedAssociationId = (selectedAssociation as any)?.leaguesphereAssociationId ?? null;
-  const associationFiltering = linkedAssociationId != null && !wizard.step2.showAllLeagues;
-
-  // Get leagues for selected season, optionally narrowed to the linked association
-  const { data: leagues = [] } = trpc.finance.leagues.listBySeason.useQuery(
-    {
-      seasonId: wizard.step1.selectedSeasonId || '',
-      associationId: associationFiltering ? linkedAssociationId : undefined,
-    },
-    { enabled: !!wizard.step1.selectedSeasonId }
-  );
+  // All leagues, regardless of season or association
+  const { data: leagues = [] } = trpc.finance.leagues.listAll.useQuery();
 
   // Mutation
   const updateMutation = trpc.finance.offers.update.useMutation();
@@ -158,13 +148,6 @@ export function OfferEditWizard({ editId }: Props) {
             selectedLeagueIds={wizard.step2.selectedLeagueIds}
             leagueSearchTerm={wizard.step2.leagueSearchTerm}
             leagueFilterType={wizard.step2.leagueFilterType || 'All'}
-            associationFilter={linkedAssociationId != null ? {
-              linked: true,
-              filtering: associationFiltering,
-              associationName: summary.associationName,
-              seasonName: summary.seasonYear,
-              onToggle: wizard.toggleShowAllLeagues,
-            } : undefined}
             submitError={submitError}
             onBack={() => {}} // Not used in unified view
             onCancel={() => {}} // Not used in unified view

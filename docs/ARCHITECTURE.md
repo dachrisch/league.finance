@@ -91,6 +91,12 @@ If a `TrackedLeague` was imported by the one-time sheet migration
 manually and never linked, there is intentionally no offer to navigate to
 — that is the correct "still just a lead" state, not a bug.
 
+## Offer
+
+An `Offer` represents a priced bundle of leaguesphere leagues sent to a contact for one season. Its price is determined first by its `lines` (label/detail/amount/kind) — once non-empty — which compute `totalPrice` via `offerLinesTotal()` with optional lines excluded and discounts as negative amounts. Offers without lines still price from their linked `FinancialConfig` records. `generateLines` seeds lines from configs; `setLines` replaces them for drafts only.
+
+The offer PDF (`OFFER_LAYOUT`, measured from `Angebot_20260319-2`) mirrors the legacy Google Docs letter. `previewPdf` renders it without changing status; `fileOfferInDrive` queues a job that generates the PDF, uploads it to Drive and marks the offer `sent` — status goes `draft` → `sending` while queued, `sending` → `sent` on success, and back to `draft` if the job fails.
+
 ## Spec and plan
 
 The design rationale (why `TrackedLeague` is separate from `Offer` rather

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { Types } from 'mongoose';
 import { router, protectedProcedure, adminProcedure } from '../../trpc';
-import { UpdateOfferSchema } from '../../../../shared/schemas/offer';
+import { UpdateOfferSchema, OfferLetterSchema, OfferLineSchema } from '../../../../shared/schemas/offer';
 import { UpdateFinancialConfigSchema } from '../../../../shared/schemas/financialConfig';
 import { Offer } from '../../models/Offer';
 import { FinancialConfig } from '../../models/FinancialConfig';
@@ -11,6 +11,11 @@ import { getMysqlPool } from '../../db/mysql';
 import { supportsTransactions } from '../../db/mongo';
 import { extractContactInfo } from '../../../../shared/lib/extraction';
 import { computeConfigPrices } from '../../lib/configPricing';
+import { offerLinesTotal, linesFromConfigs, leaguePricesFromLines, validateOfferLines } from '../../../../shared/lib/offerLines';
+import { generateOfferNumber } from '../../lib/offerNumbering';
+import { fetchLeaguesMap } from '../../lib/leagueNames';
+import { buildOfferPdfData } from '../../lib/offerPdfData';
+import { PdfService } from '../../services/PdfService';
 
 const normalizeOffer = (doc: any) => {
   const obj = doc.toObject?.() || doc;
@@ -40,6 +45,16 @@ const normalizeContact = (doc: any) => ({
   ...doc,
   _id: doc._id?.toString(),
 });
+
+const loadDraft = async (id: string) => {
+  const offer = await Offer.findById(id);
+  if (!offer) throw new TRPCError({ code: 'NOT_FOUND' });
+  if (offer.status !== 'draft') {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only draft offers can be edited.' });
+  }
+  return offer;
+};
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const offersRouter = router({
   list: protectedProcedure
@@ -73,11 +88,17 @@ export const offersRouter = router({
         (leaguePricesByOfferId[key] ||= []).push({ leagueId: config.leagueId, finalPrice });
       }
 
-      return offers.map((offer: any) => ({
-        ...normalizeOffer(offer),
-        totalPrice: totalByOfferId[offer._id?.toString()] || 0,
-        leaguePrices: leaguePricesByOfferId[offer._id?.toString()] || [],
-      }));
+      return offers.map((offer: any) => {
+        const hasLines = !!offer.lines?.length;
+        return {
+          ...normalizeOffer(offer),
+          totalPrice: hasLines ? offerLinesTotal(offer.lines) : (totalByOfferId[offer._id?.toString()] || 0),
+          // Once an offer has lines they are authoritative for pricing, so the dashboard's
+          // per-league breakdown must be derived from them too (not the stale configs) —
+          // otherwise it would keep showing config-based numbers after a lines edit.
+          leaguePrices: hasLines ? leaguePricesFromLines(offer.lines) : (leaguePricesByOfferId[offer._id?.toString()] || []),
+        };
+      });
     }),
 
   get: protectedProcedure
@@ -93,22 +114,27 @@ export const offersRouter = router({
       const configs = await FinancialConfig.find({ offerId: input.id }).lean();
 
       // Fetch league data from MySQL to get league names
-      let leaguesMap: Record<number, string> = {};
-      try {
-        const pool = getMysqlPool();
-        const [rows] = await pool.query<any[]>('SELECT id, name FROM gamedays_league');
-        leaguesMap = rows.reduce((acc, row) => {
-          acc[row.id] = row.name;
-          return acc;
-        }, {});
-      } catch (err) {
-        console.error('Failed to fetch leagues:', err);
-      }
+      const leaguesMap = await fetchLeaguesMap();
+
+      const pricedConfigs = configs.map((config) => computeConfigPrices(config, leaguesMap[config.leagueId] || 'Unknown League'));
+
+      const storedLines = (offer as any).lines;
+      const hasLines = !!storedLines?.length;
+      // The offer's lines as the UI should show/edit them: the stored lines once the offer
+      // has any, otherwise the same config-derived lines the PDF falls back to (buildOfferPdfData)
+      // — so a pre-lines offer shows its real prices instead of an empty table. This only
+      // changes what's displayed/edited; totalPrice (below) still prices stored-line-less
+      // offers from configs, unchanged.
+      const effectiveLines = hasLines ? storedLines : linesFromConfigs(pricedConfigs, leaguesMap);
 
       return {
         offer: normalizeOffer(offer),
         contact: (offer as any).contactId,
-        configs: configs.map((config) => computeConfigPrices(config, leaguesMap[config.leagueId] || 'Unknown League'))
+        configs: pricedConfigs,
+        effectiveLines,
+        totalPrice: hasLines
+          ? offerLinesTotal(storedLines)
+          : pricedConfigs.reduce((s, c) => s + c.finalPrice, 0),
       };
     }),
 
@@ -354,5 +380,79 @@ export const offersRouter = router({
       }
 
       return computeConfigPrices(config.toObject(), leagueName);
+    }),
+
+  setLines: adminProcedure
+    .input(z.object({ id: z.string(), lines: z.array(OfferLineSchema) }))
+    .mutation(async ({ input }) => {
+      const offer = await loadDraft(input.id);
+      const invalid = validateOfferLines(input.lines);
+      if (invalid) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: `Zeile ${invalid.index + 1}: ${invalid.message}` });
+      }
+      offer.lines = input.lines;
+      await offer.save();
+      return normalizeOffer(offer);
+    }),
+
+  generateLines: adminProcedure
+    .input(z.object({ id: z.string(), overwrite: z.boolean().optional() }))
+    .mutation(async ({ input }) => {
+      const offer = await loadDraft(input.id);
+      if (offer.lines?.length && !input.overwrite) {
+        throw new TRPCError({ code: 'CONFLICT', message: 'Offer already has price lines.' });
+      }
+      const configs = await FinancialConfig.find({ offerId: offer._id }).lean();
+      const leaguesMap = await fetchLeaguesMap(configs.map((c) => c.leagueId));
+      offer.lines = linesFromConfigs(configs.map((c) => computeConfigPrices(c)), leaguesMap);
+      await offer.save();
+      return normalizeOffer(offer);
+    }),
+
+  updateLetter: adminProcedure
+    .input(z.object({ id: z.string(), data: OfferLetterSchema.extend({ assignNumber: z.boolean().optional() }) }))
+    .mutation(async ({ input }) => {
+      const offer = await loadDraft(input.id);
+      const { assignNumber, ...data } = input.data;
+      // Object.assign would keep a key's old value when the client sends `null` to clear it
+      // (e.g. a deleted Zusatztext/Schlusstext) instead of actually unsetting it, so a cleared
+      // note kept printing on the PDF. `null` means "unset"; `undefined` keys are simply absent
+      // (JSON drops them) and must not touch the stored value.
+      for (const [key, value] of Object.entries(data)) {
+        if (value === null) {
+          offer.set(key, undefined);
+        } else if (value !== undefined) {
+          (offer as any)[key] = value;
+        }
+      }
+      if (!offer.offerDate) offer.offerDate = new Date();
+      if (assignNumber && !offer.offerNumber) offer.offerNumber = await generateOfferNumber(offer.offerDate);
+      if (data.offerDate !== undefined && data.validUntil === undefined) {
+        // offerDate changed in this request and validUntil wasn't explicitly set alongside it:
+        // recompute the default so an earlier save's validUntil doesn't go stale.
+        offer.validUntil = new Date(offer.offerDate.getTime() + 30 * DAY_MS);
+      } else if (!offer.validUntil) {
+        offer.validUntil = new Date(offer.offerDate.getTime() + 30 * DAY_MS);
+      }
+      try {
+        await offer.save();
+      } catch (err: any) {
+        if (err.code === 11000) {
+          throw new TRPCError({ code: 'CONFLICT', message: `Angebotsnummer ${offer.offerNumber} ist bereits vergeben.` });
+        }
+        throw err;
+      }
+      return normalizeOffer(offer);
+    }),
+
+  /** Renders the offer letter for preview (admin only); does not change the offer's status. */
+  previewPdf: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const exists = await Offer.exists({ _id: input.id });
+      if (!exists) throw new TRPCError({ code: 'NOT_FOUND', message: 'Offer not found' });
+      const data = await buildOfferPdfData(input.id);
+      const pdf = await PdfService.generateOfferPdf(data);
+      return { filename: PdfService.generateFilename(data.offerNumber, data.seasonName), base64: pdf.toString('base64') };
     }),
 });

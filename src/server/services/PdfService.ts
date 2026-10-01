@@ -3,13 +3,16 @@ import { buildLineDescriptions } from '../../../shared/lib/invoiceDescriptions';
 import { computeLineVat, computeInvoiceTotals } from '../lib/invoicePricing';
 import { buildStandardInvoiceAddress } from '../lib/invoiceAddress';
 import { BUMBLEFLIES_LOGO_PNG_DATA_URI } from '../assets/bumbleflies-logo';
+import { offerLinesTotal, type OfferLine } from '../../../shared/lib/offerLines';
 
 export interface PdfGenerationData {
-  offer: any;
-  contact: any;
-  configs: any[];
-  leaguesMap: Record<number, string>;
-  associationName: string;
+  offerNumber: string;
+  offerDate: Date;
+  validUntil: Date;
+  introNote?: string;
+  closingNote?: string;
+  recipient: { associationName: string; contactName?: string; street: string; postalCode: string; city: string };
+  lines: OfferLine[];
   seasonName: string;
 }
 
@@ -27,10 +30,6 @@ export interface InvoicePdfGenerationData {
   lineItems: Array<{ leagueName: string; amount: number }>;
   seasonName: string;
 }
-
-const BLUE = '#2c5aa0';
-const GREY = '#666666';
-const DARK = '#333333';
 
 /**
  * Absolute positions (A4 points) of the legacy Apps Script invoice, measured from the issued
@@ -72,22 +71,78 @@ const INVOICE_LAYOUT = {
   footerColumns: [45, 225.4, 407.6] as const,
 };
 
+/**
+ * Absolute positions (A4 points) of the legacy Google Docs offer letter, measured with
+ * pdftotext -bbox from Angebot_20260319-2 (2026). Text y is the top of the line box.
+ */
+const OFFER_LAYOUT = {
+  left: 43.1,
+  logo: { x: 424.5, y: 22.1, width: 127 },
+  senderY: 50.6,
+  // width caps the recipient block so a long association name wraps instead of running
+  // into the meta block (right-aligned, box left edge at meta.right - 150 = 411.3).
+  recipient: { x: 42.3, y: 82.1, lineHeight: 15.2, width: 350 },
+  meta: { right: 561.3, y: 82.1, lineHeight: 12.4 },
+  titleY: 163.4,
+  firstHeadingY: 198.7,
+  bodyWidth: 501,
+  lineHeight: 15.2,
+  headingGapBefore: 10,
+  headingGapAfter: 29.2,
+  /** space between the Leistungsumfang intro and its bullets, and after the bullets */
+  bulletsGapBefore: 12,
+  bulletsGapAfter: 2,
+  bullet: { x: 61.1, textX: 79.1 },
+  /**
+   * Price rows: the detail column starts after the longest label (+ labelGap), but never before
+   * the 2026 reference position 187.1 (label + minLabelColumn) and never after label +
+   * maxLabelColumn. The detail column ends amountGap before the widest amount.
+   */
+  priceColumns: {
+    label: 79.1, minLabelColumn: 108, maxLabelColumn: 200, labelGap: 12, labelGutter: 4,
+    maxDetailWidth: 200, amountGap: 10, amountRight: 470,
+  },
+  /** body content must end above this; the footer starts at footerY */
+  contentBottom: 770,
+  continuationTopY: 50,
+  footerY: 784.8,
+  footerLineHeight: 8.4,
+  footerColumns: [49.1, 217.8, 386.6] as const,
+};
+
+const OFFER_FEATURES = [
+  'Einfache Spielplanerstellung und Einteilung der Offiziellen',
+  'Live-Ergebnisse für die Fans und Teams',
+  'Liveticker für die Fans',
+  'Tracking der Schiedsrichtereinsätze',
+  'Digitalen Passcheck der Teams ohne Listen zu drucken',
+  'Automatischer digitaler Passtransfer innerhalb der App',
+];
+
 /** Width of the box right-aligned text is laid into; only its right edge matters. */
 const RIGHT_ALIGN_BOX = 150;
 
 const euro = (n: number) =>
   new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
+/** Invoice dates as the legacy invoices print them (unpadded, e.g. 29.5.2026). */
 const deDate = (d: Date) => d.toLocaleDateString('de-DE');
+/**
+ * Offer letter dates as the legacy letters print them (01.10.2026), as the Europe/Berlin
+ * calendar day: right for server-side new Date() just after local midnight and for date-input
+ * values stored as UTC midnight, and consistent with generateOfferNumber.
+ */
+const offerDate = (d: Date) =>
+  d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Berlin' });
 
 export class PdfService {
+  /**
+   * Renders an offer as the legacy Google Docs letter (logo, address/meta header, three
+   * sections, bullet price lines, footer) so app offers look like the ones sent before.
+   */
   static generateOfferPdf(data: PdfGenerationData): Promise<Buffer> {
-    const { offer, contact, configs, leaguesMap, associationName, seasonName } = data;
-    const offerId8 = offer._id.toString().substring(0, 8);
-    const totalPrice = configs.reduce((sum, c) => sum + (c.finalPrice || 0), 0);
-    // Contact address may be nested (real Contact doc) or flat (legacy) — support both.
-    const addr = contact.address ?? contact;
-
-    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const L = OFFER_LAYOUT;
+    // No margins: every element is placed absolutely; page breaks are handled by ensure().
+    const doc = new PDFDocument({ size: 'A4', margin: 0 });
     const chunks: Buffer[] = [];
     doc.on('data', (c: Buffer) => chunks.push(c));
     const done = new Promise<Buffer>((resolve, reject) => {
@@ -95,126 +150,170 @@ export class PdfService {
       doc.on('error', reject);
     });
 
-    const left = doc.page.margins.left;
-    const right = doc.page.width - doc.page.margins.right;
-    const contentWidth = right - left;
-
-    // Header
-    doc.font('Helvetica-Bold').fontSize(24).fillColor(BLUE).text('bumbleflies', left);
-    doc.font('Helvetica').fontSize(9).fillColor(GREY)
-      .text('bumbleflies UG (haftungsbeschränkt) · Gleiwitzer Str. 6d · 81929 München', left);
-    doc.moveDown(0.5);
-    doc.moveTo(left, doc.y).lineTo(right, doc.y).strokeColor(BLUE).lineWidth(2).stroke();
-    doc.moveDown(1.5);
-
-    // Recipient
-    doc.font('Helvetica-Bold').fontSize(9).fillColor(GREY).text('ANGEBOT AN:', left);
-    doc.moveDown(0.3);
-    doc.fillColor(DARK).font('Helvetica-Bold').fontSize(11).text(contact.name ?? '', left);
-    doc.font('Helvetica').fontSize(10)
-      .text(addr.street ?? '', left)
-      .text(`${addr.postalCode ?? ''} ${addr.city ?? ''}`.trim(), left)
-      .text(addr.country ?? '', left)
-      .text(contact.email ?? '', left);
-    doc.moveDown(1.5);
-
-    // Title + meta
-    doc.font('Helvetica-Bold').fontSize(15).fillColor(BLUE)
-      .text(`Angebot: ${offerId8} – Nutzung der LeagueSphere App für die Saison ${seasonName}`,
-        left, doc.y, { width: contentWidth });
-    doc.moveDown(0.5);
-    doc.font('Helvetica').fontSize(9).fillColor(GREY)
-      .text(`Angebots-ID: ${offerId8}`, left)
-      .text(`Datum: ${deDate(new Date())}`, left)
-      .text(`Organisation: ${associationName}`, left);
-
-    const section = (title: string) => {
-      doc.moveDown(0.8);
-      doc.font('Helvetica-Bold').fontSize(13).fillColor(BLUE).text(title, left);
-      doc.moveDown(0.3);
-      doc.font('Helvetica').fontSize(10.5).fillColor(DARK);
+    const font = (size: number, bold = false) => doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(size);
+    const line = (str: string, x: number, y: number, size: number, bold = false, opts: PDFKit.Mixins.TextOptions = {}) =>
+      font(size, bold).text(str, x, y, { lineBreak: false, ...opts });
+    const right = (str: string, rightEdge: number, y: number, size: number, bold = false) =>
+      line(str, rightEdge - RIGHT_ALIGN_BOX, y, size, bold, { width: RIGHT_ALIGN_BOX, align: 'right' });
+    /** Wrapped 11pt text whose lines are L.lineHeight apart, like the original. */
+    const wrapOpts = (width: number): PDFKit.Mixins.TextOptions => {
+      font(11);
+      return { width, lineGap: L.lineHeight - doc.currentLineHeight(true) };
     };
 
+    const drawFooter = () => {
+      const cols: Array<[number, string[]]> = [
+        [L.footerColumns[0], ['bumbleflies UG (haftungsbeschränkt)', 'Geschäftsführer: Christoph Kämpfe,',
+          'Christian Dähn, Sebastian Keller', 'Gleiwitzer-Str-6d', '81929 München']],
+        [L.footerColumns[1], ['Bank: GLS Bank', 'IBAN: DE96430609671106170600', 'HRB-Nr.: 260473']],
+        [L.footerColumns[2], ['E-mail: info@bumbleflies.de', 'Web: bumbleflies.de']],
+      ];
+      for (const [x, rows] of cols) rows.forEach((r, i) => line(r, x, L.footerY + i * L.footerLineHeight, 7));
+    };
+
+    let y = 0;
+    /** Continue on a new page when the next block would run into the footer. */
+    const ensure = (height: number) => {
+      if (y + height > L.contentBottom) {
+        drawFooter();
+        doc.addPage({ size: 'A4', margin: 0 });
+        y = L.continuationTopY;
+      }
+    };
+    const paragraphHeight = (str: string) => Math.max(doc.heightOfString(str, wrapOpts(L.bodyWidth)), L.lineHeight);
+    /** Wrapped paragraph at the body width; advances y. */
+    const paragraph = (str: string) => {
+      const opts = wrapOpts(L.bodyWidth);
+      const h = paragraphHeight(str);
+      ensure(h);
+      doc.text(str, L.left, y, opts);
+      y += h;
+    };
+    const heading = (str: string) => {
+      y += L.headingGapBefore;
+      ensure(L.headingGapAfter + L.lineHeight);
+      line(str, L.left, y, 14, true);
+      y += L.headingGapAfter;
+    };
+
+    const { recipient: r, lines, seasonName } = data;
+    const total = offerLinesTotal(lines);
+    const regular = lines.filter((l) => l.kind !== 'optional');
+    const optional = lines.filter((l) => l.kind === 'optional');
+
+    doc.fillColor('black');
+
+    // Header: logo, sender line, recipient (left) and meta block (right)
+    doc.image(BUMBLEFLIES_LOGO_PNG_DATA_URI, L.logo.x, L.logo.y, { width: L.logo.width });
+    line('bumbleflies UG (haftungsbeschränkt) · Gleiwitzer Str. 6d · 81929 München', L.left, L.senderY, 7);
+    const recipientLines = [r.associationName, r.contactName ? `z.H. ${r.contactName}` : '',
+      r.street, `${r.postalCode} ${r.city}`.trim()].filter(Boolean);
+    // Constrained to the left column (lineBreak:true) so a long association name wraps
+    // instead of running past the right margin into the meta block.
+    recipientLines.forEach((s, i) => line(s, L.recipient.x, L.recipient.y + i * L.recipient.lineHeight, 11,
+      false, { lineBreak: true, width: L.recipient.width }));
+    ['info@bumbleflies.de', `Angebot: ${data.offerNumber}`, `Datum: ${offerDate(data.offerDate)}`]
+      .forEach((s, i) => right(s, L.meta.right, L.meta.y + i * L.meta.lineHeight, 9));
+
+    // Wrapped within the body width (instead of lineBreak:false, which would run a long
+    // offer number/title past the right margin); when it wraps to more than one line, the
+    // following heading is pushed down by the extra lines so it doesn't overlap the title.
+    const titleStr = `Angebot: ${data.offerNumber} - Nutzung der LeagueSphere App für die Saison ${seasonName}`;
+    font(14, true);
+    const titleOpts: PDFKit.Mixins.TextOptions = { width: L.bodyWidth };
+    const titleLineHeight = doc.currentLineHeight(true);
+    const titleLines = Math.max(1, Math.round(doc.heightOfString(titleStr, titleOpts) / titleLineHeight));
+    doc.text(titleStr, L.left, L.titleY, titleOpts);
+
     // Unser Angebot
-    section('Unser Angebot');
-    doc.text(`Wir freuen uns, dir unser Angebot für die Nutzung der LeagueSphere App zur effizienten ` +
-      `Organisation und Verwaltung der Saison ${seasonName} zu unterbreiten.`,
-      left, doc.y, { width: contentWidth });
+    y = L.firstHeadingY + (titleLines - 1) * titleLineHeight - L.headingGapBefore;
+    heading('Unser Angebot');
+    paragraph('Wir freuen uns, dir unser Angebot für die Nutzung der LeagueSphere App zur effizienten Organisation ' +
+      `und Verwaltung der Saison ${seasonName} zu unterbreiten. Unsere Plattform hilft dir dabei, die Spielplanung, ` +
+      'die Verwaltung von Offiziellen und die Kommunikation mit Fans und Teams zu optimieren.');
+    if (data.introNote) paragraph(data.introNote);
 
     // Leistungsumfang
-    section('Leistungsumfang');
-    doc.text('Die Anwendung kann unter https://leaguesphere.app von allen Spieler:innen und ' +
-      'Zuschauer:innen genutzt werden, mit folgenden Funktionen:', left, doc.y, { width: contentWidth });
-    doc.moveDown(0.3);
-    doc.list([
-      'Einfache Spielplanerstellung und Einteilung der Offiziellen',
-      'Live-Ergebnisse für die Fans und Teams',
-      'Liveticker für die Fans',
-      'Tracking der Schiedsrichtereinsätze',
-      'Digitaler Passcheck der Teams ohne Listen zu drucken',
-      'Automatischer digitaler Passtransfer innerhalb der App',
-    ], left, doc.y, { width: contentWidth, bulletRadius: 1.5, textIndent: 12 });
-
-    // Preise und Konditionen (table)
-    section('Preise und Konditionen');
-    const colTeams = left + contentWidth * 0.55;
-    const colPrice = left + contentWidth * 0.78;
-    const priceW = right - colPrice;
-    const teamsW = contentWidth * 0.2;
-    const rowH = 18;
-    let y = doc.y + 4;
-    doc.font('Helvetica-Bold').fontSize(10).fillColor(DARK);
-    doc.text('Liga/League', left, y);
-    doc.text('Teams', colTeams, y, { width: teamsW, align: 'right' });
-    doc.text('Preis', colPrice, y, { width: priceW, align: 'right' });
-    y += rowH;
-    doc.moveTo(left, y - 4).lineTo(right, y - 4).strokeColor(BLUE).lineWidth(1).stroke();
-    doc.font('Helvetica').fontSize(10).fillColor(DARK);
-    for (const c of configs) {
-      doc.text(leaguesMap[c.leagueId] || 'Unknown', left, y, { width: contentWidth * 0.5 });
-      doc.text(String(c.expectedTeamsCount ?? 0), colTeams, y, { width: teamsW, align: 'right' });
-      doc.text(euro(c.finalPrice || 0), colPrice, y, { width: priceW, align: 'right' });
-      y += rowH;
+    heading('Leistungsumfang');
+    paragraph('Die Anwendung kann unter https://leaguesphere.app von allen Spieler:innen und Zuschauer:innen ' +
+      'genutzt werden, mit folgenden Funktionen:');
+    y += L.bulletsGapBefore;
+    for (const f of OFFER_FEATURES) {
+      ensure(L.lineHeight);
+      line('•', L.bullet.x, y, 11);
+      line(f, L.bullet.textX, y, 11);
+      y += L.lineHeight;
     }
-    doc.moveTo(left, y - 4).lineTo(right, y - 4).strokeColor('#cccccc').lineWidth(0.5).stroke();
-    doc.font('Helvetica-Bold').fontSize(10).fillColor(DARK);
-    doc.text('Gesamt (zzgl. MwSt.)', left, y, { width: contentWidth * 0.7 });
-    doc.text(euro(totalPrice), colPrice, y, { width: priceW, align: 'right' });
-    doc.x = left;
-    doc.y = y + rowH;
+    y += L.bulletsGapAfter;
 
-    // Note
-    doc.moveDown(0.6);
-    doc.font('Helvetica').fontSize(10).fillColor(DARK)
-      .text('Alle oben genannten Preise verstehen sich zzgl. der gesetzlichen MwSt.', left, doc.y, { width: contentWidth });
-    const until = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    doc.text(`Wir binden uns an dieses Angebot bis zum ${deDate(until)}.`, left, doc.y, { width: contentWidth });
+    // Preise und Konditionen
+    heading('Preise und Konditionen');
+    paragraph(`Für die Nutzung der LeagueSphere App in der Saison ${seasonName} berechnen wir ${euro(total)}, ` +
+      'die sich wie folgt zusammensetzen:');
+    const C = L.priceColumns;
+    const widest = (strs: string[], bold = false) => {
+      font(11, bold);
+      return Math.max(0, ...strs.map((str) => doc.widthOfString(str)));
+    };
+    const labelColumn = Math.min(C.maxLabelColumn,
+      Math.max(C.minLabelColumn, widest(lines.map((l) => l.label)) + C.labelGap));
+    const detailX = C.label + labelColumn;
+    // amounts measured in bold so the bold total also stays clear of the detail column
+    const amountLeft = C.amountRight - widest([...lines.map((l) => euro(l.amount)), euro(total)], true);
+    const detailWidth = Math.min(C.maxDetailWidth, amountLeft - C.amountGap - detailX);
+    const priceRow = (l: OfferLine) => {
+      const labelOpts = wrapOpts(labelColumn - C.labelGutter);
+      const detailOpts = wrapOpts(detailWidth);
+      const h = Math.max(
+        doc.heightOfString(l.label, labelOpts),
+        l.detail ? doc.heightOfString(l.detail, detailOpts) : 0,
+        L.lineHeight);
+      ensure(h);
+      line('•', L.bullet.x, y, 11);
+      doc.text(l.label, C.label, y, labelOpts);
+      if (l.detail) doc.text(l.detail, detailX, y, detailOpts);
+      right(euro(l.amount), C.amountRight, y, 11);
+      y += h;
+    };
+    regular.forEach(priceRow);
+    ensure(L.lineHeight + 4);
+    doc.moveTo(C.label, y + 1).lineTo(C.amountRight, y + 1).lineWidth(0.5).strokeColor('black').stroke();
+    y += 4;
+    line('Gesamt (zzgl. MwSt.)', C.label, y, 11, true);
+    right(euro(total), C.amountRight, y, 11, true);
+    y += L.lineHeight;
+    if (optional.length) {
+      y += 6;
+      ensure(L.lineHeight * 2);
+      line('Optional:', L.left, y, 11, true);
+      y += L.lineHeight;
+      optional.forEach(priceRow);
+    }
 
-    // Sign-off
-    doc.moveDown(1.2);
-    doc.font('Helvetica-Bold').fontSize(10.5).fillColor(DARK).text('Viele Grüße', left);
-    doc.font('Helvetica').text('bumbleflies (i.V. Christian Dähn)', left);
+    // Closing notes and sign-off
+    y += L.lineHeight;
+    if (data.closingNote) paragraph(data.closingNote);
+    paragraph('Alle oben genannten Preise verstehen sich zzgl. der gesetzlichen MwSt.');
+    y += L.lineHeight;
+    // Validity sentence, greeting and signature form one block that never splits across pages.
+    const validity = `Wir binden uns an dieses Angebot bis zum ${offerDate(data.validUntil)} und freuen uns auf die Zusammenarbeit.`;
+    const signatureGap = 45;
+    ensure(paragraphHeight(validity) + L.lineHeight + paragraphHeight('Viele Grüße') + signatureGap +
+      paragraphHeight('bumbleflies (i.V. Christian Dähn)'));
+    paragraph(validity);
+    y += L.lineHeight;
+    paragraph('Viele Grüße');
+    y += signatureGap;
+    paragraph('bumbleflies (i.V. Christian Dähn)');
 
-    // Footer
-    doc.moveDown(2);
-    doc.moveTo(left, doc.y).lineTo(right, doc.y).strokeColor('#dddddd').lineWidth(0.5).stroke();
-    doc.moveDown(0.5);
-    doc.font('Helvetica').fontSize(8).fillColor(GREY)
-      .text('bumbleflies UG (haftungsbeschränkt) · Geschäftsführer: Christoph Kämpfe, Christian Dähn, Sebastian Keller', left, doc.y, { width: contentWidth })
-      .text('Gleiwitzer Str. 6d, 81929 München · GLS Bank · IBAN: DE96430609671106170600', left, doc.y, { width: contentWidth })
-      .text('info@bumbleflies.de · bumbleflies.de', left, doc.y, { width: contentWidth });
-
+    drawFooter();
     doc.end();
     return done;
   }
 
-  static generateFilename(offerId: string, associationName: string): string {
-    const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
-    const sanitizedName = associationName
-      .replace(/[^a-zA-Z0-9-]/g, '-')
-      .replace(/-+/g, '-')
-      .substring(0, 30);
-    return `Angebot_${date}-${offerId.substring(0, 8)}_${sanitizedName}.pdf`;
+  /** The legacy Google Docs file name, e.g. "Angebot_20261001-1-Nutzung der … Saison 2027.pdf". */
+  static generateFilename(offerNumber: string, seasonName: string): string {
+    return `Angebot_${offerNumber}-Nutzung der LeagueSphere App für die Saison ${seasonName}.pdf`;
   }
 
   /**

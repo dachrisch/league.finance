@@ -1,7 +1,16 @@
 import { useState } from 'react';
+import type { OfferLine } from '../../../shared/lib/offerLines';
 import { useParams, useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 import { FileOfferDialog } from '../components/Offer/FileOfferDialog';
+import { OfferLinesEditor } from '../components/Offer/OfferLinesEditor';
+import { useOfferLetterFields, toLetterUpdatePayload } from '../hooks/useOfferLetterFields';
+import { useOfferPdfPreview } from '../hooks/useOfferPdfPreview';
+import { shouldGenerateLines } from '../lib/offerGenerateLines';
+
+// Defensive fallback for `data.effectiveLines`; the server always sends an array (stored
+// lines, or the config-derived fallback — see finance.offers.get), so this is just a guard.
+const NO_LINES: OfferLine[] = [];
 
 const statusBadgeStyle = (status: string): React.CSSProperties => {
   const colors: Record<string, { bg: string; color: string; border: string }> = {
@@ -74,6 +83,20 @@ export function OfferDetailPage() {
     },
   });
 
+  const { fields: letterFields, setFields: setLetterFields, applySaved: applySavedLetterFields } = useOfferLetterFields(data?.offer);
+
+  const setLines = trpc.finance.offers.setLines.useMutation({ onSuccess: () => refetch(), onError: (e) => alert(e.message) });
+  const generateLines = trpc.finance.offers.generateLines.useMutation({ onSuccess: () => refetch(), onError: (e) => alert(e.message) });
+  const updateLetter = trpc.finance.offers.updateLetter.useMutation({
+    onSuccess: (updatedOffer) => {
+      applySavedLetterFields(updatedOffer);
+      refetch();
+    },
+    onError: (e) => alert(e.message),
+  });
+  const fetchPreview = useOfferPdfPreview();
+  const openPreview = () => fetchPreview(id);
+
   if (isLoading) {
     return <div className="container"><p>Loading offer...</p></div>;
   }
@@ -91,7 +114,8 @@ export function OfferDetailPage() {
 
   const offer = data.offer;
   const configs = data.configs || [];
-  const totalPrice = configs.reduce((sum, config) => sum + config.finalPrice, 0);
+  const totalPrice = data.totalPrice;
+  const hasStoredLines = !!offer.lines?.length;
   const season = seasons.find(s => s._id === offer.seasonId);
   const seasonYear = season?.name || offer.seasonId;
   const offerInvoices = invoices.filter((inv: any) => inv.offerId === id);
@@ -161,11 +185,27 @@ export function OfferDetailPage() {
         </div>
       </div>
 
-      {/* Configs Table + Actions */}
+      {/* Price Lines + Actions */}
       <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 'var(--spacing-xl)' }}>
         <div style={{ padding: 'var(--spacing-lg)', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-secondary)' }}>
-          <h3 style={{ margin: 0, fontSize: 'var(--font-size-lg)', fontWeight: 'var(--font-weight-semibold)' }}>League Pricing Breakdown</h3>
+          <h3 style={{ margin: 0, fontSize: 'var(--font-size-lg)', fontWeight: 'var(--font-weight-semibold)' }}>Preise</h3>
         </div>
+        <div style={{ padding: 'var(--spacing-lg)' }}>
+          <OfferLinesEditor
+            lines={data.effectiveLines ?? NO_LINES}
+            readOnly={offer.status !== 'draft'}
+            saving={setLines.isPending}
+            onSave={(lines) => setLines.mutate({ id, lines })}
+            onGenerate={() => {
+              if (!shouldGenerateLines(hasStoredLines, () => confirm('Vorhandene Zeilen ersetzen?'))) return;
+              generateLines.mutate({ id, overwrite: hasStoredLines });
+            }}
+          />
+        </div>
+        <details style={{ borderTop: '1px solid var(--border-color)' }}>
+          <summary style={{ cursor: 'pointer', padding: 'var(--spacing-md) var(--spacing-lg)', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)' }}>
+            Liga-Konfiguration
+          </summary>
         <table className="mobile-cards-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
@@ -238,6 +278,7 @@ export function OfferDetailPage() {
             ))}
           </tbody>
         </table>
+        </details>
 
         {/* Action buttons directly below league table */}
         <div style={{ padding: 'var(--spacing-lg)', borderTop: '1px solid var(--border-color)', background: 'var(--bg-secondary)', display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'flex-end' }}>
@@ -283,6 +324,92 @@ export function OfferDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Angebotsschreiben (letter fields, drafts only) */}
+      {offer.status === 'draft' && (
+        <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 'var(--spacing-xl)' }}>
+          <div style={{ padding: 'var(--spacing-lg)', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-secondary)' }}>
+            <h3 style={{ margin: 0, fontSize: 'var(--font-size-lg)', fontWeight: 'var(--font-weight-semibold)' }}>Angebotsschreiben</h3>
+          </div>
+          <div style={{ padding: 'var(--spacing-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+            <div className="responsive-flex" style={{ gap: 'var(--spacing-md)' }}>
+              <label style={{ flex: 1 }}>
+                <span style={{ display: 'block', marginBottom: '4px', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Angebotsnummer</span>
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ width: '100%' }}
+                  value={letterFields.offerNumber}
+                  onChange={(e) => setLetterFields((f) => ({ ...f, offerNumber: e.target.value }))}
+                />
+              </label>
+              <label style={{ flex: 1 }}>
+                <span style={{ display: 'block', marginBottom: '4px', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Datum</span>
+                <input
+                  type="date"
+                  className="form-control"
+                  style={{ width: '100%' }}
+                  value={letterFields.offerDate}
+                  onChange={(e) => setLetterFields((f) => ({ ...f, offerDate: e.target.value }))}
+                />
+              </label>
+              <label style={{ flex: 1 }}>
+                <span style={{ display: 'block', marginBottom: '4px', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Gültig bis</span>
+                <input
+                  type="date"
+                  className="form-control"
+                  style={{ width: '100%' }}
+                  value={letterFields.validUntil}
+                  onChange={(e) => setLetterFields((f) => ({ ...f, validUntil: e.target.value }))}
+                />
+              </label>
+            </div>
+            <label>
+              <span style={{ display: 'block', marginBottom: '4px', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Zusatztext</span>
+              <textarea
+                className="form-control"
+                style={{ width: '100%', minHeight: '80px' }}
+                value={letterFields.introNote}
+                onChange={(e) => setLetterFields((f) => ({ ...f, introNote: e.target.value }))}
+              />
+            </label>
+            <label>
+              <span style={{ display: 'block', marginBottom: '4px', fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Schlusstext</span>
+              <textarea
+                className="form-control"
+                style={{ width: '100%', minHeight: '80px' }}
+                value={letterFields.closingNote}
+                onChange={(e) => setLetterFields((f) => ({ ...f, closingNote: e.target.value }))}
+              />
+            </label>
+          </div>
+          <div style={{ padding: 'var(--spacing-lg)', borderTop: '1px solid var(--border-color)', background: 'var(--bg-secondary)', display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() => updateLetter.mutate({ id, data: { assignNumber: true } })}
+              disabled={updateLetter.isPending || !!offer.offerNumber}
+            >
+              Nummer vergeben
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={openPreview}
+            >
+              PDF-Vorschau
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => updateLetter.mutate({ id, data: toLetterUpdatePayload(letterFields) })}
+              disabled={updateLetter.isPending}
+            >
+              {updateLetter.isPending ? '…' : 'Speichern'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Invoices Section */}
       {offer.status === 'accepted' && (

@@ -1,4 +1,5 @@
 import { Schema, model, Document, Types } from 'mongoose';
+import type { OfferLine } from '../../../shared/lib/offerLines';
 
 export interface IOffer extends Document {
   status: 'draft' | 'sending' | 'sent' | 'accepted' | 'rejected';
@@ -19,6 +20,12 @@ export interface IOffer extends Document {
   };
   sendJobId?: string;
   sendJobAttempts?: number;
+  lines?: OfferLine[];
+  offerNumber?: string;
+  offerDate?: Date;
+  validUntil?: Date;
+  introNote?: string;
+  closingNote?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,6 +49,22 @@ const OfferSchema = new Schema<IOffer>(
     },
     contactId: { type: Schema.Types.ObjectId, required: true, ref: 'Contact' },
     financialConfigId: { type: Schema.Types.ObjectId, ref: 'FinancialConfig' },
+    lines: {
+      type: [{
+        _id: false,
+        label: { type: String, required: true },
+        detail: String,
+        amount: { type: Number, required: true },
+        kind: { type: String, enum: ['league', 'fee', 'discount', 'optional'], required: true },
+        leagueId: Number,
+      }],
+      default: undefined,
+    },
+    offerNumber: { type: String },
+    offerDate: Date,
+    validUntil: Date,
+    introNote: String,
+    closingNote: String,
     sentAt: { type: Date },
     acceptedAt: { type: Date },
     driveMetadata: {
@@ -65,5 +88,8 @@ const OfferSchema = new Schema<IOffer>(
 OfferSchema.index({ status: 1 });
 OfferSchema.index({ contactId: 1 });
 OfferSchema.index({ associationId: 1, seasonId: 1, status: 1 });
+
+// Offer numbers are unique once assigned; legacy offers have none.
+OfferSchema.index({ offerNumber: 1 }, { unique: true, partialFilterExpression: { offerNumber: { $type: 'string' } } });
 
 export const Offer = model<IOffer>('Offer', OfferSchema);
