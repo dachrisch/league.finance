@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { offerLinesTotal, percentDiscountLine, type OfferLine, type OfferLineKind } from '../../../../shared/lib/offerLines';
+import { offerLinesTotal, percentDiscountLine, validateOfferLines, type OfferLine, type OfferLineKind } from '../../../../shared/lib/offerLines';
 
 const euro = (n: number) => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
 const KINDS: Array<[OfferLineKind, string]> = [['league', 'Liga'], ['fee', 'Gebühr'], ['discount', 'Rabatt'], ['optional', 'Optional']];
@@ -17,6 +17,7 @@ export function OfferLinesEditor({ lines, readOnly, saving, onSave, onGenerate }
   const [draft, setDraft] = useState<OfferLine[]>(lines);
   const [selected, setSelected] = useState<number[]>([]);
   const [percent, setPercent] = useState('');
+  const [error, setError] = useState<string | null>(null);
   // Only re-seed the draft when the incoming lines actually changed (by content, not
   // by reference): the parent re-creates `lines` as a new array/object on every
   // render it does for unrelated reasons (e.g. typing in a sibling form, or a
@@ -30,8 +31,10 @@ export function OfferLinesEditor({ lines, readOnly, saving, onSave, onGenerate }
     setDraft(lines);
   }, [lines]);
 
-  const update = (i: number, patch: Partial<OfferLine>) =>
+  const update = (i: number, patch: Partial<OfferLine>) => {
+    setError(null);
     setDraft((d) => d.map((l, j) => (j === i ? { ...l, ...patch } : l)));
+  };
   // Selected indexes target specific draft rows for a discount; once rows move or
   // are removed those indexes point at different rows, so any pending selection
   // is cleared rather than silently discounting the wrong lines.
@@ -55,6 +58,19 @@ export function OfferLinesEditor({ lines, readOnly, saving, onSave, onGenerate }
   const clean = (l: OfferLine): OfferLine => {
     const { detail, leagueId, ...rest } = l;
     return { ...rest, ...(detail ? { detail } : {}), ...(leagueId ? { leagueId } : {}) };
+  };
+  // An empty Betrag input becomes NaN (see the amount onChange below), which the server
+  // schema rejects as a raw, unfriendly zod error; validate client-side first and show the
+  // same "Zeile X: …" message the server would, without sending the request.
+  const handleSave = () => {
+    const cleaned = draft.map(clean);
+    const invalid = validateOfferLines(cleaned);
+    if (invalid) {
+      setError(`Zeile ${invalid.index + 1}: ${invalid.message}`);
+      return;
+    }
+    setError(null);
+    onSave(cleaned);
   };
 
   return (
@@ -80,6 +96,7 @@ export function OfferLinesEditor({ lines, readOnly, saving, onSave, onGenerate }
                 ) : (
                   <>
                     <td><input type="checkbox" aria-label="Für Rabatt auswählen" checked={selected.includes(i)}
+                      disabled={l.kind === 'optional' || l.kind === 'discount'}
                       onChange={(e) => setSelected((s) => (e.target.checked ? [...s, i] : s.filter((x) => x !== i)))} /></td>
                     <td><input aria-label="Bezeichnung" value={l.label} onChange={(e) => update(i, { label: e.target.value })} /></td>
                     <td><input aria-label="Detail" value={l.detail ?? ''} onChange={(e) => update(i, { detail: e.target.value })} /></td>
@@ -112,17 +129,20 @@ export function OfferLinesEditor({ lines, readOnly, saving, onSave, onGenerate }
         </table>
       </div>
       {!readOnly && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
-          <button type="button" className="btn btn-secondary"
-            onClick={() => setDraft((d) => [...d, { label: '', amount: 0, kind: 'fee' }])}>Zeile hinzufügen</button>
-          <button type="button" className="btn btn-secondary" onClick={onGenerate}>Aus Ligen erzeugen</button>
-          <label>Rabatt in %
-            <input aria-label="Rabatt in %" inputMode="decimal" style={{ width: '4em', marginLeft: 4 }}
-              value={percent} onChange={(e) => setPercent(e.target.value)} />
-          </label>
-          <button type="button" className="btn btn-secondary" onClick={addDiscount}>Rabatt hinzufügen</button>
-          <button type="button" className="btn btn-primary" disabled={saving}
-            onClick={() => onSave(draft.map(clean))}>Preise speichern</button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+          {error && <p role="alert" style={{ color: 'var(--danger-color)', margin: 0 }}>{error}</p>}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
+            <button type="button" className="btn btn-secondary"
+              onClick={() => setDraft((d) => [...d, { label: '', amount: 0, kind: 'fee' }])}>Zeile hinzufügen</button>
+            <button type="button" className="btn btn-secondary" onClick={onGenerate}>Aus Ligen erzeugen</button>
+            <label>Rabatt in %
+              <input aria-label="Rabatt in %" inputMode="decimal" style={{ width: '4em', marginLeft: 4 }}
+                value={percent} onChange={(e) => setPercent(e.target.value)} />
+            </label>
+            <button type="button" className="btn btn-secondary" onClick={addDiscount}>Rabatt hinzufügen</button>
+            <button type="button" className="btn btn-primary" disabled={saving}
+              onClick={handleSave}>Preise speichern</button>
+          </div>
         </div>
       )}
     </div>

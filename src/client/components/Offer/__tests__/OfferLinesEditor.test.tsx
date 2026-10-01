@@ -48,6 +48,47 @@ describe('OfferLinesEditor', () => {
     expect(onSave.mock.calls[0][0][0].label).toBe('U16 Thüringen');
   });
 
+  // F5: an empty Betrag becomes NaN, which the server would reject with a raw zod error;
+  // validate client-side first and show the "Zeile X: …" message without saving.
+  it('F5: validates lines before saving and shows the error inline without calling onSave', () => {
+    const onSave = vi.fn();
+    render(<OfferLinesEditor lines={lines} onSave={onSave} onGenerate={vi.fn()} />);
+    const rows = screen.getAllByTestId('offer-line-row');
+    fireEvent.change(within(rows[0]).getByLabelText('Betrag'), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Preise speichern' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Zeile 1: Betrag ungültig');
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('F5: clears the error once the line is fixed and saves successfully', () => {
+    const onSave = vi.fn();
+    render(<OfferLinesEditor lines={lines} onSave={onSave} onGenerate={vi.fn()} />);
+    const rows = screen.getAllByTestId('offer-line-row');
+    fireEvent.change(within(rows[0]).getByLabelText('Betrag'), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Preise speichern' }));
+    expect(screen.getByRole('alert')).toBeTruthy();
+
+    fireEvent.change(within(rows[0]).getByLabelText('Betrag'), { target: { value: '150' } });
+    expect(screen.queryByRole('alert')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Preise speichern' }));
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
+  // F12: optional/discount rows can't be part of a discount's base.
+  it('F12: disables the discount-selection checkbox for optional and discount rows', () => {
+    const withDiscount = [
+      lines[0], // league
+      { label: '15% Rabatt', amount: -10, kind: 'discount' as const },
+      lines[2], // optional (DFFLF2)
+    ];
+    render(<OfferLinesEditor lines={withDiscount} onSave={vi.fn()} onGenerate={vi.fn()} />);
+    const rows = screen.getAllByTestId('offer-line-row');
+    expect(within(rows[0]).getByLabelText('Für Rabatt auswählen')).toBeEnabled();
+    expect(within(rows[1]).getByLabelText('Für Rabatt auswählen')).toBeDisabled();
+    expect(within(rows[2]).getByLabelText('Für Rabatt auswählen')).toBeDisabled();
+  });
+
   it('is read-only for non-draft offers', () => {
     render(<OfferLinesEditor lines={lines} readOnly onSave={vi.fn()} onGenerate={vi.fn()} />);
     expect(screen.queryByRole('button', { name: 'Preise speichern' })).toBeNull();

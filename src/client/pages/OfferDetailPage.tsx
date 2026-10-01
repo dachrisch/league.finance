@@ -4,11 +4,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 import { FileOfferDialog } from '../components/Offer/FileOfferDialog';
 import { OfferLinesEditor } from '../components/Offer/OfferLinesEditor';
-import { useOfferLetterFields } from '../hooks/useOfferLetterFields';
+import { useOfferLetterFields, toLetterUpdatePayload } from '../hooks/useOfferLetterFields';
+import { useOfferPdfPreview } from '../hooks/useOfferPdfPreview';
+import { shouldGenerateLines } from '../lib/offerGenerateLines';
 
-// Stable reference so `offer.lines ?? NO_LINES` doesn't hand OfferLinesEditor a
-// brand-new empty array on every render (which would otherwise look like changed
-// `lines` content and reset any unsaved rows the admin just added).
+// Defensive fallback for `data.effectiveLines`; the server always sends an array (stored
+// lines, or the config-derived fallback — see finance.offers.get), so this is just a guard.
 const NO_LINES: OfferLine[] = [];
 
 const statusBadgeStyle = (status: string): React.CSSProperties => {
@@ -93,12 +94,8 @@ export function OfferDetailPage() {
     },
     onError: (e) => alert(e.message),
   });
-  const utils = trpc.useUtils();
-  const openPreview = async () => {
-    const { base64 } = await utils.finance.offers.previewPdf.fetch({ id });
-    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-    window.open(URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })), '_blank');
-  };
+  const fetchPreview = useOfferPdfPreview();
+  const openPreview = () => fetchPreview(id);
 
   if (isLoading) {
     return <div className="container"><p>Loading offer...</p></div>;
@@ -118,6 +115,7 @@ export function OfferDetailPage() {
   const offer = data.offer;
   const configs = data.configs || [];
   const totalPrice = data.totalPrice;
+  const hasStoredLines = !!offer.lines?.length;
   const season = seasons.find(s => s._id === offer.seasonId);
   const seasonYear = season?.name || offer.seasonId;
   const offerInvoices = invoices.filter((inv: any) => inv.offerId === id);
@@ -194,11 +192,14 @@ export function OfferDetailPage() {
         </div>
         <div style={{ padding: 'var(--spacing-lg)' }}>
           <OfferLinesEditor
-            lines={offer.lines ?? NO_LINES}
+            lines={data.effectiveLines ?? NO_LINES}
             readOnly={offer.status !== 'draft'}
             saving={setLines.isPending}
             onSave={(lines) => setLines.mutate({ id, lines })}
-            onGenerate={() => generateLines.mutate({ id, overwrite: !!offer.lines?.length && confirm('Vorhandene Zeilen ersetzen?') })}
+            onGenerate={() => {
+              if (!shouldGenerateLines(hasStoredLines, () => confirm('Vorhandene Zeilen ersetzen?'))) return;
+              generateLines.mutate({ id, overwrite: hasStoredLines });
+            }}
           />
         </div>
         <details style={{ borderTop: '1px solid var(--border-color)' }}>
@@ -401,16 +402,7 @@ export function OfferDetailPage() {
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => updateLetter.mutate({
-                id,
-                data: {
-                  offerNumber: letterFields.offerNumber.trim() || undefined,
-                  offerDate: letterFields.offerDate || undefined,
-                  validUntil: letterFields.validUntil || undefined,
-                  introNote: letterFields.introNote || undefined,
-                  closingNote: letterFields.closingNote || undefined,
-                },
-              })}
+              onClick={() => updateLetter.mutate({ id, data: toLetterUpdatePayload(letterFields) })}
               disabled={updateLetter.isPending}
             >
               {updateLetter.isPending ? '…' : 'Speichern'}

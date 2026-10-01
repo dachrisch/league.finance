@@ -28,8 +28,17 @@ const EMPTY_FIELDS: OfferLetterFieldValues = {
   closingNote: '',
 };
 
+// Europe/Berlin calendar day formatter, 'en-CA' gives YYYY-MM-DD (what <input type="date"> wants).
+const berlinDayFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' });
+
+/**
+ * Offer dates print/edit as the Europe/Berlin calendar day everywhere. `toISOString().slice(0,
+ * 10)` instead reads the UTC day, which is wrong close to local midnight: a date stored as
+ * 2026-09-30T22:30Z is already 2026-10-01 in Berlin (CEST, UTC+2) but `toISOString` shows
+ * 2026-09-30, so the date input (and a save right after) would silently go back a day.
+ */
 const toDateInputValue = (value: string | Date | undefined | null): string =>
-  value ? new Date(value).toISOString().slice(0, 10) : '';
+  value ? berlinDayFormatter.format(new Date(value)) : '';
 
 const toFields = (src: OfferLetterSource): OfferLetterFieldValues => ({
   offerNumber: src.offerNumber ?? '',
@@ -38,6 +47,32 @@ const toFields = (src: OfferLetterSource): OfferLetterFieldValues => ({
   introNote: src.introNote ?? '',
   closingNote: src.closingNote ?? '',
 });
+
+export interface OfferLetterUpdatePayload {
+  offerNumber?: string;
+  offerDate?: string;
+  validUntil?: string;
+  introNote?: string | null;
+  closingNote?: string | null;
+}
+
+/**
+ * Builds the `updateLetter` payload from the form fields. `offerNumber`/`offerDate`/
+ * `validUntil` are omitted (not touched server-side) when empty, same as before. `introNote`/
+ * `closingNote` send `null` when cleared rather than being omitted: an omitted key is dropped
+ * by JSON before it reaches the server, so the server would see no change at all and keep the
+ * old stored note (and print it on the PDF) even though the admin cleared the textarea. `null`
+ * tells the server to actually unset the field (see `updateLetter` in offers.ts).
+ */
+export function toLetterUpdatePayload(fields: OfferLetterFieldValues): OfferLetterUpdatePayload {
+  return {
+    offerNumber: fields.offerNumber.trim() || undefined,
+    offerDate: fields.offerDate || undefined,
+    validUntil: fields.validUntil || undefined,
+    introNote: fields.introNote || null,
+    closingNote: fields.closingNote || null,
+  };
+}
 
 /**
  * Local, editable copy of an offer's letter fields (Angebotsnummer, Datum, Gültig
