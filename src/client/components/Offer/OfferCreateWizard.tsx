@@ -55,10 +55,6 @@ export function OfferCreateWizard({ editId }: Props) {
     }
   }, [editId, existingOffer, hasInitialized, wizard, seasons, searchParams]);
 
-  const selectedAssociation = associations.find(a => a._id === wizard.step1.selectedAssociationId);
-  const linkedAssociationId = (selectedAssociation as any)?.leaguesphereAssociationId ?? null;
-  const associationFiltering = linkedAssociationId != null && !wizard.step2.showAllLeagues;
-
   // All leagues, regardless of season or association
   const { data: leagues = [] } = trpc.finance.leagues.listAll.useQuery();
 
@@ -234,13 +230,6 @@ export function OfferCreateWizard({ editId }: Props) {
       selectedLeagueIds={wizard.step2.selectedLeagueIds}
       leagueSearchTerm={wizard.step2.leagueSearchTerm}
       leagueFilterType={wizard.step2.leagueFilterType || 'All'}
-      associationFilter={linkedAssociationId != null ? {
-        linked: true,
-        filtering: associationFiltering,
-        associationName: summary.associationName,
-        seasonName: summary.seasonYear,
-        onToggle: wizard.toggleShowAllLeagues,
-      } : undefined}
       submitError={submitError}
       onBack={wizard.previousStep}
       onCancel={() => navigate('/offers')}

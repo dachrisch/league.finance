@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { offerLinesTotal, percentDiscountLine, type OfferLine, type OfferLineKind } from '../../../../shared/lib/offerLines';
 
 const euro = (n: number) => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
@@ -17,17 +17,34 @@ export function OfferLinesEditor({ lines, readOnly, saving, onSave, onGenerate }
   const [draft, setDraft] = useState<OfferLine[]>(lines);
   const [selected, setSelected] = useState<number[]>([]);
   const [percent, setPercent] = useState('');
-  useEffect(() => setDraft(lines), [lines]);
+  // Only re-seed the draft when the incoming lines actually changed (by content, not
+  // by reference): the parent re-creates `lines` as a new array/object on every
+  // render it does for unrelated reasons (e.g. typing in a sibling form, or a
+  // refetch that still resolves to the same lines), and a naive `[lines]` dependency
+  // would wipe any unsaved in-progress edits on each of those renders.
+  const lastLinesKey = useRef(JSON.stringify(lines));
+  useEffect(() => {
+    const key = JSON.stringify(lines);
+    if (key === lastLinesKey.current) return;
+    lastLinesKey.current = key;
+    setDraft(lines);
+  }, [lines]);
 
   const update = (i: number, patch: Partial<OfferLine>) =>
     setDraft((d) => d.map((l, j) => (j === i ? { ...l, ...patch } : l)));
-  const move = (i: number, dir: -1 | 1) => setDraft((d) => {
-    const j = i + dir;
-    if (j < 0 || j >= d.length) return d;
-    const next = [...d];
-    [next[i], next[j]] = [next[j], next[i]];
-    return next;
-  });
+  // Selected indexes target specific draft rows for a discount; once rows move or
+  // are removed those indexes point at different rows, so any pending selection
+  // is cleared rather than silently discounting the wrong lines.
+  const move = (i: number, dir: -1 | 1) => {
+    setDraft((d) => {
+      const j = i + dir;
+      if (j < 0 || j >= d.length) return d;
+      const next = [...d];
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
+    setSelected([]);
+  };
   const addDiscount = () => {
     const p = Number(percent.replace(',', '.'));
     if (!selected.length || !(p > 0)) return;
@@ -78,7 +95,7 @@ export function OfferLinesEditor({ lines, readOnly, saving, onSave, onGenerate }
                       <button type="button" className="btn btn-secondary" aria-label="Nach oben" onClick={() => move(i, -1)}>↑</button>
                       <button type="button" className="btn btn-secondary" aria-label="Nach unten" onClick={() => move(i, 1)}>↓</button>
                       <button type="button" className="btn btn-secondary" aria-label="Zeile löschen"
-                        onClick={() => setDraft((d) => d.filter((_, j) => j !== i))}>✕</button>
+                        onClick={() => { setDraft((d) => d.filter((_, j) => j !== i)); setSelected([]); }}>✕</button>
                     </td>
                   </>
                 )}

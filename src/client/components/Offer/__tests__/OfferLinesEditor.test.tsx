@@ -53,4 +53,45 @@ describe('OfferLinesEditor', () => {
     expect(screen.queryByRole('button', { name: 'Preise speichern' })).toBeNull();
     expect(screen.queryAllByLabelText('Bezeichnung')).toHaveLength(0);
   });
+
+  it('clears the discount selection after deleting a line, so a later discount is not mis-targeted', () => {
+    const onSave = vi.fn();
+    render(<OfferLinesEditor lines={lines} onSave={onSave} onGenerate={vi.fn()} />);
+    const rows = screen.getAllByTestId('offer-line-row');
+    fireEvent.click(within(rows[0]).getByLabelText('Für Rabatt auswählen'));
+    fireEvent.click(within(rows[1]).getByLabelText('Für Rabatt auswählen'));
+    fireEvent.click(within(rows[2]).getByRole('button', { name: 'Zeile löschen' }));
+    fireEvent.change(screen.getByLabelText('Rabatt in %'), { target: { value: '15' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Rabatt hinzufügen' }));
+    // selection was cleared by the delete, so "Rabatt hinzufügen" is a no-op: no
+    // discount line was appended, and the total is unaffected.
+    expect(screen.getAllByTestId('offer-line-row')).toHaveLength(2);
+    expect(screen.getByTestId('offer-lines-total')).toHaveTextContent('360,00 €');
+  });
+
+  it('clears the discount selection after moving a line, so a later discount is not mis-targeted', () => {
+    const onSave = vi.fn();
+    render(<OfferLinesEditor lines={lines} onSave={onSave} onGenerate={vi.fn()} />);
+    const rows = screen.getAllByTestId('offer-line-row');
+    fireEvent.click(within(rows[0]).getByLabelText('Für Rabatt auswählen'));
+    fireEvent.click(within(screen.getAllByTestId('offer-line-row')[1]).getByRole('button', { name: 'Nach oben' }));
+    fireEvent.change(screen.getByLabelText('Rabatt in %'), { target: { value: '15' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Rabatt hinzufügen' }));
+    expect(screen.getAllByTestId('offer-line-row')).toHaveLength(3);
+    expect(screen.getByTestId('offer-lines-total')).toHaveTextContent('360,00 €');
+  });
+
+  it('keeps an unsaved added row when the lines prop is replaced by a new-but-equal array', () => {
+    const onSave = vi.fn();
+    const { rerender } = render(<OfferLinesEditor lines={lines} onSave={onSave} onGenerate={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Zeile hinzufügen' }));
+    expect(screen.getAllByTestId('offer-line-row')).toHaveLength(4);
+
+    // Simulate the parent re-rendering for an unrelated reason (e.g. typing in a
+    // sibling form) and recreating the `lines` array with the same content but a
+    // new reference/object identity.
+    rerender(<OfferLinesEditor lines={JSON.parse(JSON.stringify(lines))} onSave={onSave} onGenerate={vi.fn()} />);
+
+    expect(screen.getAllByTestId('offer-line-row')).toHaveLength(4);
+  });
 });

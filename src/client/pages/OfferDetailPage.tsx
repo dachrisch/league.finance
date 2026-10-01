@@ -1,11 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import type { OfferLine } from '../../../shared/lib/offerLines';
 import { useParams, useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 import { FileOfferDialog } from '../components/Offer/FileOfferDialog';
 import { OfferLinesEditor } from '../components/Offer/OfferLinesEditor';
+import { useOfferLetterFields } from '../hooks/useOfferLetterFields';
 
-const toDateInputValue = (value: string | Date | undefined | null): string =>
-  value ? new Date(value).toISOString().slice(0, 10) : '';
+// Stable reference so `offer.lines ?? NO_LINES` doesn't hand OfferLinesEditor a
+// brand-new empty array on every render (which would otherwise look like changed
+// `lines` content and reset any unsaved rows the admin just added).
+const NO_LINES: OfferLine[] = [];
 
 const statusBadgeStyle = (status: string): React.CSSProperties => {
   const colors: Record<string, { bg: string; color: string; border: string }> = {
@@ -47,13 +51,6 @@ export function OfferDetailPage() {
   const [editingPrice, setEditingPrice] = useState<number | null>(null);
   const [editingLeagueId, setEditingLeagueId] = useState<number | null>(null);
   const [showSendDialog, setShowSendDialog] = useState(false);
-  const [letterFields, setLetterFields] = useState({
-    offerNumber: '',
-    offerDate: '',
-    validUntil: '',
-    introNote: '',
-    closingNote: '',
-  });
 
   if (!id) {
     return <div className="container">Offer not found.</div>;
@@ -85,26 +82,23 @@ export function OfferDetailPage() {
     },
   });
 
+  const { fields: letterFields, setFields: setLetterFields, applySaved: applySavedLetterFields } = useOfferLetterFields(data?.offer);
+
   const setLines = trpc.finance.offers.setLines.useMutation({ onSuccess: () => refetch(), onError: (e) => alert(e.message) });
   const generateLines = trpc.finance.offers.generateLines.useMutation({ onSuccess: () => refetch(), onError: (e) => alert(e.message) });
-  const updateLetter = trpc.finance.offers.updateLetter.useMutation({ onSuccess: () => refetch(), onError: (e) => alert(e.message) });
+  const updateLetter = trpc.finance.offers.updateLetter.useMutation({
+    onSuccess: (updatedOffer) => {
+      applySavedLetterFields(updatedOffer);
+      refetch();
+    },
+    onError: (e) => alert(e.message),
+  });
   const utils = trpc.useUtils();
   const openPreview = async () => {
     const { base64 } = await utils.finance.offers.previewPdf.fetch({ id });
     const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
     window.open(URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })), '_blank');
   };
-
-  useEffect(() => {
-    if (!data?.offer) return;
-    setLetterFields({
-      offerNumber: data.offer.offerNumber ?? '',
-      offerDate: toDateInputValue(data.offer.offerDate),
-      validUntil: toDateInputValue(data.offer.validUntil),
-      introNote: data.offer.introNote ?? '',
-      closingNote: data.offer.closingNote ?? '',
-    });
-  }, [data?.offer]);
 
   if (isLoading) {
     return <div className="container"><p>Loading offer...</p></div>;
@@ -200,7 +194,7 @@ export function OfferDetailPage() {
         </div>
         <div style={{ padding: 'var(--spacing-lg)' }}>
           <OfferLinesEditor
-            lines={offer.lines ?? []}
+            lines={offer.lines ?? NO_LINES}
             readOnly={offer.status !== 'draft'}
             saving={setLines.isPending}
             onSave={(lines) => setLines.mutate({ id, lines })}
