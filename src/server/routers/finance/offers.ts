@@ -11,7 +11,7 @@ import { getMysqlPool } from '../../db/mysql';
 import { supportsTransactions } from '../../db/mongo';
 import { extractContactInfo } from '../../../../shared/lib/extraction';
 import { computeConfigPrices } from '../../lib/configPricing';
-import { offerLinesTotal, linesFromConfigs, validateOfferLines } from '../../../../shared/lib/offerLines';
+import { offerLinesTotal, linesFromConfigs, leaguePricesFromLines, validateOfferLines } from '../../../../shared/lib/offerLines';
 import { generateOfferNumber } from '../../lib/offerNumbering';
 import { fetchLeaguesMap } from '../../lib/leagueNames';
 import { buildOfferPdfData } from '../../lib/offerPdfData';
@@ -88,11 +88,17 @@ export const offersRouter = router({
         (leaguePricesByOfferId[key] ||= []).push({ leagueId: config.leagueId, finalPrice });
       }
 
-      return offers.map((offer: any) => ({
-        ...normalizeOffer(offer),
-        totalPrice: offer.lines?.length ? offerLinesTotal(offer.lines) : (totalByOfferId[offer._id?.toString()] || 0),
-        leaguePrices: leaguePricesByOfferId[offer._id?.toString()] || [],
-      }));
+      return offers.map((offer: any) => {
+        const hasLines = !!offer.lines?.length;
+        return {
+          ...normalizeOffer(offer),
+          totalPrice: hasLines ? offerLinesTotal(offer.lines) : (totalByOfferId[offer._id?.toString()] || 0),
+          // Once an offer has lines they are authoritative for pricing, so the dashboard's
+          // per-league breakdown must be derived from them too (not the stale configs) —
+          // otherwise it would keep showing config-based numbers after a lines edit.
+          leaguePrices: hasLines ? leaguePricesFromLines(offer.lines) : (leaguePricesByOfferId[offer._id?.toString()] || []),
+        };
+      });
     }),
 
   get: protectedProcedure
@@ -112,12 +118,22 @@ export const offersRouter = router({
 
       const pricedConfigs = configs.map((config) => computeConfigPrices(config, leaguesMap[config.leagueId] || 'Unknown League'));
 
+      const storedLines = (offer as any).lines;
+      const hasLines = !!storedLines?.length;
+      // The offer's lines as the UI should show/edit them: the stored lines once the offer
+      // has any, otherwise the same config-derived lines the PDF falls back to (buildOfferPdfData)
+      // — so a pre-lines offer shows its real prices instead of an empty table. This only
+      // changes what's displayed/edited; totalPrice (below) still prices stored-line-less
+      // offers from configs, unchanged.
+      const effectiveLines = hasLines ? storedLines : linesFromConfigs(pricedConfigs, leaguesMap);
+
       return {
         offer: normalizeOffer(offer),
         contact: (offer as any).contactId,
         configs: pricedConfigs,
-        totalPrice: (offer as any).lines?.length
-          ? offerLinesTotal((offer as any).lines)
+        effectiveLines,
+        totalPrice: hasLines
+          ? offerLinesTotal(storedLines)
           : pricedConfigs.reduce((s, c) => s + c.finalPrice, 0),
       };
     }),
@@ -398,10 +414,26 @@ export const offersRouter = router({
     .mutation(async ({ input }) => {
       const offer = await loadDraft(input.id);
       const { assignNumber, ...data } = input.data;
-      Object.assign(offer, data);
+      // Object.assign would keep a key's old value when the client sends `null` to clear it
+      // (e.g. a deleted Zusatztext/Schlusstext) instead of actually unsetting it, so a cleared
+      // note kept printing on the PDF. `null` means "unset"; `undefined` keys are simply absent
+      // (JSON drops them) and must not touch the stored value.
+      for (const [key, value] of Object.entries(data)) {
+        if (value === null) {
+          offer.set(key, undefined);
+        } else if (value !== undefined) {
+          (offer as any)[key] = value;
+        }
+      }
       if (!offer.offerDate) offer.offerDate = new Date();
       if (assignNumber && !offer.offerNumber) offer.offerNumber = await generateOfferNumber(offer.offerDate);
-      if (!offer.validUntil) offer.validUntil = new Date(offer.offerDate.getTime() + 30 * DAY_MS);
+      if (data.offerDate !== undefined && data.validUntil === undefined) {
+        // offerDate changed in this request and validUntil wasn't explicitly set alongside it:
+        // recompute the default so an earlier save's validUntil doesn't go stale.
+        offer.validUntil = new Date(offer.offerDate.getTime() + 30 * DAY_MS);
+      } else if (!offer.validUntil) {
+        offer.validUntil = new Date(offer.offerDate.getTime() + 30 * DAY_MS);
+      }
       try {
         await offer.save();
       } catch (err: any) {

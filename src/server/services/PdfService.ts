@@ -79,7 +79,9 @@ const OFFER_LAYOUT = {
   left: 43.1,
   logo: { x: 424.5, y: 22.1, width: 127 },
   senderY: 50.6,
-  recipient: { x: 42.3, y: 82.1, lineHeight: 15.2 },
+  // width caps the recipient block so a long association name wraps instead of running
+  // into the meta block (right-aligned, box left edge at meta.right - 150 = 411.3).
+  recipient: { x: 42.3, y: 82.1, lineHeight: 15.2, width: 350 },
   meta: { right: 561.3, y: 82.1, lineHeight: 12.4 },
   titleY: 163.4,
   firstHeadingY: 198.7,
@@ -206,15 +208,25 @@ export class PdfService {
     line('bumbleflies UG (haftungsbeschränkt) · Gleiwitzer Str. 6d · 81929 München', L.left, L.senderY, 7);
     const recipientLines = [r.associationName, r.contactName ? `z.H. ${r.contactName}` : '',
       r.street, `${r.postalCode} ${r.city}`.trim()].filter(Boolean);
-    recipientLines.forEach((s, i) => line(s, L.recipient.x, L.recipient.y + i * L.recipient.lineHeight, 11));
+    // Constrained to the left column (lineBreak:true) so a long association name wraps
+    // instead of running past the right margin into the meta block.
+    recipientLines.forEach((s, i) => line(s, L.recipient.x, L.recipient.y + i * L.recipient.lineHeight, 11,
+      false, { lineBreak: true, width: L.recipient.width }));
     ['info@bumbleflies.de', `Angebot: ${data.offerNumber}`, `Datum: ${offerDate(data.offerDate)}`]
       .forEach((s, i) => right(s, L.meta.right, L.meta.y + i * L.meta.lineHeight, 9));
 
-    line(`Angebot: ${data.offerNumber} - Nutzung der LeagueSphere App für die Saison ${seasonName}`,
-      L.left, L.titleY, 14, true);
+    // Wrapped within the body width (instead of lineBreak:false, which would run a long
+    // offer number/title past the right margin); when it wraps to more than one line, the
+    // following heading is pushed down by the extra lines so it doesn't overlap the title.
+    const titleStr = `Angebot: ${data.offerNumber} - Nutzung der LeagueSphere App für die Saison ${seasonName}`;
+    font(14, true);
+    const titleOpts: PDFKit.Mixins.TextOptions = { width: L.bodyWidth };
+    const titleLineHeight = doc.currentLineHeight(true);
+    const titleLines = Math.max(1, Math.round(doc.heightOfString(titleStr, titleOpts) / titleLineHeight));
+    doc.text(titleStr, L.left, L.titleY, titleOpts);
 
     // Unser Angebot
-    y = L.firstHeadingY - L.headingGapBefore;
+    y = L.firstHeadingY + (titleLines - 1) * titleLineHeight - L.headingGapBefore;
     heading('Unser Angebot');
     paragraph('Wir freuen uns, dir unser Angebot für die Nutzung der LeagueSphere App zur effizienten Organisation ' +
       `und Verwaltung der Saison ${seasonName} zu unterbreiten. Unsere Plattform hilft dir dabei, die Spielplanung, ` +

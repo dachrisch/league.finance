@@ -36,6 +36,16 @@ export function linesFromConfigs(
   }));
 }
 
+/** Per-league totals (summed amount per `leagueId`) for the dashboard's `leaguePrices` breakdown. Lines without a `leagueId` (fees, discounts, free-text lines) are excluded. */
+export function leaguePricesFromLines(lines: OfferLine[]): Array<{ leagueId: number; finalPrice: number }> {
+  const sums = new Map<number, number>();
+  for (const l of lines) {
+    if (l.leagueId == null) continue;
+    sums.set(l.leagueId, roundCents((sums.get(l.leagueId) ?? 0) + l.amount));
+  }
+  return [...sums.entries()].map(([leagueId, finalPrice]) => ({ leagueId, finalPrice }));
+}
+
 /** A discount line worth `percent` of the selected lines' sum. */
 export function percentDiscountLine(lines: OfferLine[], indexes: number[], percent: number, label?: string): OfferLine {
   const base = roundCents(indexes.reduce((sum, i) => sum + (lines[i]?.amount ?? 0), 0));

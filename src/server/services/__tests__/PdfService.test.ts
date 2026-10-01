@@ -130,6 +130,35 @@ describe('PdfService.generateOfferPdf — layout matches the legacy offer letter
     expect(detail.x + detail.opts.width).toBeLessThanOrEqual(470 - width11(eur(1523.9)) - 10);
   });
 
+  it('F10: wraps a long title within the body width and pushes "Unser Angebot" down accordingly', async () => {
+    await render({ ...offerData, offerNumber: '20251015-2_NRW' });
+    const title = find('Angebot: 20251015-2_NRW - Nutzung der LeagueSphere App für die Saison 2027');
+    near(title.x, 43.1);
+    near(title.y, 163.4);
+    expect(title.opts.lineBreak).not.toBe(false);
+    near(title.opts.width, 501);
+    // the title wrapped onto a 2nd line, so the heading starts noticeably below the
+    // 2026 reference position (198.7) used for a single-line title
+    expect(find('Unser Angebot').y).toBeGreaterThan(198.7 + 10);
+  });
+
+  it('F10: a short title stays on a single line at the pinned reference position (unchanged)', async () => {
+    await render();
+    const title = find('Angebot: 20261001-3 - Nutzung der LeagueSphere App für die Saison 2027');
+    near(title.opts.width, 501);
+    near(find('Unser Angebot').y, 198.7);
+  });
+
+  it('F10: constrains the recipient block to the left column so a long name wraps instead of running into the meta block', async () => {
+    const longName = 'American Football und Cheerleading Verband Nordrhein-Westfalen e.V. (AFCVNRW)';
+    await render({ ...offerData, recipient: { ...offerData.recipient, associationName: longName } });
+    const name = find(longName);
+    near(name.x, 42.3);
+    near(name.y, 82.1);
+    expect(name.opts.lineBreak).not.toBe(false);
+    expect(name.opts.width).toBeLessThanOrEqual(360);
+  });
+
   it('keeps the 2026 reference detail column (x 187.1) for short labels', async () => {
     await render({ ...offerData, closingNote: undefined, lines: [
       { label: 'Grundpreis', amount: 600, kind: 'fee' },

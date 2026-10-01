@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { offerLinesTotal, linesFromConfigs, percentDiscountLine, validateOfferLines, type OfferLine } from '../offerLines';
+import { offerLinesTotal, linesFromConfigs, leaguePricesFromLines, percentDiscountLine, validateOfferLines, type OfferLine } from '../offerLines';
 
 const ost: OfferLine[] = [
   { label: 'Oberliga Ost', detail: 'bis zu 20 Spieltage mit jeweils 6 Teams', amount: 900, kind: 'fee' },
@@ -55,6 +55,24 @@ describe('linesFromConfigs', () => {
       { label: 'Regionalliga NRW', detail: '12 Teams', amount: 648, kind: 'league', leagueId: 1 },
       { label: 'Liga 2', detail: '20 Spieltage × 6 Teams', amount: 900, kind: 'league', leagueId: 2 },
     ]);
+  });
+});
+
+describe('leaguePricesFromLines', () => {
+  it('sums amounts per leagueId and excludes lines without one', () => {
+    expect(leaguePricesFromLines([
+      { label: 'U16 Sachsen', amount: 144, kind: 'league', leagueId: 1 },
+      { label: 'U13 Mitteldeutschland', amount: 122, kind: 'league', leagueId: 2 },
+      { label: 'U13 Mitteldeutschland', amount: 72, kind: 'league', leagueId: 2 },
+      { label: 'Grundpreis', amount: 600, kind: 'fee' },
+    ])).toEqual([
+      { leagueId: 1, finalPrice: 144 },
+      { leagueId: 2, finalPrice: 194 },
+    ]);
+  });
+
+  it('returns an empty array for lines with no leagueId', () => {
+    expect(leaguePricesFromLines([{ label: 'Grundpreis', amount: 600, kind: 'fee' }])).toEqual([]);
   });
 });
 

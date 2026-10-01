@@ -12,8 +12,11 @@ export const OfferLetterSchema = z.object({
   offerNumber: z.string().trim().min(1).optional(),
   offerDate: z.coerce.date().optional(),
   validUntil: z.coerce.date().optional(),
-  introNote: z.string().optional(),
-  closingNote: z.string().optional(),
+  // Nullable so the client can explicitly clear a previously-saved note: `undefined`
+  // keys are dropped by JSON before they reach the server, so `null` is the only way
+  // to tell the server "unset this" rather than "leave it as-is" (see updateLetter).
+  introNote: z.string().optional().nullable(),
+  closingNote: z.string().optional().nullable(),
 });
 
 // Offer metadata only - financial config is separate
