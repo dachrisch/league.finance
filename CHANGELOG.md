@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.2](https://github.com/dachrisch/league.finance/compare/v0.12.1...v0.12.2) (2026-10-02)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @tanstack/react-query to v5.104.1 ([#717](https://github.com/dachrisch/league.finance/issues/717)) ([8c0e8d8](https://github.com/dachrisch/league.finance/commit/8c0e8d81ad48efa39b3e7b022a660ad835a89c3c))
+
 ## [0.12.1](https://github.com/dachrisch/league.finance/compare/v0.12.0...v0.12.1) (2026-10-01)
 
 
