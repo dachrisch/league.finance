@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.5](https://github.com/dachrisch/league.finance/compare/v0.12.4...v0.12.5) (2026-10-04)
+
+
+### Bug Fixes
+
+* **deps:** update dependency jsdom to v30.1.2 ([#724](https://github.com/dachrisch/league.finance/issues/724)) ([cb20c68](https://github.com/dachrisch/league.finance/commit/cb20c68b7950e78a85f9caca8e9b3d796fdaf360))
+
 ## [0.12.4](https://github.com/dachrisch/league.finance/compare/v0.12.3...v0.12.4) (2026-10-03)
 
 
