@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.8](https://github.com/dachrisch/league.finance/compare/v0.12.7...v0.12.8) (2026-10-05)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @vitejs/plugin-react to v6.1.2 ([#729](https://github.com/dachrisch/league.finance/issues/729)) ([a0f6a94](https://github.com/dachrisch/league.finance/commit/a0f6a94638dc80f1e37b44ed1ecc0455928c815b))
+* **deps:** update dependency nodemailer to v10.0.15 ([#730](https://github.com/dachrisch/league.finance/issues/730)) ([e790d2b](https://github.com/dachrisch/league.finance/commit/e790d2b3f01b8470a5e563d84bd70b767d83585a))
+
 ## [0.12.7](https://github.com/dachrisch/league.finance/compare/v0.12.6...v0.12.7) (2026-10-05)
 
 
