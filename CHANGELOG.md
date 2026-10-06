@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.11](https://github.com/dachrisch/league.finance/compare/v0.12.10...v0.12.11) (2026-10-06)
+
+
+### Bug Fixes
+
+* **deps:** update dependency express-rate-limit to v8.7.1 ([#736](https://github.com/dachrisch/league.finance/issues/736)) ([fc12fac](https://github.com/dachrisch/league.finance/commit/fc12fac6c6f37ddb63398c406279e65a9a89543e))
+
 ## [0.12.10](https://github.com/dachrisch/league.finance/compare/v0.12.9...v0.12.10) (2026-10-05)
 
 
