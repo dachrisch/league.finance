@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.17](https://github.com/dachrisch/league.finance/compare/v0.12.16...v0.12.17) (2026-10-08)
+
+
+### Bug Fixes
+
+* **deps:** update dependency concurrently to v10.0.6 ([#750](https://github.com/dachrisch/league.finance/issues/750)) ([7d06df7](https://github.com/dachrisch/league.finance/commit/7d06df7a7512a34da137118f2dde0beca47f4948))
+* **deps:** update dependency vite to v8.3.4 ([#751](https://github.com/dachrisch/league.finance/issues/751)) ([911a7bc](https://github.com/dachrisch/league.finance/commit/911a7bcb22afdb7c53ab0816429b5b0f96e2a2eb))
+
 ## [0.12.16](https://github.com/dachrisch/league.finance/compare/v0.12.15...v0.12.16) (2026-10-08)
 
 
