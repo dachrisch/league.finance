@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.18](https://github.com/dachrisch/league.finance/compare/v0.12.17...v0.12.18) (2026-10-09)
+
+
+### Bug Fixes
+
+* **deps:** update dependency express to v5.3.0 ([#754](https://github.com/dachrisch/league.finance/issues/754)) ([f9f19e3](https://github.com/dachrisch/league.finance/commit/f9f19e378aeba649f494590d697792320ead98cc))
+
 ## [0.12.17](https://github.com/dachrisch/league.finance/compare/v0.12.16...v0.12.17) (2026-10-08)
 
 
