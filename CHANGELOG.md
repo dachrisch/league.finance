@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.24](https://github.com/dachrisch/league.finance/compare/v0.12.23...v0.12.24) (2026-10-12)
+
+
+### Bug Fixes
+
+* **deps:** update dependency vitest to v5.0.4 ([#767](https://github.com/dachrisch/league.finance/issues/767)) ([1ed183f](https://github.com/dachrisch/league.finance/commit/1ed183f822a885d125af0a46cee5504ec726cc4e))
+
 ## [0.12.23](https://github.com/dachrisch/league.finance/compare/v0.12.22...v0.12.23) (2026-10-12)
 
 
