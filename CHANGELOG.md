@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.23](https://github.com/dachrisch/league.finance/compare/v0.12.22...v0.12.23) (2026-10-12)
+
+
+### Bug Fixes
+
+* **deps:** lock file maintenance ([#765](https://github.com/dachrisch/league.finance/issues/765)) ([a5597aa](https://github.com/dachrisch/league.finance/commit/a5597aa1690721a937effd28564c56fb8288acbb))
+
 ## [0.12.22](https://github.com/dachrisch/league.finance/compare/v0.12.21...v0.12.22) (2026-10-11)
 
 
