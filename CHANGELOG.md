@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.28](https://github.com/dachrisch/league.finance/compare/v0.12.27...v0.12.28) (2026-10-13)
+
+
+### Bug Fixes
+
+* **deps:** update dependency mysql2 to v3.24.6 ([#776](https://github.com/dachrisch/league.finance/issues/776)) ([c0bac89](https://github.com/dachrisch/league.finance/commit/c0bac89fe5e6156dce0935c3ff193f2df996d33c))
+* **deps:** update dependency oxlint to v1.88.0 ([#777](https://github.com/dachrisch/league.finance/issues/777)) ([2b888da](https://github.com/dachrisch/league.finance/commit/2b888da8b8ad3a7ac8acf35ea69bae4b358812fc))
+
 ## [0.12.27](https://github.com/dachrisch/league.finance/compare/v0.12.26...v0.12.27) (2026-10-13)
 
 
