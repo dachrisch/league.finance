@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.30](https://github.com/dachrisch/league.finance/compare/v0.12.29...v0.12.30) (2026-10-14)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @playwright/test to v1.64.1 ([#781](https://github.com/dachrisch/league.finance/issues/781)) ([4ff74d5](https://github.com/dachrisch/league.finance/commit/4ff74d5c8e8613b194059eccb08baa0c87e4e2d4))
+* **deps:** update dependency dotenv to v18.0.8 ([#782](https://github.com/dachrisch/league.finance/issues/782)) ([ebf6158](https://github.com/dachrisch/league.finance/commit/ebf61585d20abae00a40c5a68e557b6f8cdfd77f))
+
 ## [0.12.29](https://github.com/dachrisch/league.finance/compare/v0.12.28...v0.12.29) (2026-10-14)
 
 
