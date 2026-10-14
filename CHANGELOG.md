@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.31](https://github.com/dachrisch/league.finance/compare/v0.12.30...v0.12.31) (2026-10-14)
+
+
+### Bug Fixes
+
+* **deps:** update react monorepo to v19.3.1 ([#785](https://github.com/dachrisch/league.finance/issues/785)) ([49a2441](https://github.com/dachrisch/league.finance/commit/49a2441b8aac78acc43fde034e13ca963ecabb7d))
+
 ## [0.12.30](https://github.com/dachrisch/league.finance/compare/v0.12.29...v0.12.30) (2026-10-14)
 
 
