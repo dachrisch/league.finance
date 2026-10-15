@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.33](https://github.com/dachrisch/league.finance/compare/v0.12.32...v0.12.33) (2026-10-15)
+
+
+### Bug Fixes
+
+* **deps:** update dependency dotenv to v18.0.8 ([#784](https://github.com/dachrisch/league.finance/issues/784)) ([9e0b325](https://github.com/dachrisch/league.finance/commit/9e0b325dc89155595037db40593ecad62adecbf5))
+* **deps:** update dependency google-auth-library to v11.3.0 ([#773](https://github.com/dachrisch/league.finance/issues/773)) ([b20b645](https://github.com/dachrisch/league.finance/commit/b20b645314769c69200e45a182729c41c062cd3d))
+* **deps:** update dependency googleapis to v186 ([#787](https://github.com/dachrisch/league.finance/issues/787)) ([d42aa57](https://github.com/dachrisch/league.finance/commit/d42aa572ebd0fdd623e904624a1018dbc0b562b4))
+
 ## [0.12.32](https://github.com/dachrisch/league.finance/compare/v0.12.31...v0.12.32) (2026-10-15)
 
 
