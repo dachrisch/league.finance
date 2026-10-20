@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.42](https://github.com/dachrisch/league.finance/compare/v0.12.41...v0.12.42) (2026-10-20)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @tanstack/react-query to v5.104.5 ([#809](https://github.com/dachrisch/league.finance/issues/809)) ([0e88f8f](https://github.com/dachrisch/league.finance/commit/0e88f8fb9484aa71b09bc125e8e322b0522aa6fb))
+* **deps:** update dependency oxlint to v1.89.0 ([#810](https://github.com/dachrisch/league.finance/issues/810)) ([886e4f4](https://github.com/dachrisch/league.finance/commit/886e4f4b48e8416e12ab09a39630bdb4378f36ae))
+
 ## [0.12.41](https://github.com/dachrisch/league.finance/compare/v0.12.40...v0.12.41) (2026-10-19)
 
 
