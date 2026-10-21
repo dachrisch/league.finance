@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.45](https://github.com/dachrisch/league.finance/compare/v0.12.44...v0.12.45) (2026-10-21)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @hookform/resolvers to v6 ([#808](https://github.com/dachrisch/league.finance/issues/808)) ([80dadb8](https://github.com/dachrisch/league.finance/commit/80dadb82d17ecd541ff2ff8f8fd9217d39cb7af0))
+* **deps:** update dependency googleapis to v187 ([#813](https://github.com/dachrisch/league.finance/issues/813)) ([99a830a](https://github.com/dachrisch/league.finance/commit/99a830acba1982ae0d79317989b02986ea869a17))
+* **deps:** update dependency oxlint to v1.89.0 ([#812](https://github.com/dachrisch/league.finance/issues/812)) ([6dfb536](https://github.com/dachrisch/league.finance/commit/6dfb5361f171666d2bfd903e379131a0deaba839))
+
 ## [0.12.44](https://github.com/dachrisch/league.finance/compare/v0.12.43...v0.12.44) (2026-10-21)
 
 
