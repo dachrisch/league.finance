@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.58](https://github.com/dachrisch/league.finance/compare/v0.12.57...v0.12.58) (2026-10-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency express-rate-limit to v8.7.2 ([#852](https://github.com/dachrisch/league.finance/issues/852)) ([3e74342](https://github.com/dachrisch/league.finance/commit/3e743427bf7f094e05a6529b947ef5016bafe07a))
+* **deps:** update dependency nodemailer to v10.3.1 ([#853](https://github.com/dachrisch/league.finance/issues/853)) ([15bcb12](https://github.com/dachrisch/league.finance/commit/15bcb125206b14fc8ec207279cba9b770956cb27))
+
 ## [0.12.57](https://github.com/dachrisch/league.finance/compare/v0.12.56...v0.12.57) (2026-10-29)
 
 
