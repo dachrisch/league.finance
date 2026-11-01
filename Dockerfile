@@ -1,4 +1,4 @@
-FROM node:24-alpine AS builder
+FROM node:26-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
@@ -9,7 +9,7 @@ ENV VITE_BUILD_VERSION=$VITE_BUILD_VERSION
 ENV VITE_GIT_COMMIT_HASH=$VITE_GIT_COMMIT_HASH
 RUN npm run build
 
-FROM node:24-alpine
+FROM node:26-alpine
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
