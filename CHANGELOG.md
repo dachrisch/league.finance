@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.59](https://github.com/dachrisch/league.finance/compare/v0.12.58...v0.12.59) (2026-11-01)
+
+
+### Bug Fixes
+
+* **deps:** renovate update ([3052fba](https://github.com/dachrisch/league.finance/commit/3052fbaf270aed434aa8eb941ff348b907c55e6d))
+* **deps:** renovate update ([b7adaec](https://github.com/dachrisch/league.finance/commit/b7adaecaab23d8a4e550ed52c7d100037b881754))
+* **deps:** renovate update ([c706836](https://github.com/dachrisch/league.finance/commit/c706836c243b6f0c6004369376ae563bb2959b14))
+* **deps:** renovate update ([55f2542](https://github.com/dachrisch/league.finance/commit/55f2542500c2f1e29d8a3d21edfc0f9e64aedb1e))
+
 ## [0.12.58](https://github.com/dachrisch/league.finance/compare/v0.12.57...v0.12.58) (2026-10-29)
 
 
