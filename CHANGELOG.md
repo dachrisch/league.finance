@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.83](https://github.com/dachrisch/league.finance/compare/v0.12.82...v0.12.83) (2026-11-09)
+
+
+### Bug Fixes
+
+* **deps:** update dependency express-rate-limit to v8.7.4 ([#913](https://github.com/dachrisch/league.finance/issues/913)) ([1434962](https://github.com/dachrisch/league.finance/commit/143496243b6670073c611dc1f3c3b5cb7d705aba))
+* **deps:** update dependency google-auth-library to v11.3.4 ([#914](https://github.com/dachrisch/league.finance/issues/914)) ([d295460](https://github.com/dachrisch/league.finance/commit/d2954605b0f36752933cc74226aef2a522e29472))
+
 ## [0.12.82](https://github.com/dachrisch/league.finance/compare/v0.12.81...v0.12.82) (2026-11-09)
 
 
