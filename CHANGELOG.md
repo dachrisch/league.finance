@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.86](https://github.com/dachrisch/league.finance/compare/v0.12.85...v0.12.86) (2026-11-10)
+
+
+### Bug Fixes
+
+* **deps:** update dependency oxlint to v1.93.0 ([#922](https://github.com/dachrisch/league.finance/issues/922)) ([495db7d](https://github.com/dachrisch/league.finance/commit/495db7dbb5426a2914ee9756ca8352ac4e7cbad7))
+* **deps:** update trpc monorepo to v11.26.0 ([#923](https://github.com/dachrisch/league.finance/issues/923)) ([f963f0d](https://github.com/dachrisch/league.finance/commit/f963f0dbcf26076df7c6ea52352075803e28e3ff))
+
 ## [0.12.85](https://github.com/dachrisch/league.finance/compare/v0.12.84...v0.12.85) (2026-11-10)
 
 
