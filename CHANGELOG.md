@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.85](https://github.com/dachrisch/league.finance/compare/v0.12.84...v0.12.85) (2026-11-10)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @testing-library/user-event to v14.6.9 ([#919](https://github.com/dachrisch/league.finance/issues/919)) ([104e35c](https://github.com/dachrisch/league.finance/commit/104e35cfc70c2e20079325d34af4e3fe37ce5efc))
+* **deps:** update dependency @vitejs/plugin-react to v6.3.0 ([#920](https://github.com/dachrisch/league.finance/issues/920)) ([ea09f44](https://github.com/dachrisch/league.finance/commit/ea09f441c97d2ff0a53da3d0a87e10cb37f01aaf))
+
 ## [0.12.84](https://github.com/dachrisch/league.finance/compare/v0.12.83...v0.12.84) (2026-11-10)
 
 
