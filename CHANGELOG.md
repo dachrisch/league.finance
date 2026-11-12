@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.91](https://github.com/dachrisch/league.finance/compare/v0.12.90...v0.12.91) (2026-11-12)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @testing-library/user-event to v14.6.10 ([#935](https://github.com/dachrisch/league.finance/issues/935)) ([c8866dd](https://github.com/dachrisch/league.finance/commit/c8866ddaf1c6ffb5e926ce84da09acf5c9be0ee4))
+
 ## [0.12.90](https://github.com/dachrisch/league.finance/compare/v0.12.89...v0.12.90) (2026-11-12)
 
 
