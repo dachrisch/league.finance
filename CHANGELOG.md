@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.93](https://github.com/dachrisch/league.finance/compare/v0.12.92...v0.12.93) (2026-11-14)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @playwright/test to v1.65.1 ([#940](https://github.com/dachrisch/league.finance/issues/940)) ([ddc5b6f](https://github.com/dachrisch/league.finance/commit/ddc5b6fc6081e12757fc9c4fe97a1e459d9c4fb1))
+
 ## [0.12.92](https://github.com/dachrisch/league.finance/compare/v0.12.91...v0.12.92) (2026-11-13)
 
 
