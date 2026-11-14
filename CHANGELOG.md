@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.95](https://github.com/dachrisch/league.finance/compare/v0.12.94...v0.12.95) (2026-11-14)
+
+
+### Bug Fixes
+
+* **deps:** update trpc monorepo to v11.28.2 ([#944](https://github.com/dachrisch/league.finance/issues/944)) ([ba9d8d4](https://github.com/dachrisch/league.finance/commit/ba9d8d419f00f8ff9d2acd06128ecb750b2a11e7))
+
 ## [0.12.94](https://github.com/dachrisch/league.finance/compare/v0.12.93...v0.12.94) (2026-11-14)
 
 
