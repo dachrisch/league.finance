@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.97](https://github.com/dachrisch/league.finance/compare/v0.12.96...v0.12.97) (2026-11-16)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @testing-library/user-event to v14.6.12 ([#949](https://github.com/dachrisch/league.finance/issues/949)) ([5bf7a51](https://github.com/dachrisch/league.finance/commit/5bf7a5153971d3541f259957fc662c47f6d602eb))
+* **deps:** update dependency nodemailer to v10.6.0 ([#950](https://github.com/dachrisch/league.finance/issues/950)) ([8c823d7](https://github.com/dachrisch/league.finance/commit/8c823d7d1fe4092546f386d27f41e685517e0a42))
+
 ## [0.12.96](https://github.com/dachrisch/league.finance/compare/v0.12.95...v0.12.96) (2026-11-16)
 
 
