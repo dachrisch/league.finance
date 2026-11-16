@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.96](https://github.com/dachrisch/league.finance/compare/v0.12.95...v0.12.96) (2026-11-16)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @testing-library/user-event to v14.6.11 ([#946](https://github.com/dachrisch/league.finance/issues/946)) ([b75b741](https://github.com/dachrisch/league.finance/commit/b75b7412543455b1a8817bf08de5e73a60ca1734))
+* **deps:** update trpc monorepo to v11.28.3 ([#947](https://github.com/dachrisch/league.finance/issues/947)) ([b62f0a8](https://github.com/dachrisch/league.finance/commit/b62f0a8a1fde2d40b7da97b0466110f13d2cefdf))
+
 ## [0.12.95](https://github.com/dachrisch/league.finance/compare/v0.12.94...v0.12.95) (2026-11-14)
 
 
