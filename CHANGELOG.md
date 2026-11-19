@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.106](https://github.com/dachrisch/league.finance/compare/v0.12.105...v0.12.106) (2026-11-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @vitejs/plugin-react to v6.3.0 ([#925](https://github.com/dachrisch/league.finance/issues/925)) ([270e8e8](https://github.com/dachrisch/league.finance/commit/270e8e8c688da67825e6b152d11bff006f720d34))
+* **deps:** update dependency googleapis to v190 ([#937](https://github.com/dachrisch/league.finance/issues/937)) ([ead0b68](https://github.com/dachrisch/league.finance/commit/ead0b68e316580ada981c675c129454d67fd1875))
+* **deps:** update dependency mongoose to v9.12.2 ([#956](https://github.com/dachrisch/league.finance/issues/956)) ([849e15f](https://github.com/dachrisch/league.finance/commit/849e15f2879747cadc5d648dd1ee2f5a2a8670ca))
+
 ## [0.12.105](https://github.com/dachrisch/league.finance/compare/v0.12.104...v0.12.105) (2026-11-19)
 
 
