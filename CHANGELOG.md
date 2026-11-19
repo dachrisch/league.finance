@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.103](https://github.com/dachrisch/league.finance/compare/v0.12.102...v0.12.103) (2026-11-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @testing-library/user-event to v14.6.13 ([#966](https://github.com/dachrisch/league.finance/issues/966)) ([41aedee](https://github.com/dachrisch/league.finance/commit/41aedeebcac29ebe664dc93181d8d8d2c0599701))
+* **deps:** update dependency express-rate-limit to v8.7.5 ([#967](https://github.com/dachrisch/league.finance/issues/967)) ([bd03d55](https://github.com/dachrisch/league.finance/commit/bd03d55e0635df31622f3491dd492427a2ed31dd))
+
 ## [0.12.102](https://github.com/dachrisch/league.finance/compare/v0.12.101...v0.12.102) (2026-11-18)
 
 
