@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.104](https://github.com/dachrisch/league.finance/compare/v0.12.103...v0.12.104) (2026-11-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency react-router-dom to v7.18.6 ([#969](https://github.com/dachrisch/league.finance/issues/969)) ([41f059d](https://github.com/dachrisch/league.finance/commit/41f059dc00ca4063e11b6d9c0e5974fdf19bbf27))
+* **deps:** update trpc monorepo to v11.29.5 ([#970](https://github.com/dachrisch/league.finance/issues/970)) ([02c0a85](https://github.com/dachrisch/league.finance/commit/02c0a855c6d2628214ddf45c19660accb77a0717))
+
 ## [0.12.103](https://github.com/dachrisch/league.finance/compare/v0.12.102...v0.12.103) (2026-11-19)
 
 
