@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.113](https://github.com/dachrisch/league.finance/compare/v0.12.112...v0.12.113) (2026-11-21)
+
+
+### Bug Fixes
+
+* **deps:** update dependency mongodb-memory-server to v11.4.0 ([#989](https://github.com/dachrisch/league.finance/issues/989)) ([7649bdc](https://github.com/dachrisch/league.finance/commit/7649bdc281becb064e3650c980eff3d0daf2bf10))
+* **deps:** update trpc monorepo to v11.29.7 ([#988](https://github.com/dachrisch/league.finance/issues/988)) ([0fed8b5](https://github.com/dachrisch/league.finance/commit/0fed8b5cbf529da4fa0ba9fea5043ef0675566c0))
+
 ## [0.12.112](https://github.com/dachrisch/league.finance/compare/v0.12.111...v0.12.112) (2026-11-20)
 
 
