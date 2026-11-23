@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.119](https://github.com/dachrisch/league.finance/compare/v0.12.118...v0.12.119) (2026-11-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency ioredis to v6.1.0 ([#1001](https://github.com/dachrisch/league.finance/issues/1001)) ([295ece7](https://github.com/dachrisch/league.finance/commit/295ece700aac4c7b99becc5372e41d628e50c65a))
+* **deps:** update dependency mongoose to v9.13.0 ([#1002](https://github.com/dachrisch/league.finance/issues/1002)) ([eaaf7a1](https://github.com/dachrisch/league.finance/commit/eaaf7a1ae619e28ae1afc44fc33d9ba38b125d0a))
+
 ## [0.12.118](https://github.com/dachrisch/league.finance/compare/v0.12.117...v0.12.118) (2026-11-23)
 
 
