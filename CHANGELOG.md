@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.117](https://github.com/dachrisch/league.finance/compare/v0.12.116...v0.12.117) (2026-11-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @trpc/react-query to v11.29.7 ([#996](https://github.com/dachrisch/league.finance/issues/996)) ([c366a91](https://github.com/dachrisch/league.finance/commit/c366a91bd3bb0b84757c4769b0c3197c938a1c4d))
+
 ## [0.12.116](https://github.com/dachrisch/league.finance/compare/v0.12.115...v0.12.116) (2026-11-23)
 
 
