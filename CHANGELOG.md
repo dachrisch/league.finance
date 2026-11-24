@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.121](https://github.com/dachrisch/league.finance/compare/v0.12.120...v0.12.121) (2026-11-24)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @hookform/resolvers to v7.0.9 ([#1007](https://github.com/dachrisch/league.finance/issues/1007)) ([2322055](https://github.com/dachrisch/league.finance/commit/2322055e24765e2337bf54c373cc4c643cd43167))
+* **deps:** update trpc monorepo to v11.31.2 ([#1008](https://github.com/dachrisch/league.finance/issues/1008)) ([bf5446d](https://github.com/dachrisch/league.finance/commit/bf5446d8f5fc39c6b13342eb86361acc0f92abce))
+
 ## [0.12.120](https://github.com/dachrisch/league.finance/compare/v0.12.119...v0.12.120) (2026-11-24)
 
 
