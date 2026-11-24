@@ -1,57 +1,35 @@
 # Agent Instructions: Leagues Finance
 
-## Deployment
-- **Production URL**: https://finance.leaguesphere.app/ (deployed via the `container` repo).
+Standalone financial dashboard for league revenues, discounts, offers and invoices.
+Production: https://finance.leaguesphere.app/ (deployed via the `container` repo).
+Human-facing overview: [`README.md`](README.md).
 
-## Architecture & Boundaries
-- **Client**: `src/client/` (React + Vite + tRPC Client). Entry: `src/client/main.tsx`.
-- **Server**: `src/server/` (Express + tRPC Server + tsx). Entry: `src/server/index.ts`.
-- **Shared**: `shared/` contains Zod schemas (`shared/schemas`), types (`shared/types`), and helpers (`shared/lib`) used by both.
-- **Frontend Assets**: Uses `src/client/index.css` for responsive design. Mimic existing styles (inline styles + utility classes).
-- **Domain entity relationships** (how `Association`, `Contact`, `TrackedLeague`, `Offer`, `FinancialConfig`, and `Invoice` connect, and how to navigate that chain in the UI): see [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
+## Component map — read the relevant guide before changing code there
 
-### tRPC router map (`src/server/routers/index.ts`)
-The single `appRouter` is the client/server contract; its type (`AppRouter`) drives client-side inference. Top-level namespaces: `health`, `auth`, `teams`, `google`, and everything domain-specific nested under **`finance`**: `settings`, `configs`, `discounts`, `dashboard`, `calculate`, `associations`, `offers`, `offersDrive`, `contacts`, `leagues`, `seasons`. So an endpoint like the one that computes offer pricing is `finance.offers.list`, not `offers.list`. `teams`/`finance.leagues`/`finance.seasons` read from the MySQL source; the rest are MongoDB-backed.
+- **Client** (React 19 + Vite + tRPC client): [`src/client/AGENTS.md`](src/client/AGENTS.md)
+- **Server** (Express + tRPC via tsx, Mongoose models, services, Bull jobs): [`src/server/AGENTS.md`](src/server/AGENTS.md)
+- **Shared** (Zod schemas, inferred types, cross-side helpers): [`shared/AGENTS.md`](shared/AGENTS.md)
+- **E2E** (Playwright specs): [`e2e/AGENTS.md`](e2e/AGENTS.md)
+- **Domain entity relationships** (`Association` → `Contact` → `TrackedLeague` → `Offer` → `FinancialConfig` → `Invoice`, and how to navigate that chain in the UI): [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
-## Command Shortcuts
-- **Dev**: `npm run dev` (Runs server on 3000, Vite dev server proxies `/trpc` and `/auth`).
-- **Typecheck**: 
-  - `npm run typecheck` (Client only)
-  - `npm run typecheck:server` (Server only - uses `tsconfig.server.json`)
-- **Build**: `npm run build` (Vite build + Server TSC).
-- **Test**: `npm run test` (Vitest). Single file/pattern: `npm run test -- src/server/lib/__tests__/configPricing.test.ts` or `npm run test -- -t "computes prices"`. Watch mode: `npm run test:watch`.
-- **E2E**: `npm run test:e2e` (Playwright; specs in `e2e/`). `test:e2e:ui` / `test:e2e:debug` for interactive runs.
-- **Lint**: `npm run lint` (oxlint). CI (`part_node_build.yaml`) runs this before build/test — check it passes before pushing.
-- **Mongo migrations**: `npm run migrate` runs compiled migrations from `src/server/db/migrations/` (build first — it reads from `dist/`).
+## Build & verify (commands verified against `package.json`)
 
-## Toolchain Quirks
-- **TypeScript**: Two separate configs (`tsconfig.json` for client, `tsconfig.server.json` for server). Use the correct one for `tsc`.
-- **Server Execution**: Uses `tsx` for direct execution of TypeScript in dev.
-- **Proxy**: Vite proxies API requests to `localhost:3000`.
+- **Dev**: `npm run dev` — concurrently starts the API (port 3000) and the Vite dev server.
+- **Typecheck**: `npm run typecheck` (client, `tsc --noEmit`) and `npm run typecheck:server` (`tsc -p tsconfig.server.json --noEmit`).
+- **Build**: `npm run build` — `vite build && tsc -p tsconfig.server.json`.
+- **Lint**: `npm run lint` (oxlint). CI (`part_node_build.yaml`) runs lint before build and tests — make sure it passes before pushing.
+- **Unit tests**: `npm run test` (Vitest). Single file: `npm run test -- src/server/lib/__tests__/configPricing.test.ts`; name filter: `npm run test -- -t "computes prices"`. Watch mode: `npm run test:watch`.
+- **E2E**: `npm run test:e2e` (plus `test:e2e:ui` / `test:e2e:debug`) — see [`e2e/AGENTS.md`](e2e/AGENTS.md).
+- **Mongo migrations**: `npm run migrate` runs compiled migrations from `dist/` — run `npm run build` first.
 
-## Data & Persistence
-- **MySQL**: Read-only connection to legacy LeagueSphere data. Configured via `LS_DB_*` env vars.
-- **MongoDB**: Primary store for configs, discounts, and settings. 
-- **Local Dev**: If `MONGO_URI` is unset in `.env`, the server automatically starts an **in-memory MongoDB** (`mongodb-memory-server`).
+## Toolchain
 
-## Domain Data Shapes & Gotchas
-- **Seasons are SQL rows, not Mongo docs.** `teams.seasons` returns `{ id, name, slug }` (typed to the shared `Season` type). The season **`name` is the year string** (e.g. `"2026"`) — there is **no `year` field and no `_id`**. Pick the current season by `Number(season.name)` (descending) and filter offers by `season.id`. (Assuming a Mongo-style `{ _id, year }` shape caused the v0.6.10 dashboard "Tracking Season undefined" bug.)
-- **Leagues are always fetched season-scoped — there is no unscoped league list.** `finance.leagues.listBySeason({ seasonId, associationId? })` returns `{ _id, name, slug, type }` — note `_id`, not `id`. `teams.associations({ seasonId? })` returns leaguesphere's regional associations (`{ id, abbr, name }`), optionally scoped to a season (unscoped when `seasonId` is omitted).
-- **Offer pricing is never stored on the Offer document.** It lives in separate `FinancialConfig` records and is computed on read via `computeConfigPrices()` (`src/server/lib/configPricing.ts`) — passing a raw config yields `finalPrice === undefined`, which renders as `0,00 €`. Endpoint contract:
-  - `finance.offers.list` → each offer carries a derived `totalPrice` **and** a per-league `leaguePrices: [{ leagueId, finalPrice }]` breakdown. It does **not** embed `financialConfigs`.
-  - `finance.offers.get` → returns `configs` (fully priced) separately from the offer.
+- Two TypeScript configs: `tsconfig.json` (client, `bundler` resolution) and `tsconfig.server.json` (server, `nodenext`, emits to `dist/`). Use the right one with `tsc`.
+- The dev API runs TypeScript directly through `tsx watch src/server/index.ts`.
+- Vite proxies `/trpc` and `/auth` to `http://localhost:3000` (see `vite.config.ts`).
 
-- **Two ways an invoice gets into the app.** `finance.invoices.create` issues a *new* invoice: it generates the number (`YYYYMMDD-NN`, next after the day's highest suffix), dates it today and appends the header + position rows to the legacy Sheets ledger (`SheetsService`, spreadsheet `1yLKEp…`). `finance.invoices.recordExisting` tracks an invoice that was *already issued* outside the app (legacy sheet + Apps Script PDF): it keeps the given number/dates/status/Drive link and **never** touches the Sheets ledger or renders a PDF — using `create` for those would duplicate their ledger rows.
-- **Invoice PDF layout mirrors the legacy Apps Script design.** `PdfService.generateInvoicePdf` places everything at absolute A4 points (`INVOICE_LAYOUT`) measured from the Apps Script-issued PDFs, so app- and sheet-issued invoices look the same; the logo is embedded as base64 (`src/server/assets/bumbleflies-logo.ts`) because `tsc` does not copy binary assets into `dist`. Layout tests spy on pdfkit's `text`/`image` calls to pin those positions.
-- **Offer price lines win over configs.** `Offer.lines` (label/detail/amount/kind) — once non-empty — are the offer's price: `totalPrice` = `offerLinesTotal(lines)` (optional lines excluded, discounts negative). Offers without lines still price from `FinancialConfig`s. `generateLines` seeds lines from configs; `setLines` replaces them (drafts only).
-- **Offer PDF mirrors the legacy Google Docs letter** (`OFFER_LAYOUT`, measured from `Angebot_20260319-2`). `previewPdf` renders it without changing status; `fileOfferInDrive` queues a job (`FileOfferJobHandler`) that generates the PDF, uploads it to Drive and marks the offer `sent` — status goes `draft` → `sending` while queued, `sending` → `sent` on success, and back to `draft` (with `driveMetadata.failureReason` set) if the job fails.
+## Safety / conventions
 
-## Auth Flow
-- **Strategy**: Passport.js with `passport-google-oauth20`.
-- **Token**: Success redirects issue a JWT. Client uses `getToken()`/`clearToken()` in `src/client/lib/trpc.ts`.
-- **Google Drive calls use the logged-in user's OAuth access token** (`ctx.accessToken`), not a service account. When that token is missing/expired, `google.listFolders` throws **`UNAUTHORIZED`** (not a 500) so the UI can prompt a re-login — `DriveService.listFolders` preserves the Google `401/403` status for this mapping.
-
-## Testing
-- **Suite**: Vitest.
-- **Backend Tests**: Often use `mongodb-memory-server` automatically.
-- **Patterns**: Check `src/server/lib/__tests__/` for calculator logic tests.
+- Legacy MySQL is **read-only** source data (teams, seasons, leagues). Never write to it; the app's own state lives in MongoDB.
+- Vitest deliberately blocks production MySQL by setting `LS_DB_*` to `test-blocked` (`vitest.config.ts`). Keep tests pointed at test/in-memory data.
+- Secrets belong in `.env` (gitignored) or environment variables. Never commit credentials.
