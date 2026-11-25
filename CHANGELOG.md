@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.125](https://github.com/dachrisch/league.finance/compare/v0.12.124...v0.12.125) (2026-11-25)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @types/react to v19.3.2 ([#1014](https://github.com/dachrisch/league.finance/issues/1014)) ([f86f534](https://github.com/dachrisch/league.finance/commit/f86f5347c21f98a48d168d8f190db03a899fb084))
+
 ## [0.12.124](https://github.com/dachrisch/league.finance/compare/v0.12.123...v0.12.124) (2026-11-25)
 
 
